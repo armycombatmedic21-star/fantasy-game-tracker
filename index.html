@@ -37,7 +37,7 @@ html{font-size:16px;-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;tex
 body{background:var(--bg);background-image:linear-gradient(180deg,#0a1426 0,#060b16 260px);background-repeat:no-repeat;color:var(--text);font-family:var(--font);font-variant-numeric:tabular-nums;margin:0;min-height:100vh;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
 button:focus-visible,.mc:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.wrap{max-width:480px;margin:0 auto;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:480px;margin:0 auto;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 img{display:block}
 
 /* ---- header ---- */
@@ -287,7 +287,7 @@ html.ios .sheet{max-height:calc(var(--vvh,1vh)*88)}
 .gateopen .ico{width:64px;height:64px;margin:0 auto 14px;border-radius:16px;background:var(--card);border:1px solid rgba(var(--acc-rgb),.4);display:flex;align-items:center;justify-content:center;color:var(--acc);box-shadow:0 0 24px rgba(var(--acc-rgb),.18)}
 
 /* ---- Glass Pill tab bar (Pick'em 4.7.0) ---- */
-.tabbar{position:fixed;left:max(21px,env(safe-area-inset-left,0px));right:max(21px,env(safe-area-inset-right,0px));bottom:calc(21px + env(safe-area-inset-bottom,0px));z-index:50;height:62px;padding:3px;border-radius:31px;display:flex;align-items:stretch;border:1px solid rgba(130,155,205,.28);max-width:440px;margin:0 auto}
+.tabbar{position:fixed;left:max(21px,env(safe-area-inset-left,0px));right:max(21px,env(safe-area-inset-right,0px));bottom:max(10px,calc(env(safe-area-inset-bottom,0px) - 8px));z-index:50;height:62px;padding:3px;border-radius:31px;display:flex;align-items:stretch;border:1px solid rgba(130,155,205,.28);max-width:440px;margin:0 auto}
 .tabbar .lens{position:absolute;z-index:0;inset:0;border-radius:inherit;pointer-events:none;background:rgba(104,137,200,.14);-webkit-backdrop-filter:blur(2.5px) brightness(.05) saturate(120%);backdrop-filter:blur(2.5px) brightness(.05) saturate(120%)}
 html.tbbend .tabbar .lens{-webkit-backdrop-filter:url(#lensf) blur(2.5px) brightness(.05) saturate(120%);backdrop-filter:url(#lensf) blur(2.5px) brightness(.05) saturate(120%)}
 .tabbtn{position:relative;z-index:1;flex:1;min-width:0;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3.5px;padding:9px 4px 0;border-radius:27px;color:#f5fbff}
@@ -299,7 +299,7 @@ html.tbbend .tabbar .lens{-webkit-backdrop-filter:url(#lensf) blur(2.5px) bright
 .tabbar .rail::after{content:"";position:absolute;left:-16px;right:-16px;top:1px;height:30px;background:radial-gradient(60% 100% at 50% 0%,rgba(var(--acc-rgb),.14),transparent 70%)}
 
 /* ---- toast, update bar ---- */
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1a2a42;color:#fff;font-weight:700;font-size:14px;border:1px solid rgba(var(--acc-rgb),.3);padding:10px 16px;border-radius:22px;z-index:80;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1a2a42;color:#fff;font-weight:700;font-size:14px;border:1px solid rgba(var(--acc-rgb),.3);padding:10px 16px;border-radius:22px;z-index:80;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:0 10px 24px rgba(0,0,0,.45)}
 .toast.show{opacity:1}
 .updbar{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:55;max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:16px;text-align:left;background:linear-gradient(170deg,#102c55,#0b1c30);color:#fff;animation:updPulse 1.4s ease-in-out infinite}
 .updbar[hidden]{display:none}
@@ -438,8 +438,9 @@ body.dragmode .mc.dragging{transition:scale .14s}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.1.2';
 const CHANGELOG = [
+  ['1.1.2', 'Tab bar sits lower, closer to the bottom of the screen.'],
   ['1.1.1', 'Every game card shows each team\u2019s win % next to its name. Win % is less overconfident (calibrated against FantasyPros).'],
   ['1.1.0', 'The Prediction Engine: our backtested model projects every player, then 20,000 simulations per game give live win % (ties go to bench points) and update during games. New FantasyPros-style matchup header, League Analysis card with playoff odds (top 5 in your division), Divisional Week badge, Pick\u2019em-style pins, new tab icons. Return TDs now score 6 for the player too, past weeks use CBS\u2019s official points, and the app reopens where you left off.'],
   ['1.0.1', 'Players on IR no longer show a CBS mismatch flag (CBS doesn\u2019t score IR).'],
