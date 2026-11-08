@@ -432,13 +432,14 @@ body.dragmode .mc.dragging{transition:scale .14s}
 (function(){
 'use strict';
 /* =====================================================================
-   Fantasy Game Tracker — v1.0
+   Fantasy Game Tracker — v1.1 (Prediction Engine)
    Data:  CBS lineups/standings via our Cloudflare Worker (fgt-lineups, 1 call/min to CBS)
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.1.0';
 const CHANGELOG = [
+  ['1.1.0', 'The Prediction Engine: our backtested model projects every player, then 20,000 simulations per game give live win % (ties go to bench points) and update during games. New FantasyPros-style matchup header, League Analysis card with playoff odds (top 5 in your division), Divisional Week badge, Pick\u2019em-style pins, new tab icons. Return TDs now score 6 for the player too, past weeks use CBS\u2019s official points, and the app reopens where you left off.'],
   ['1.0.1', 'Players on IR no longer show a CBS mismatch flag (CBS doesn\u2019t score IR).'],
   ['1.0.0', 'First version. Live scoring in our league’s exact rules from ESPN, checked against CBS. All six matchups with pins and press-and-hold to reorder, swipeable matchup screen with tier bars, TD and fumble badges, and AFC/NFC standings. The Prediction Engine (projections and win %) comes in the next update.']
 ];
