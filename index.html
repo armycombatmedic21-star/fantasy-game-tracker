@@ -373,7 +373,8 @@ body.dragmode .mc.dragging{transition:scale .14s}
 .wpbar{display:flex;gap:4px;height:8px}
 .wpbar i{display:block;border-radius:9px;background:rgba(255,255,255,.18);min-width:2px}
 .wpbar i.lead{background:var(--green);box-shadow:0 0 8px rgba(61,220,132,.35)}
-.mc .wpbar{height:4px;gap:3px;margin-top:8px}
+.chip2{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;padding:1px 6px;border-radius:7px;border:1px solid var(--hair2);color:var(--muted);vertical-align:2px}
+.chip2.lead{color:var(--green);border-color:rgba(61,220,132,.55);background:rgba(61,220,132,.10)}
 .mc.mine .wp{margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)}
 .ptop{align-items:center;min-height:36px}
 .ppt b{line-height:1}
@@ -437,8 +438,9 @@ body.dragmode .mc.dragging{transition:scale .14s}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.1.1';
 const CHANGELOG = [
+  ['1.1.1', 'Every game card shows each team\u2019s win % next to its name. Win % is less overconfident (calibrated against FantasyPros).'],
   ['1.1.0', 'The Prediction Engine: our backtested model projects every player, then 20,000 simulations per game give live win % (ties go to bench points) and update during games. New FantasyPros-style matchup header, League Analysis card with playoff odds (top 5 in your division), Divisional Week badge, Pick\u2019em-style pins, new tab icons. Return TDs now score 6 for the player too, past weeks use CBS\u2019s official points, and the app reopens where you left off.'],
   ['1.0.1', 'Players on IR no longer show a CBS mismatch flag (CBS doesn\u2019t score IR).'],
   ['1.0.0', 'First version. Live scoring in our league’s exact rules from ESPN, checked against CBS. All six matchups with pins and press-and-hold to reorder, swipeable matchup screen with tier bars, TD and fumble badges, and AFC/NFC standings. The Prediction Engine (projections and win %) comes in the next update.']
@@ -1027,14 +1029,15 @@ function card(mt, mine, LM){
   const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home;
   const wa = E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const done = left === 0 && (la && la.any);
-  const row = function(t, p, o, L, pj){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + '</b><small>' + esc(t ? t.record : '') + '</small></span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
+  const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
+  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + '</b>' + chip(w) + '<small>' + esc(t ? t.record : '') + '</small></span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
     '<div class="mchead">' + (mine ? '<span class="tag">Your matchup</span><span class="tag">' + left + ' players left</span>' :
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
     (mine ? '' : '<span class="tag left">' + left + ' left</span>') +
-    '<div class="rows">' + row(A, a, b, la, pa) + row(B, b, a, lb, pb) + '</div>' +
-    (E && B ? wpRow(wa, mine) : (mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
+    '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
+    (E && B && mine ? wpRow(wa, true) : (mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
 }
 function homeView(){
   let h = header('Game Tracker') + statusStrip();
@@ -1812,6 +1815,8 @@ setInterval(function(){ checkUpdate('timer'); }, 300000);
 function engineWorker(){
   'use strict';
   const N = 20000;
+  const SPREAD_K = 1.35;   // temporary calibration vs FantasyPros (Nov 8, 2026); full calibration review pending
+  function widen(a){ let m = 0; for(let i = 0; i < a.length; i++) m += a[i]; m /= a.length; for(let i = 0; i < a.length; i++) a[i] = Math.round(m + SPREAD_K * (a[i] - m)); return a; }
   const SK = [[25,3],[50,6],[100,10],[150,12],[200,15]], PA = [[75,3],[150,5],[226,7],[300,10],[350,12],[400,15]];
   const TDP = { rush: [0.930, 0.959, 0.974, 1], rec: [0.893, 0.941, 0.963, 1], pass: [0.893, 0.941, 0.963, 1] };
   const TDV = [6, 8, 10, 12];
@@ -1924,6 +1929,7 @@ function engineWorker(){
       const ta = new Float32Array(N), tb = new Float32Array(N);
       A.st.forEach(function(m){ for(let i = 0; i < N; i++) ta[i] += m.arr[i]; if(live) res.p[m.pid] = [mean(m.arr), pct(m.arr, 0.2), pct(m.arr, 0.8)]; });
       if(B) B.st.forEach(function(m){ for(let i = 0; i < N; i++) tb[i] += m.arr[i]; if(live) res.p[m.pid] = [mean(m.arr), pct(m.arr, 0.2), pct(m.arr, 0.8)]; });
+      widen(ta); widen(tb); widen(A.bench); if(B) widen(B.bench);
       const wa = new Uint8Array(N); let w = 0;
       for(let i = 0; i < N; i++){ let x = ta[i] > tb[i] ? 1 : ta[i] < tb[i] ? 0 : (A.bench[i] > (B ? B.bench[i] : 0) ? 1 : A.bench[i] < (B ? B.bench[i] : 0) ? 0 : 0.5); if(x === 0.5) x = (i & 1); wa[i] = x; w += x; }
       res.m[mt.key] = { wa: w / N, pa: mean(ta), pb: B ? mean(tb) : 0 };
@@ -1943,7 +1949,7 @@ function engineWorker(){
     const fx = (pool.RB[0] || { m: -1 }).m >= (pool.WR[0] || { m: -1 }).m ? take('RB') : take('WR'); L.push(fx);
     let m = 0, v = 0; L.forEach(function(x){ m += x.m; v += x.v; });
     let bm = 0, bv = 0; Object.keys(pool).forEach(function(k){ pool[k].forEach(function(x){ bm += x.m; bv += x.v; }); });
-    return { m: m, s: Math.sqrt(v), bm: bm, bs: Math.sqrt(bv) };
+    return { m: m, s: SPREAD_K * Math.sqrt(v), bm: bm, bs: SPREAD_K * Math.sqrt(bv) };
   }
   function playoff(msg, wk){
     const S = msg.season; if(!S) return null;

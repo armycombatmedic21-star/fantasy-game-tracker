@@ -137,7 +137,7 @@ with sync_playwright() as pw:
         la = page.inner_text('.la')
         check(f'[{tag}] League Analysis: 4th AFC, league rank, playoff odds %', '4th' in la.replace('\n', '') and 'AFC' in la and '%' in la, la)
         check(f'[{tag}] Divisional Week badge (every Week 9 fixture game is in-division)', page.locator('.la .divwk').count() == 1)
-        check(f'[{tag}] compact cards have a win bar + projections', page.locator('#cards .mc .wpbar').count() == 5)
+        check(f'[{tag}] compact cards have a win % chip per team', page.locator('#cards .mc .chip2').count() == 10)
         check(f'[{tag}] no page errors', not errs, errs)
         ov = page.evaluate('document.documentElement.scrollWidth - window.innerWidth')
         check(f'[{tag}] no sideways scroll on scoreboard', ov <= 0, ov)
