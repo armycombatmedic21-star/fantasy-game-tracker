@@ -1666,11 +1666,330 @@ setInterval(function(){ checkUpdate('timer'); }, 300000);
   try{ const kill = []; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(/^fgt-sum-/.test(k)){ const v = JSON.parse(localStorage.getItem(k) || 'null'); if(!v || !v.w || v.w < S.curWeek - 1) kill.push(k); } } kill.forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
 })();
 
+/* =====================================================================
+   Prediction Engine (v1.1)
+   projections.json = per-player distribution parameters from model/fgt_model.py (Drop 1 Appendix A port),
+   refreshed Wed/Sat/Sun ~11:30 AM ET. The Web Worker re-simulates them 20,000 times (seeded), updates
+   players in progress (Drop 1 §5), correlates same-team players (§4.3), breaks ties on bench points,
+   and simulates the rest of the regular season for playoff odds (top 5 in the division after Week 12).
+   ===================================================================== */
+function engineWorker(){
+  'use strict';
+  const N = 20000;
+  const SK = [[25,3],[50,6],[100,10],[150,12],[200,15]], PA = [[75,3],[150,5],[226,7],[300,10],[350,12],[400,15]];
+  const TDP = { rush: [0.930, 0.959, 0.974, 1], rec: [0.893, 0.941, 0.963, 1], pass: [0.893, 0.941, 0.963, 1] };
+  const TDV = [6, 8, 10, 12];
+  function tier(y, T){ let p = 0; for(let i = 0; i < T.length; i++) if(y >= T[i][0]) p = T[i][1]; return p; }
+  function paPts(pa){ return pa <= 0 ? 15 : pa <= 7 ? 9 : pa <= 17 ? 6 : pa <= 24 ? 3 : pa <= 29 ? 0 : -3; }
+  // seeded RNG (cyrb128 -> sfc32)
+  function seedOf(str){ let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+    for(let i = 0, k; i < str.length; i++){ k = str.charCodeAt(i); h1 = h2 ^ Math.imul(h1 ^ k, 597399067); h2 = h3 ^ Math.imul(h2 ^ k, 2869860233); h3 = h4 ^ Math.imul(h3 ^ k, 951274213); h4 = h1 ^ Math.imul(h4 ^ k, 2716044179); }
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067); h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233); h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213); h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0]; }
+  function RNG(str){
+    let [a, b, c, d] = seedOf(str), spare = null;
+    const u = function(){ a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; let t = (a + b) | 0; a = b ^ b >>> 9; b = c + (c << 3) | 0; c = (c << 21 | c >>> 11); d = d + 1 | 0; t = t + d | 0; c = c + t | 0; return ((t >>> 0) + 0.5) / 4294967296; };
+    const nrm = function(){ if(spare !== null){ const s = spare; spare = null; return s; } const r = Math.sqrt(-2 * Math.log(u())), th = 2 * Math.PI * u(); spare = r * Math.sin(th); return r * Math.cos(th); };
+    const gam = function(k){ if(k < 1) return gam(k + 1) * Math.pow(u(), 1 / k); const dd = k - 1 / 3, cc = 1 / Math.sqrt(9 * dd);
+      for(;;){ let x, v; do { x = nrm(); v = 1 + cc * x; } while(v <= 0); v = v * v * v; const uu = u(); if(uu < 1 - 0.0331 * x * x * x * x || Math.log(uu) < 0.5 * x * x + dd * (1 - v + Math.log(v))) return dd * v; } };
+    const poi = function(l){ if(l <= 0) return 0; if(l > 30) return Math.max(0, Math.round(l + Math.sqrt(l) * nrm())); const L = Math.exp(-l); let k = 0, p = 1; do { k++; p *= u(); } while(p > L); return k - 1; };
+    return { u: u, n: nrm, g: gam, p: poi };
+  }
+  function yds(R, mean, cv){ if(mean <= 0.5) return 0; const k = 1 / (cv * cv); return R.g(k) * mean / k; }
+  function tds(R, lam, kind){ if(lam <= 0) return 0; const n = R.p(lam); let t = 0; for(let i = 0; i < n; i++){ const x = R.u(), P = TDP[kind]; t += x < P[0] ? 6 : x < P[1] ? 8 : x < P[2] ? 10 : 12; } return t; }
+  // one draw for one component. live = { f, cur, on } (Drop 1 §5) or null for pregame
+  function draw(R, pos, c, pp, sc, live){
+    if(pos === 'K'){
+      if(!live) { const m = c.km * pp; return m > 0 ? Math.max(0, m + 0.45 * m * R.n()) : 0; }
+      const m = c.km * sc * live.f; return live.cur.pts + (m > 0 && live.on ? Math.max(0, m + 0.45 * c.km * Math.sqrt(live.f) * R.n()) : 0);
+    }
+    if(pos === 'DST'){
+      if(!live){ const pa = Math.max(0, Math.round(c.oi + 9.5 * R.n())); return paPts(pa) + R.p(c.sk) + R.p(c['in']) + R.p(0.6) + 6 * R.p(0.13) + 2 * R.p(0.03); }
+      const f = live.f, k = live.cur;
+      const pa = Math.round(k.pa + Math.max(0, c.oi * f + 9.5 * Math.sqrt(f) * R.n()));
+      return paPts(pa) + k.sk + k.int + k.fr + 6 * k.td + 2 * k.sf + R.p(c.sk * f) + R.p(c['in'] * f) + R.p(0.6 * f) + 6 * R.p(0.13 * f) + 2 * R.p(0.03 * f);
+    }
+    if(!live){
+      if(R.u() >= pp) return 0;
+      if(pos === 'QB'){ const py = Math.max(0, c.py + c.ps * R.n()); return tier(py, PA) + tds(R, c.pt, 'pass') - R.p(c.it) + tier(yds(R, c.ry, 0.9), SK) + tds(R, c.rt, 'rush'); }
+      return tier(yds(R, c.ry, c.rv), SK) + tier(yds(R, c.cy, c.cv), SK) + tds(R, c.rt, 'rush') + tds(R, c.ct, 'rec');
+    }
+    const f = live.on ? live.f : 0, k = live.cur;
+    if(pos === 'QB'){
+      const py = k.py + (f > 0 ? Math.max(0, c.py * sc * f + c.ps * Math.sqrt(f) * R.n()) : 0);
+      return tier(py, PA) + tier(k.ry + yds(R, c.ry * sc * f, 0.9), SK) + tier(k.cy, SK) + k.tdp + k.oth + tds(R, c.pt * sc * f, 'pass') + tds(R, c.rt * sc * f, 'rush') - R.p(c.it * f);
+    }
+    return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec');
+  }
+  let P = {}, LG = 22, BYES = {}, cache = {};
+  function simPlayer(q){
+    // q = { pid, key, pos, mode: pre|live|final|none, pts, live }
+    const out = new Float32Array(N);
+    const rec = P[q.key];
+    if(q.mode === 'final'){ out.fill(q.pts || 0); return out; }
+    if(!rec || !rec.c || !rec.c.length){ if(q.mode === 'live') out.fill(q.pts || 0); return out; }
+    const ck = q.mode === 'pre' ? 'pre|' + q.key : 'live|' + q.key + '|' + JSON.stringify(q.live);
+    if(cache[ck]) return cache[ck];
+    const R = RNG(q.key + '|' + (q.mode === 'pre' ? 'pre' : 'live')), cs = rec.c, sc = rec.sc || 1, pp = rec.pp == null ? 1 : rec.pp;
+    for(let i = 0; i < N; i++){
+      let c = cs[0];
+      if(cs.length > 1){ let x = R.u(); for(let j = 0; j < cs.length; j++){ x -= cs[j].w; if(x <= 0 || j === cs.length - 1){ c = cs[j]; break; } } }
+      let v = draw(R, q.pos, c, pp, sc, q.mode === 'live' ? q.live : null);
+      if(q.mode === 'pre') v *= sc;
+      out[i] = Math.round(v);
+    }
+    cache[ck] = out;
+    return out;
+  }
+  // Drop 1 §4.3: Gaussian copula on ranks for players from the same NFL team
+  function rho(a, b){
+    const s = function(x, y){ return (a.pos === x && b.pos === y) || (a.pos === y && b.pos === x); };
+    const w1 = function(x){ return x.pos === 'WR' && x.wr1; };
+    if((a.pos === 'QB' && w1(b)) || (b.pos === 'QB' && w1(a))) return 0.45;
+    if(s('QB', 'K')) return 0.25;
+    if(s('WR', 'K')) return 0.15;
+    if((a.pos === 'RB' && w1(b)) || (b.pos === 'RB' && w1(a))) return 0.15;
+    return 0;
+  }
+  function chol(M){ const n = M.length, L = M.map(function(){ return new Array(n).fill(0); });
+    for(let i = 0; i < n; i++) for(let j = 0; j <= i; j++){ let s = M[i][j]; for(let k = 0; k < j; k++) s -= L[i][k] * L[j][k]; if(i === j){ if(s <= 1e-9) return null; L[i][i] = Math.sqrt(s); } else L[i][j] = s / L[j][j]; } return L; }
+  function correlate(members, seed){
+    const byTeam = {};
+    members.forEach(function(m){ (byTeam[m.nfl] || (byTeam[m.nfl] = [])).push(m); });
+    Object.keys(byTeam).forEach(function(t){
+      const g = byTeam[t]; if(g.length < 2) return;
+      const d = g.length; let M = g.map(function(a, i){ return g.map(function(b, j){ return i === j ? 1 : rho(a, b); }); });
+      if(!M.some(function(r, i){ return r.some(function(v, j){ return i !== j && v; }); })) return;
+      let L = chol(M), tries = 0; while(!L && tries++ < 10){ M = M.map(function(r, i){ return r.map(function(v, j){ return i === j ? 1 : v * 0.9; }); }); L = chol(M); }
+      if(!L) return;
+      const R = RNG(seed + '|' + t), X = g.map(function(){ return new Float64Array(N); }), z = new Float64Array(d);
+      for(let i = 0; i < N; i++){ for(let k = 0; k < d; k++) z[k] = R.n(); for(let a = 0; a < d; a++){ let s = 0; for(let k = 0; k <= a; k++) s += L[a][k] * z[k]; X[a][i] = s; } }
+      g.forEach(function(m, a){
+        const sorted = Float32Array.from(m.arr).sort(), idx = new Uint32Array(N); for(let i = 0; i < N; i++) idx[i] = i;
+        const x = X[a]; idx.sort(function(p, q){ return x[p] - x[q]; });
+        const out = new Float32Array(N); for(let r = 0; r < N; r++) out[idx[r]] = sorted[r];
+        m.arr = out;
+      });
+    });
+  }
+  function teamArrays(T, live, seed){
+    const st = T.starters.map(function(q){ return { pid: q.pid, pos: q.pos, nfl: q.nfl, wr1: q.wr1, arr: simPlayer(live ? q : Object.assign({}, q, { mode: q.mode === 'none' ? 'none' : 'pre' })) }; });
+    const bn = new Float32Array(N);
+    T.bench.forEach(function(q){ const a = simPlayer(live ? q : Object.assign({}, q, { mode: 'pre' })); for(let i = 0; i < N; i++) bn[i] += a[i]; });
+    return { st: st, bench: bn };
+  }
+  function mean(a){ let s = 0; for(let i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+  function pct(a, p){ const s = Float32Array.from(a).sort(); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; }
+  function runWeek(msg, live){
+    const res = { m: {}, p: {}, tot: {}, win: {} };
+    msg.matchups.forEach(function(mt){
+      const A = teamArrays(msg.teams[mt.a], live, 'A'), B = mt.b ? teamArrays(msg.teams[mt.b], live, 'B') : null;
+      if(B) correlate(A.st.concat(B.st), msg.week + '|' + mt.a + '|' + mt.b + (live ? '' : '|pre'));
+      const ta = new Float32Array(N), tb = new Float32Array(N);
+      A.st.forEach(function(m){ for(let i = 0; i < N; i++) ta[i] += m.arr[i]; if(live) res.p[m.pid] = [mean(m.arr), pct(m.arr, 0.2), pct(m.arr, 0.8)]; });
+      if(B) B.st.forEach(function(m){ for(let i = 0; i < N; i++) tb[i] += m.arr[i]; if(live) res.p[m.pid] = [mean(m.arr), pct(m.arr, 0.2), pct(m.arr, 0.8)]; });
+      const wa = new Uint8Array(N); let w = 0;
+      for(let i = 0; i < N; i++){ let x = ta[i] > tb[i] ? 1 : ta[i] < tb[i] ? 0 : (A.bench[i] > (B ? B.bench[i] : 0) ? 1 : A.bench[i] < (B ? B.bench[i] : 0) ? 0 : 0.5); if(x === 0.5) x = (i & 1); wa[i] = x; w += x; }
+      res.m[mt.key] = { wa: w / N, pa: mean(ta), pb: B ? mean(tb) : 0 };
+      res.tot[mt.a] = ta; res.win[mt.a] = wa;
+      if(B){ res.tot[mt.b] = tb; const wb = new Uint8Array(N); for(let i = 0; i < N; i++) wb[i] = 1 - wa[i]; res.win[mt.b] = wb; }
+    });
+    if(live) msg.teams && Object.keys(msg.teams).forEach(function(id){ msg.teams[id].bench.forEach(function(q){ const a = simPlayer(q); res.p[q.pid] = [mean(a), pct(a, 0.2), pct(a, 0.8)]; }); });
+    return res;
+  }
+  // best lineup by neutral mean for a future week (Drop 1 §4.5)
+  function futureTeam(T, wk){
+    const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
+    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push({ m: r.nm || 0, v: Math.pow(r.ns || 0, 2) }); });
+    Object.keys(pool).forEach(function(k){ pool[k].sort(function(a, b){ return b.m - a.m; }); });
+    const take = function(k){ return pool[k].length ? pool[k].shift() : { m: 0, v: 0 }; };
+    const L = [take('QB'), take('RB'), take('WR'), take('WR'), take('TE'), take('K'), take('DST')];
+    const fx = (pool.RB[0] || { m: -1 }).m >= (pool.WR[0] || { m: -1 }).m ? take('RB') : take('WR'); L.push(fx);
+    let m = 0, v = 0; L.forEach(function(x){ m += x.m; v += x.v; });
+    let bm = 0, bv = 0; Object.keys(pool).forEach(function(k){ pool[k].forEach(function(x){ bm += x.m; bv += x.v; }); });
+    return { m: m, s: Math.sqrt(v), bm: bm, bs: Math.sqrt(bv) };
+  }
+  function playoff(msg, wk){
+    const S = msg.season; if(!S) return null;
+    const ids = Object.keys(S.teams), R = RNG('season|' + msg.week + '|' + (wk ? 'live' : 'pre'));
+    const cnt = {}; ids.forEach(function(id){ cnt[id] = 0; });
+    const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
+    const W = {}, DW = {}, PF = {}, PAg = {};
+    for(let i = 0; i < N; i++){
+      ids.forEach(function(id){ const t = S.teams[id]; W[id] = t.w + 0.5 * t.t; DW[id] = t.dw + 0.5 * t.dt; PF[id] = t.pf; PAg[id] = t.pa; });
+      const game = function(a, b, sa, sb, ba, bb){ let x = sa > sb ? 1 : sa < sb ? 0 : (ba > bb ? 1 : ba < bb ? 0 : R.u() < 0.5 ? 1 : 0);
+        W[a] += x; W[b] += 1 - x; PF[a] += sa; PF[b] += sb; PAg[a] += sb; PAg[b] += sa; if(S.teams[a].div === S.teams[b].div){ DW[a] += x; DW[b] += 1 - x; } };
+      if(wk && S.countCur) S.curPairs.forEach(function(pr){ const ta = wk.tot[pr[0]], tb = wk.tot[pr[1]]; if(!ta || !tb) return; const x = wk.win[pr[0]][i];
+        W[pr[0]] += x; W[pr[1]] += 1 - x; PF[pr[0]] += ta[i]; PF[pr[1]] += tb[i]; PAg[pr[0]] += tb[i]; PAg[pr[1]] += ta[i]; if(S.teams[pr[0]].div === S.teams[pr[1]].div){ DW[pr[0]] += x; DW[pr[1]] += 1 - x; } });
+      S.future.forEach(function(F){
+        let pairs = F.pairs;
+        if(!pairs){ const sh = ids.slice(); for(let k = sh.length - 1; k > 0; k--){ const j = Math.floor(R.u() * (k + 1)); const t = sh[k]; sh[k] = sh[j]; sh[j] = t; } pairs = []; for(let k = 0; k + 1 < sh.length; k += 2) pairs.push([sh[k], sh[k + 1]]); }
+        pairs.forEach(function(pr){ const A = fut[F.w][pr[0]], B = fut[F.w][pr[1]]; if(!A || !B) return;
+          game(pr[0], pr[1], Math.round(A.m + A.s * R.n()), Math.round(B.m + B.s * R.n()), A.bm + A.bs * R.n(), B.bm + B.bs * R.n()); });
+      });
+      const divs = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); });
+      Object.keys(divs).forEach(function(d){
+        divs[d].sort(function(a, b){ return (W[b] - W[a]) || (DW[b] - DW[a]) || (PF[b] - PF[a]) || (PAg[b] - PAg[a]); });
+        divs[d].slice(0, 5).forEach(function(id){ cnt[id]++; });
+      });
+    }
+    const out = {}; ids.forEach(function(id){ out[id] = cnt[id] / N; }); return out;
+  }
+  self.onmessage = function(e){
+    const msg = e.data;
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; cache = {}; return; }
+    if(msg.type !== 'run') return;
+    try{
+      Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });
+      const live = runWeek(msg, true), pre = msg.season ? runWeek(msg, false) : null;
+      const po = msg.season ? playoff(msg, live) : null, po0 = msg.season ? playoff(msg, pre) : null;
+      const keep = {}; Object.keys(cache).forEach(function(k){ keep[k] = 1; });
+      self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0 });
+    }catch(err){ self.postMessage({ type: 'error', id: msg.id, err: String(err && err.message || err) }); }
+  };
+}
+
+const NV_TEAM = { WSH: 'WAS', LAR: 'LA' };
+function nvTeam(ab){ return NV_TEAM[ab] || ab; }
+const ENG = { worker: null, busy: false, sig: '', id: 0, res: null, projAt: 0, err: '', fut: {}, futAt: {} };
+S.proj = null;
+function engineStart(){
+  if(ENG.worker || typeof Worker !== 'function') return;
+  try{ ENG.worker = new Worker(URL.createObjectURL(new Blob(['(' + engineWorker.toString() + ')()'], { type: 'text/javascript' }))); }
+  catch(e){ ENG.err = 'worker'; return; }
+  ENG.worker.onmessage = function(e){
+    const d = e.data; ENG.busy = false;
+    if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); render(); }
+    else if(d.type === 'error') ENG.err = d.err;
+    engineTick();
+  };
+  if(S.proj) ENG.worker.postMessage({ type: 'proj', proj: S.proj.raw });
+}
+function loadProj(){
+  if(busy.proj) return; busy.proj = true;
+  return getJSON('projections.json?t=' + Date.now())
+    .then(function(j){
+      if(!j || !Array.isArray(j.players)) return;
+      if(S.proj && S.proj.raw.generated === j.generated) return;
+      const byKey = {}, byName = {};
+      j.players.forEach(function(r){ byKey[r.k] = r; const nm = r.k.split('|')[0]; (byName[nm] || (byName[nm] = [])).push(r); });
+      S.proj = { raw: j, week: j.week, at: Date.parse(j.generated) || 0, byKey: byKey, byName: byName };
+      ENG.sig = ''; ENG.res = null;
+      if(ENG.worker) ENG.worker.postMessage({ type: 'proj', proj: j });
+    })
+    .catch(function(){})
+    .then(function(){ busy.proj = false; ENG.projAt = Date.now(); engineTick(); render(); });
+}
+function projFor(pl){
+  const P = S.proj; if(!P || !pl) return null;
+  const t = nvTeam(pl.nfl);
+  if(pl.pos === 'DST') return P.byKey['DST|' + t] || null;
+  const nm = normName(pl.name);
+  if(P.byKey[nm + '|' + t]) return P.byKey[nm + '|' + t];
+  const same = (P.byName[nm] || []).filter(function(r){ return r.p === pl.pos; });
+  if(same.length === 1) return same[0];
+  const last = nm.split(' ').pop(), fi = nm[0];
+  const c = P.raw.players.filter(function(r){ return r.t === t && r.p === pl.pos && r.k.split('|')[0].split(' ').pop() === last; });
+  const c2 = c.filter(function(r){ return r.k[0] === fi; });
+  return c2.length === 1 ? c2[0] : (c.length === 1 ? c[0] : null);
+}
+function engineReady(){ return !!(S.proj && S.curWeek && S.proj.week === S.curWeek && S.week === S.curWeek); }
+// minutes left in regulation -> fraction of the game still to play
+function gameFrac(g){
+  if(!g) return 1;
+  if(g.state === 'post') return 0;
+  if(g.state !== 'in') return 1;
+  const n = (g.statusName || '').toUpperCase(), p = g.period || 1;
+  if(p > 4) return 0.03;
+  if(n.indexOf('HALFTIME') >= 0) return 0.5;
+  const parts = String(g.clock || '0:00').split(':'), mins = (parseInt(parts[0], 10) || 0) + (parseInt(parts[1], 10) || 0) / 60;
+  const left = n.indexOf('END_PERIOD') >= 0 || n.indexOf('END_OF') >= 0 ? (4 - p) * 15 : (4 - p) * 15 + mins;
+  return clamp(left / 60, 0, 1);
+}
+function engState(pl, L){
+  const r = projFor(pl);
+  const q = { pid: pl.id, key: r ? r.k : '', pos: pl.pos, nfl: nvTeam(pl.nfl), wr1: !!(r && r.wr1), mode: 'pre' };
+  if(!r) q.mode = 'none';
+  if(!L) return q;
+  if(L.state === 'bye'){ q.mode = 'final'; q.pts = 0; return q; }
+  if(L.state === 'post'){ q.mode = 'final'; q.pts = L.pts || 0; return q; }
+  if(L.state === 'in' && L.s){
+    const s = L.s, sum = function(a){ return (a || []).reduce(function(t, l){ return t + tdPts(l); }, 0); };
+    const has = !!(s.py || s.ry || s.cy || s.rcar || (s.ptd || []).length || (s.rtd || []).length || (s.ctd || []).length || (s.fg || []).length || s.xp) || pl.pos === 'DST';
+    q.mode = r ? 'live' : 'final'; q.pts = L.pts || 0;
+    let cur;
+    if(pl.pos === 'K') cur = { pts: L.pts || 0 };
+    else if(pl.pos === 'DST'){ const d = s.dst || {}; cur = { pa: d.pa || 0, sk: d.sk || 0, int: d.int || 0, fr: d.fr || 0, td: d.td || 0, sf: d.sf || 0 }; }
+    else cur = { py: s.py || 0, ry: s.ry || 0, cy: s.cy || 0, tdp: sum(s.ptd) + sum(s.rtd) + sum(s.ctd) + sum(s.ktd), oth: 2 * (s.two || 0) - (s.fl || 0) - (pl.pos === 'QB' ? (s.pint || 0) : 0) };
+    q.live = { f: Math.round(gameFrac(L.g) * 120) / 120, cur: cur, on: has || !r || r.pp >= 0.75 };
+  }
+  return q;
+}
+function seasonInputs(m){
+  const st = S.standings && S.standings.overall_standings && S.standings.overall_standings.divisions;
+  if(!Array.isArray(st)) return null;
+  const teams = {};
+  st.forEach(function(d){ (d.teams || []).forEach(function(t){ const id = String(t.id);
+    teams[id] = { div: t.division || d.id, w: num(t.wins), l: num(t.losses), t: num(t.ties), dw: num(t.division_wins), dt: num(t.division_ties), pf: num(t.points_scored), pa: num(t.points_against) }; }); });
+  const ids = Object.keys(teams); if(ids.length < 4) return null;
+  const played = teams[ids[0]].w + teams[ids[0]].l + teams[ids[0]].t;
+  const countCur = played < m.week;
+  const curPairs = m.matchups.filter(function(x){ return x.home && x.away; }).map(function(x){ return [x.home.id, x.away.id]; });
+  const future = [];
+  for(let w = m.week + 1; w <= 12; w++){
+    const f = ENG.fut[w];
+    let pairs = null;
+    if(f){ const used = {}; pairs = []; Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); }); if(pairs.length < ids.length / 2) pairs = null; }
+    future.push({ w: w, pairs: pairs });
+  }
+  return { teams: teams, countCur: countCur, curPairs: curPairs, future: future };
+}
+function loadFuture(){
+  const m = weekModel(); if(!m || !S.curWeek || S.week !== S.curWeek) return;
+  for(let w = S.curWeek + 1; w <= 12; w++){
+    if(busy['fut' + w] || (ENG.futAt[w] && Date.now() - ENG.futAt[w] < 6 * 3600000)) continue;
+    busy['fut' + w] = true;
+    (function(w){
+      getJSON(WORKER + '/live?week=' + w).then(function(j){
+        const T = j && j.data && j.data.live_scoring && j.data.live_scoring.teams; if(!Array.isArray(T)) return;
+        const map = {}; T.forEach(function(t){ if(t.opp_team_id) map[String(t.id)] = String(t.opp_team_id); });
+        ENG.fut[w] = Object.keys(map).length ? map : null; ENG.futAt[w] = Date.now(); ENG.sig = '';
+      }).catch(function(){}).then(function(){ busy['fut' + w] = false; engineTick(); });
+    })(w);
+  }
+}
+function engineTick(){
+  if(!engineReady()) return;
+  engineStart(); if(!ENG.worker || ENG.busy) return;
+  const LM = liveModel(); if(!LM) return;
+  const m = LM.model, teams = {};
+  Object.keys(m.teams).forEach(function(id){
+    const t = m.teams[id], lv = LM.live[id];
+    teams[id] = { starters: t.lineup.map(function(p, i){ return p ? engState(p, lv && lv.rows[i]) : null; }).filter(Boolean),
+                  bench: t.bench.filter(function(p){ return !p.ir; }).map(function(p){ const i = t.bench.indexOf(p); return engState(p, lv && lv.bench[i]); }),
+                  roster: t.lineup.concat(t.bench).filter(Boolean).map(function(p){ const r = projFor(p); return { key: r ? r.k : '', pos: p.pos, nfl: nvTeam(p.nfl), ir: !!p.ir }; }) };
+  });
+  const matchups = m.matchups.map(function(x){ return { key: x.key, a: x.home ? x.home.id : x.away.id, b: x.home && x.away ? x.away.id : null }; });
+  const season = seasonInputs(m);
+  const msg = { type: 'run', week: m.week, teams: teams, matchups: matchups, season: season };
+  const sig = JSON.stringify([msg.teams, season, S.proj.raw.generated]);
+  if(sig === ENG.sig) return;
+  const keep = {};
+  Object.keys(teams).forEach(function(id){ teams[id].starters.concat(teams[id].bench).forEach(function(q){ if(q.mode === 'live') keep['live|' + q.key + '|' + JSON.stringify(q.live)] = 1; }); });
+  msg.keep = keep;
+  ENG.sig = sig; ENG.busy = true; msg.id = ++ENG.id;
+  ENG.worker.postMessage(msg);
+}
+function engMatch(key){ return engineReady() && ENG.res && ENG.res.m[key] || null; }
+function engPlayer(pid){ return engineReady() && ENG.res && ENG.res.p[pid] || null; }
+setInterval(function(){ if(!document.hidden){ engineTick(); if(Date.now() - ENG.projAt > 600000) loadProj(); loadFuture(); } }, 2000);
+
 /* ---------- start ---------- */
-window.__fgt = { S: S, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, version: APP_VERSION };
+window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, version: APP_VERSION };
 try{ history.replaceState({}, ''); }catch(e){}
 render();
 tick();
+loadProj();
 setTimeout(function(){ checkUpdate('wake'); }, UPD_START_DELAY);
 if(!S.team){
   if(!isInstalled() && !getLocal('gate')){ gate.hidden = false; gateHome(false); }
