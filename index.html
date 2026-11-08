@@ -379,6 +379,10 @@ body.dragmode .mc.dragging{transition:scale .14s}
 .ptop{align-items:center;min-height:36px}
 .ppt b{line-height:1}
 .ppt small.pj{color:rgba(61,220,132,.78)}
+.ppt{position:relative}
+.ppt small{position:absolute;top:calc(100% + 2px);right:0;margin-top:0;white-space:nowrap}
+.pside.r .ppt small{right:auto;left:0}
+.ptop{margin-bottom:9px}
 .pnm{font-size:15.75px}
 .mhead{margin-bottom:20px}
 .pv.proj{color:rgba(61,220,132,.9)}
@@ -438,8 +442,9 @@ body.dragmode .mc.dragging{transition:scale .14s}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.1.2';
+const APP_VERSION = '1.1.3';
 const CHANGELOG = [
+  ['1.1.3', 'Player scores sit centered on the position square, with the projection underneath.'],
   ['1.1.2', 'Tab bar sits lower, closer to the bottom of the screen.'],
   ['1.1.1', 'Every game card shows each team\u2019s win % next to its name. Win % is less overconfident (calibrated against FantasyPros).'],
   ['1.1.0', 'The Prediction Engine: our backtested model projects every player, then 20,000 simulations per game give live win % (ties go to bench points) and update during games. New FantasyPros-style matchup header, League Analysis card with playoff odds (top 5 in your division), Divisional Week badge, Pick\u2019em-style pins, new tab icons. Return TDs now score 6 for the player too, past weeks use CBS\u2019s official points, and the app reopens where you left off.'],

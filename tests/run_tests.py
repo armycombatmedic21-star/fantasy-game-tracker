@@ -162,6 +162,9 @@ with sync_playwright() as pw:
         hero = page.inner_text('#hero')
         check(f'[{tag}] header: Win Probability, projections, record + division rank, VS', 'Win Probability' in hero and '3-5 · 4th AFC' in hero and page.locator('#hero .pj span').count() == 2 and page.locator('#hero .vsw svg').count() == 1, hero)
         check(f'[{tag}] header Divisional Week badge', page.locator('#hero .divwk').count() == 1)
+        cen = page.evaluate("""() => [...document.querySelectorAll('.plist .prow')].slice(0, 8).map(r => { const c = r.querySelector('.chip').getBoundingClientRect(), cc = c.top + c.height / 2;
+          return [...r.querySelectorAll('.ppt b')].map(b => { const q = b.getBoundingClientRect(); return Math.abs(q.top + q.height / 2 - cc); }); }).flat()""")
+        check(f'[{tag}] every score centered on its position square (within 3 px)', max(cen) <= 3, cen)
         check(f'[{tag}] projection under a not-started player (Marks)', page.locator('.prow[data-row="4"] .ppt small.pj').count() >= 1)
         page.click('.prow[data-row="0"]')
         page.wait_for_timeout(300)
