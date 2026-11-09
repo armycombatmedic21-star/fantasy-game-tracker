@@ -74,51 +74,55 @@ API_FIELDS = {"pyd": ["pass_yds"], "ptd": ["pass_tds"], "ints": ["pass_ints"], "
 
 
 def fetch_api(week, key, season=2026):
-    """FantasyPros official API (personal key, sent as x-api-key). One request for QB/RB/WR/TE.
+    """FantasyPros official API (personal key, sent as x-api-key), one request per position (QB, RB, WR, TE).
+    Free keys return a truncated list (top 10 per request); a full key returns every player with the same code.
     Returns (players, info, code) like fetch(). The key is never logged or written anywhere."""
     import urllib.error
-    q = urllib.parse.urlencode({"week": week, "positions": "QB:RB:WR:TE", "scoring": "STD"})
-    info, last = {"source": "api"}, None
-    for host in API_HOSTS:
-        url = host.format(season=season) + "?" + q
-        try:
-            req = urllib.request.Request(url, headers={"x-api-key": key, "User-Agent": "fgt-projections/1.0", "Accept": "application/json"})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                j = json.loads(r.read().decode("utf-8", "replace"))
-        except urllib.error.HTTPError as e:
-            last = f"HTTP {e.code} at {host.split('/json')[0]}"
-            continue
-        except Exception as e:
-            last = f"{type(e).__name__} at {host.split('/json')[0]}"
-            continue
+    info, players, by_pos, host_ok = {"source": "api", "requests": 0}, [], {}, None
+    for pos in ("QB", "RB", "WR", "TE"):
+        q = urllib.parse.urlencode({"week": week, "position": pos, "scoring": "STD"})
+        j, last = None, None
+        for host in ([host_ok] if host_ok else API_HOSTS):
+            try:
+                info["requests"] += 1
+                req = urllib.request.Request(host.format(season=season) + "?" + q,
+                                             headers={"x-api-key": key, "User-Agent": "fgt-projections/1.0", "Accept": "application/json"})
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    j = json.loads(r.read().decode("utf-8", "replace"))
+                host_ok = host
+                break
+            except urllib.error.HTTPError as e:
+                last = f"HTTP {e.code} at {host.split('/json')[0]}"
+            except Exception as e:
+                last = f"{type(e).__name__} at {host.split('/json')[0]}"
+        if j is None:
+            info["error"] = last
+            return None, info, 1
         rows = j.get("players") or []
-        info.update({"endpoint": host.split("/json")[0], "api_week": j.get("week"), "count": j.get("count"), "rows": len(rows),
-                     "stat_keys": sorted({k for p in rows[:50] for k in (p.get("stats") or {})})[:40]})
+        info.setdefault("total_available", {})[pos] = j.get("count")
+        info["endpoint"] = host_ok.split("/json")[0]
+        info["stat_keys"] = sorted({k for p in rows[:20] for k in (p.get("stats") or {})})[:40]
         try:
             api_week = int(j.get("week"))
         except (TypeError, ValueError):
             api_week = None
+        info["api_week"] = api_week
         if api_week != week:
             return None, info, 2          # FantasyPros hasn't posted this week yet
-        if not rows:
-            return None, info, 1
-        players, by_pos = [], {}
         for p in rows:
-            pos = (p.get("position_id") or p.get("position") or "").upper()
-            if pos not in ("QB", "RB", "WR", "TE"):
-                continue
             st = p.get("stats") or {}
-            rec = {"name": p.get("name") or p.get("player_name") or "", "pos": pos, "team": (p.get("team_id") or p.get("team") or "").upper()}
+            rec = {"name": p.get("name") or p.get("player_name") or "", "pos": pos,
+                   "team": (p.get("team_id") or p.get("team") or "").upper()}
             for f, ks in API_FIELDS.items():
                 k = next((k for k in ks if k in st), None)
                 rec[f] = round(num(st[k]), 3) if k else 0.0
             if rec["name"]:
                 players.append(rec)
                 by_pos[pos] = by_pos.get(pos, 0) + 1
-        info["by_pos"] = by_pos
-        return players, info, (0 if players else 1)
-    info["error"] = last
-    return None, info, 1
+        time.sleep(1.2)                   # API terms: max 1 request per second
+    info["by_pos"] = by_pos
+    info["truncated"] = any(int(info["total_available"].get(p) or 0) > by_pos.get(p, 0) for p in by_pos)
+    return players, info, (0 if players else 1)
 
 
 def fetch_best(week):
