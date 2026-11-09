@@ -221,11 +221,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] PLAYOFF % for every team', page.locator('.strow .stpo').count() == 12 and page.locator('.strow .stpo.na').count() == 0)
         check(f'[{tag}] MOVE column for every team (GB gone)', page.locator('.strow .stmv').count() == 12 and 'MOVE' in page.inner_text('.sthead') and 'GB' not in page.inner_text('.sthead'))
         # live: CBS 611 + Dallas's 63 so far this week (fixture), records unchanged until the week is final
-        import re as _re
-        lv = int(_re.search(r'points scored\n[\d,]+\n[\d.]+ per game\n\+(\d+) this week', det).group(1)) if _re.search(r'points scored\n[\d,]+\n[\d.]+ per game\n\+(\d+) this week', det) else -1
-        now_lv = page.evaluate("Math.round(window.__fgt.liveModel().live['11'].pts)")
-        check(f'[{tag}] this week = Dallas live score', abs(lv - now_lv) <= 12 and lv > 0, (lv, now_lv))
-        check(f'[{tag}] points scored live (CBS 611 + this week)', f'{611 + lv}' in det and f'+{lv} this week' in det and '76.4 per game' in det, (lv, det))
+        check(f'[{tag}] Avg. per game, no +this week', '76.4 avg. per game' in det and 'this week' not in det, det)
         check(f'[{tag}] record unchanged while games are on', '3-5' in page.inner_text('.strow.me'))
         page.locator('.strow').nth(0).click(); page.wait_for_timeout(200)
         check(f'[{tag}] open several teams at once', page.locator('.stdet').count() == 2)

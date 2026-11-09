@@ -571,6 +571,44 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .stpo.out{flex-direction:row;font-size:10px;font-weight:800;letter-spacing:.8px;color:var(--faint)}
 .stpo.na{color:var(--faint);font-size:12px}
 @media (max-width:380px){ .sthead,.strow{grid-template-columns:12px 25px minmax(0,1fr) 31px 28px 27px 22px 29px 18px;gap:3px;padding:0 7px} .strow .badge{width:25px;height:25px;font-size:9px} .stpo i{width:24px} .stmv{min-width:25px} .strow .stnm.long{font-size:13px} }
+
+/* v1.4.1: arrow in front of the name (smaller), no streak column */
+.sthead,.strow{grid-template-columns:16px 30px 16px minmax(0,1fr) 36px 34px 34px 36px;gap:6px;padding:0 10px}
+.sthead b{grid-column:1/5}
+.sthead .poh{grid-column:8/9;text-align:center;padding-left:0}
+.stchev{width:16px;height:16px;border-radius:5px}
+.stchev svg{width:10px;height:10px}
+@media (max-width:380px){ .sthead,.strow{grid-template-columns:14px 26px 15px minmax(0,1fr) 33px 30px 30px 33px;gap:4px;padding:0 8px} .stchev{width:15px;height:15px} .strow .badge{width:26px;height:26px} }
+
+/* v1.4.1 final: name, online dot, arrow; wider columns now that streak is gone */
+.sthead,.strow{grid-template-columns:16px 30px minmax(0,1fr) 38px 36px 38px 42px;gap:6px;padding:0 12px}
+.sthead b{grid-column:1/4}
+.sthead .poh{grid-column:7/8;text-align:center}
+.strow .stl{display:flex;align-items:center;gap:6px;min-width:0}
+.strow .stl .stnm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strow .stl .odot{margin:0;top:0}
+.strow .stl .stchev{flex:none;width:12px;height:12px;border-radius:4px}
+.strow .stl .stchev svg{width:8px;height:8px}
+.strow .stnm.long{font-size:14.5px}
+.stpo i{width:30px}
+@media (max-width:380px){ .sthead,.strow{grid-template-columns:14px 27px minmax(0,1fr) 35px 33px 34px 38px;gap:5px;padding:0 9px} .strow .badge{width:27px;height:27px} .strow .stnm.long{font-size:14px} .stpo i{width:28px} }
+
+.sthead,.strow{grid-template-columns:16px 29px minmax(0,1fr) 34px 32px 32px 38px;gap:5px;padding:0 11px}
+.sthead .poh{text-align:right;letter-spacing:.4px}
+.strow .stnm.long{font-size:14.5px;letter-spacing:-.2px}
+@media (max-width:380px){ .sthead,.strow{grid-template-columns:13px 26px minmax(0,1fr) 31px 29px 29px 35px;gap:4px;padding:0 8px} .strow .badge{width:26px;height:26px} .strow .stnm.long{font-size:13.6px} .strow .stl{gap:5px} .stmv{min-width:26px;padding:0 3px} .stpo i{width:26px} }
+
+/* v1.4.1: little arrow centered at the bottom of each team row; name line = name + online dot */
+.strow{position:relative}
+.strow .stchev{position:absolute;left:50%;bottom:1px;width:14px;height:9px;margin-left:-7px;border:0;border-radius:0;background:none;display:grid;place-items:center;color:rgba(147,174,200,.55);transition:transform .2s}
+.strow .stchev svg{width:12px;height:12px}
+.strow[aria-expanded="true"] .stchev{transform:rotate(180deg)}
+.strow .stl .odot{margin-left:0}
+.sthead .poh{grid-column:7/8;justify-self:end;text-align:right;letter-spacing:.3px;font-size:8.5px;white-space:nowrap}
+
+.sthead,.strow{grid-template-columns:16px 29px minmax(0,1fr) 34px 32px 32px 48px}
+.sthead .poh{justify-self:center}
+@media (max-width:380px){ .sthead,.strow{grid-template-columns:13px 26px minmax(0,1fr) 31px 29px 29px 46px} }
 </style>
 </head>
 <body>
@@ -627,10 +665,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.0';
-const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
+const APP_VERSION = '1.4.1';
+const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.1', 'Standings cleanup: a small drop-down arrow centered at the bottom of each team (tap anywhere on a team to open or close it), the streak column is gone so names get more room, the drop-down shows Avg. per game, and playoff odds read 100% (green) when a team is in and 0% (red) when it’s out. Dallas owners now show as Rick L. & Wes S.'],
   ['1.4.0', 'Standings update themselves: Points Scored and Points Against go up live during games, and records, division records, games back and streaks update the moment the whole week is final (after Monday night, overtime included) — no waiting for CBS. A badge and a “Records updated” banner tell you when. New MOVE column: green or red arrows show how many spots each team moved in its division since last week. New PLAYOFF % column: every team’s live chance to make the playoffs. Every team has its own drop-down arrow: open as many as you want to compare. Finished games now read 100% / 0%.'],
   ['1.3.6', 'More accurate win % late in the week: when only a player or two is left, the app now uses that position’s real range instead of a whole-team stretch (it overstated a lone kicker’s chances), and exact ties count again. Players back from injury or newly signed (no games yet this season) now get a projection instead of 0.'],
   ['1.3.5', 'Projections now blend our model 50/50 with FantasyPros consensus for every player (official FantasyPros API), refreshed automatically.'],
@@ -1510,8 +1549,8 @@ function poCell(id){
   const po = ENG.res && ENG.res.po ? ENG.res.po[id] : null;
   if(po == null) return '<span class="stpo na">—</span>';
   const v = po * 100;
-  if(v >= 99.95) return '<span class="stpo in" aria-label="Clinched a playoff spot">IN</span>';
-  if(v < 0.05) return '<span class="stpo out" aria-label="Eliminated">OUT</span>';
+  if(v >= 99.95) return '<span class="stpo hi" aria-label="Clinched a playoff spot"><b>100<sup>%</sup></b><i><u style="width:100%"></u></i></span>';
+  if(v < 0.05) return '<span class="stpo vlo" aria-label="Eliminated"><b>0<sup>%</sup></b><i><u style="width:4%"></u></i></span>';
   const r = v >= 99.5 ? 99 : v < 1 ? '<1' : Math.round(v), c = v >= 90 ? 'hi' : v >= 50 ? 'mid' : v >= 20 ? 'lo' : 'vlo';
   return '<span class="stpo ' + c + '" aria-label="' + Math.round(v) + ' percent playoff chance"><b>' + r + '<sup>%</sup></b><i><u style="width:' + Math.max(4, Math.min(100, v)).toFixed(0) + '%"></u></i></span>';
 }
@@ -1525,7 +1564,7 @@ function standingsView(){
   if(S.recBanner) h += '<div class="recban" data-key="recban"><span class="rbi"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="rbt"><b>Records updated</b><small>Week ' + esc(S.recBanner.w) + ' is final · standings are up to date</small></span></div>';
   d.forEach(function(div){
     const teams = (div.teams || []).slice().sort(function(a, b){ return num(a.order) - num(b.order); });
-    h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>DIV</span><span class="mvh">MOVE</span><span>STRK</span><span class="poh">PLAYOFF</span></div>';
+    h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>DIV</span><span class="mvh">MOVE</span><span class="poh">PLAYOFF %</span></div>';
     teams.forEach(function(t, i){
       const id = String(t.id), me = id === S.team, open = !!S.stOpen[id];
       const T = { logo: t.logo, code: teamCode(id, t.name) };
@@ -1535,21 +1574,21 @@ function standingsView(){
       const mvh = mv == null ? '<span class="stmv na">—</span>' : mv === 0 ? '<span class="stmv eq" aria-label="No change"><i></i></span>' :
         '<span class="stmv ' + mvc + '" aria-label="' + (mv > 0 ? 'Up ' : 'Down ') + Math.abs(mv) + '"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (mv > 0 ? 'M5 1.5 9 7.5H1z' : 'M5 8.5 1 2.5h8z') + '"/></svg>' + Math.abs(mv) + '</span>';
       h += '<button class="strow' + (me ? ' me' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn"><span class="stnm' + (trim(t.name).length >= 11 ? ' long' : '') + '">' + esc(trim(t.name)) + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + '<span class="stk ' + sc + '">' + esc(strk || '—') + '</span>' + poCell(id) + '<span class="stchev">' + ICON.rowchev + '</span></button>';
+        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
       if(open){
         const g = num(t._g), pf = num(t.points_scored), pa = num(t.points_against), live = t._live != null;
         const pfd = num(t._pfDone), pad = num(t._paDone);
-        const avg = function(v){ return g ? (Math.round(v / g * 10) / 10).toFixed(1) + ' per game' : '—'; };
+        const avg = function(v){ return g ? (Math.round(v / g * 10) / 10).toFixed(1) + ' Avg. per game' : '—'; };
         const diff = pf - pa, share = pf + pa > 0 ? pf / (pf + pa) * 100 : 50;
         h += '<div class="stdet" data-std="' + esc(id) + '" data-key="std-' + esc(id) + '"><div class="stx">' +
-          '<div class="sts"><small>Points Scored</small><b>' + fmtN(pf) + '</b><em>' + avg(pfd) + '</em>' + (live ? '<i class="stlv"><span></span>+' + fmtN(t._live) + ' this week</i>' : '') + '</div>' +
-          '<div class="sts"><small>Points Against</small><b>' + fmtN(pa) + '</b><em>' + avg(pad) + '</em>' + (live ? '<i class="stlv"><span></span>+' + fmtN(t._livepa) + ' this week</i>' : '') + '</div></div>' +
-          '<div class="stdf"><div class="stbar"><i style="width:' + share.toFixed(1) + '%"></i></div><span>Point differential</span><b class="' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : '') + '">' + (diff > 0 ? '+' : '') + fmtN(diff) + '</b></div></div>';
+          '<div class="sts"><small>Points Scored</small><b>' + fmtN(pf) + '</b><em>' + avg(pfd) + '</em></div>' +
+          '<div class="sts"><small>Points Against</small><b>' + fmtN(pa) + '</b><em>' + avg(pad) + '</em></div></div>' +
+          '<div class="stdf"><span>Point differential</span><b class="' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : '') + '">' + (diff > 0 ? '+' : '') + fmtN(diff) + '</b></div></div>';
       }
     });
     h += '</section>';
   });
-  h += '<p class="note">' + (A.live ? 'Points update live during games · ' : '') + 'Records update when the week is final · DIV = record in division games · MOVE = spots moved in the division since last week · PLAYOFF % = chance to finish top 5 in the division (live) · tap a team for points</p>';
+  h += '<p class="note">' + (A.live ? 'Points update live during games · ' : '') + 'Records update when the week is final · DIV = record in division games · MOVE = spots moved in the division since last week · PLAYOFF = chance to finish top 5 in the division (live) · tap a team for points</p>';
   return h;
 }
 function chatView(){
