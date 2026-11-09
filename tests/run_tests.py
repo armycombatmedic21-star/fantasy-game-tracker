@@ -221,7 +221,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] reopens on the last tab (Standings)', page.locator('.tabbtn.on[data-tab="standings"]').count() == 1)
         page.click('.tabbtn[data-tab="chat"]')
         page.wait_for_timeout(300)
-        check(f'[{tag}] chat says coming soon', 'Coming soon' in page.inner_text('#view'))
+        check(f'[{tag}] chat pane opens with a message box', page.is_visible('#chatPane') and page.locator('#chatInput').count() == 1)
         page.click('.tabbtn[data-tab="match"]')
         page.wait_for_timeout(400)
         check(f'[{tag}] Matchup tab opens your game', 'Dallas' in page.inner_text('#hero'))

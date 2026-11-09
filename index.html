@@ -418,6 +418,55 @@ body.dragmode .mc.dragging{transition:scale .14s}
 .sthead span{text-align:right}
 .mc.mine .own{white-space:normal}
 @media (max-width:380px){ .pnm small{display:none} .sthead,.strow{grid-template-columns:16px 26px 1fr 34px 32px 22px 30px;gap:4px;padding:0 10px} .strow .badge{width:26px;height:26px} .strow .stn{font-size:15px} }
+/* ---- v1.3.0: online dots + strip, chat, open-stats block (C), softer pills ---- */
+.odot{--s:7px;display:inline-block;flex:none;width:var(--s);height:var(--s);border-radius:50%;position:relative;vertical-align:middle;margin-left:7px;top:-1px;
+  background:radial-gradient(circle at 34% 28%,#cfe0ff 0,#6f9dff calc(var(--s)*.12),#2a62f5 calc(var(--s)*.3),#1238b5 calc(var(--s)*.52),#08206e calc(var(--s)*.72),#040f3a 100%);
+  box-shadow:inset 0 calc(var(--s)*-.08) calc(var(--s)*.14) rgba(0,4,20,.8),0 0 calc(var(--s)*.45) rgba(37,92,255,.85);animation:orbglow 1.8s ease-in-out infinite}
+.odot::after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid rgba(48,104,255,.95);box-shadow:0 0 3px rgba(37,92,255,.8);animation:orbring 1.8s ease-out infinite;pointer-events:none}
+@keyframes orbring{0%{transform:scale(1);opacity:1}75%,100%{transform:scale(2.1);opacity:0}}
+@keyframes orbglow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.18)}}
+.fp2 .nm.r b .odot{margin-left:0;margin-right:7px}
+.onstrip{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:4px 0 14px;padding:12px 10px 7px;border-radius:12px;border:1px solid rgba(79,141,255,.28);background:rgba(79,141,255,.07)}
+.onstrip small{position:absolute;top:-9px;left:12px;height:18px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;font-size:9.5px;font-weight:800;letter-spacing:1.3px;background:#0a1222;border:1.2px solid;animation:olab 3.2s ease-in-out infinite}
+@keyframes olab{0%,100%{color:#f2f6ff;border-color:rgba(242,246,255,.75);box-shadow:0 0 6px rgba(242,246,255,.25)}50%{color:#5d8fff;border-color:#2f66f0;box-shadow:0 0 9px rgba(47,102,240,.55)}}
+.onstrip span{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#e8eefb;padding:2px 7px 2px 5px;border-radius:999px;background:rgba(255,255,255,.05)}
+.onstrip .odot{margin:0;top:0}
+.mhead + .onstrip{margin-top:-2px}
+.cbadge{position:absolute;top:4px;left:calc(50% + 5px);z-index:3;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#2a62f5;color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 0 2px #0d1628,0 0 8px rgba(42,98,245,.6);pointer-events:none}
+#chatPane{position:fixed;bottom:0;z-index:5;display:flex;flex-direction:column;padding:0 16px;box-sizing:border-box}
+#chatPane[hidden],#chatCompose[hidden],#chatPick[hidden]{display:none!important}
+.chatlist{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:4px;padding:8px 14px 12px;border:1px solid var(--hair);border-bottom:0;border-radius:18px 18px 0 0;background:linear-gradient(180deg,#0e1a2d,#0b1321 40%)}
+.chatempty{margin:auto;max-width:240px;text-align:center;font-size:14px;font-weight:600;line-height:1.5;color:var(--muted)}
+.chatsys{align-self:center;margin:8px 0 2px;padding:5px 12px;border-radius:12px;background:rgba(255,255,255,.04);font-size:12px;font-weight:700;color:var(--muted)}
+.chatmsg{display:flex;flex-direction:column;gap:4px;max-width:84%;align-self:flex-start}
+.chatmsg.first{margin-top:10px}
+.chatmsg.mine{align-self:flex-end;align-items:flex-end;max-width:80%}
+.chatwho{padding:0 4px;font-size:12px;font-weight:800}
+.chatwho i{font-style:normal;font-weight:600;color:var(--faint)}
+.chatbubble{align-self:flex-start;padding:9px 13px;border-radius:16px 16px 16px 4px;background:#16233a;border:1px solid rgba(147,174,200,.1);font-size:15px;font-weight:500;line-height:1.4;color:#fff;overflow-wrap:anywhere;white-space:pre-wrap}
+.chatmsg.mine .chatbubble{align-self:flex-end;border:none;border-radius:16px 16px 4px 16px;background:var(--acc);color:#04122e;font-weight:600;cursor:pointer;-webkit-user-select:none;user-select:none}
+.chatcompose,.chatpick{flex:none;display:flex;align-items:flex-end;gap:8px;padding:10px 12px 96px 14px;border:1px solid var(--hair);border-top:1px solid var(--hair);background:#0a111e;margin:0}
+.chatpick{display:block}.chatpick button{width:100%}
+html.chattyping .chatcompose{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+html.chattyping .tabbar{display:none}
+#chatInput{display:block;resize:none;overflow-y:hidden;font-family:inherit;line-height:20px;min-height:44px;max-height:124px;padding:11px 16px;flex:1;min-width:0;height:44px;border-radius:22px;border:1px solid var(--hair2);background:rgba(6,11,22,.6);color:#fff;font-size:16px;font-weight:600;outline:none;box-sizing:border-box}
+#chatInput:focus{border-color:var(--acc)}
+.chatsend{flex:none;width:44px;height:44px;padding:0;border:none;border-radius:50%;background:var(--acc);color:#04122e;display:flex;align-items:center;justify-content:center}
+.chatsend svg{width:18px;height:18px;display:block}
+.chatsend:disabled{opacity:.5}
+.confirmyes.danger{border-color:rgba(255,59,78,.65);background:linear-gradient(180deg,#4a1820 0%,#2c0e14 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 14px rgba(255,59,78,.16)}
+#chatDelText{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+/* open stats: player + both sides' stats = one outlined block; 2px lines between rows */
+.plist .prow{border-top:2px solid rgba(147,174,200,.24)}
+.plist .plabel + .prow{border-top-color:rgba(147,174,200,.08)}
+.plist .prow[aria-expanded="true"]{background:#13203a;border:1.5px solid rgba(79,141,255,.6);border-bottom:0;border-radius:14px 14px 0 0;margin-top:8px}
+.plist .detail{background:#13203a;border:1.5px solid rgba(79,141,255,.6);border-top:1px solid rgba(147,174,200,.16);border-radius:0 0 14px 14px;margin:0 0 8px}
+.plist .detail + .prow{border-top:0}
+/* softer pills (glow 50%), bigger letters (15% toward filling each pill) */
+.chip{box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 0 7px rgba(var(--c),.175);text-shadow:0 0 4px rgba(var(--c),.3)}
+.chip.FLEX{box-shadow:0 0 7px rgba(40,220,180,.175)}
+.chip.QB{font-size:14.6px}.chip.RB{font-size:14.9px}.chip.WR{font-size:14.1px}.chip.TE{font-size:15px}.chip.K{font-size:15px}.chip.DST{font-size:13.6px}.chip.FLEX{font-size:13.2px}
+@media (prefers-reduced-motion:reduce){.odot,.odot::after,.onstrip small{animation:none}}
 </style>
 </head>
 <body>
@@ -474,10 +523,11 @@ body.dragmode .mc.dragging{transition:scale .14s}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.3.0', 'League chat is live: one season-long chat (last 200 messages), every team in its own color as “Team (Owner)”, tap your own message to delete it, and an unread badge on the Chat tab. Who’s online: a blue dot next to every team with the app open, plus an Online strip on every tab; it turns on and off within about a second. Opening a player’s stats now outlines him and his stats as one block, with bolder lines between rows. Softer position pills with bigger letters. The ESPN/CBS status bar only shows up when something is wrong.'],
   ['1.2.0', 'Tighter matchup screen: rows about 20% shorter, bigger team logos, and a green score means that player is playing right now (projections are gray). Owner names under every team, “4 more rush yds”, “13 players left”, less empty space in the matchup header, and a DIV column (division record) in Standings.'],
   ['1.1.3', 'Player scores sit centered on the position square, with the projection underneath.'],
   ['1.1.2', 'Tab bar sits lower, closer to the bottom of the screen.'],
@@ -991,6 +1041,7 @@ function render(){
   else html = homeView();
   morph(v, html);
   lightTabs(S.view);
+  if(chatHook){ try{ chatHook(); }catch(e){} }
 }
 setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press && press.active) && !swipe.active) render(); }, 250);
 
@@ -1046,7 +1097,7 @@ function statusStrip(){
   if(!c || !c.data){
     const er = (c && c.err) || (!S.week && S.bootErr);
     if(er) return '<div class="status"><span class="dot bad"></span><span><b class="warn">Can’t load lineups</b> · ' + esc(er === 'cbs_key' ? 'the CBS key has expired' : er) + '</span></div>';
-    return '<div class="status"><span class="dot still"></span><span><b>Loading</b> · lineups from CBS</span></div>';
+    return '';
   }
   if(!cur) lead = '<b>Week ' + S.week + '</b> · final scores';
   else if(live) lead = '<b>Live</b>';
@@ -1059,7 +1110,8 @@ function statusStrip(){
   if(c.err === 'cbs_key') warn = '<b class="warn">CBS key expired</b> · lineups can’t refresh';
   else if(c.err) warn = '<b class="warn">CBS slow</b> · showing lineups from ' + ago(c.at);
   if(sb && sb.err) warn = (warn ? warn + ' · ' : '') + '<b class="warn">Can’t reach ESPN</b>';
-  if(warn) cls = 'bad';
+  if(!warn) return '';
+  cls = 'bad';
   return '<div class="status"><span class="dot ' + cls + '"></span><span>' + lead + (parts.length ? ' · ' + parts.join(' · ') : '') + (warn ? '<br>' + warn : '') + '</span></div>';
 }
 function card(mt, mine, LM){
@@ -1071,7 +1123,7 @@ function card(mt, mine, LM){
   const wa = E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const done = left === 0 && (la && la.any);
   const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
-  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + '</b>' + chip(w) + '<small>' + esc(t ? t.record : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
+  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? t.record : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
     '<div class="mchead">' + (mine ? '<span class="tag">Your matchup</span><span class="tag">' + left + ' players left</span>' :
@@ -1081,7 +1133,7 @@ function card(mt, mine, LM){
     (E && B && mine ? wpRow(wa, true) : (mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
 }
 function homeView(){
-  let h = header('Game Tracker') + statusStrip();
+  let h = header('Game Tracker') + onStrip() + statusStrip();
   const LM = liveModel();
   const dw = LM && isDivWeek(LM.model);
   if(S.team && stTeams().length){
@@ -1165,7 +1217,7 @@ function prow(a, La, b, Lb, i, slot, bench, mkey){
 function matchList(){ const LM = liveModel(); if(!LM) return null; return { LM: LM, list: orderedMatchups(LM.model).all }; }
 function matchView(){
   const X = matchList();
-  let h = '<div class="mhead"><button class="back" id="back">‹ Scoreboard</button><span class="mtitle">Matchup</span><span style="width:96px"></span></div>';
+  let h = '<div class="mhead"><button class="back" id="back">‹ Scoreboard</button><span class="mtitle">Matchup</span><span style="width:96px"></span></div>' + onStrip();
   if(!X || !X.list.length) return h + '<div class="empty">Getting this week’s lineups…</div>';
   let idx = X.list.findIndex(function(x){ return x.key === S.curKey; });
   if(idx < 0){ idx = 0; S.curKey = X.list[0].key; }
@@ -1181,7 +1233,7 @@ function matchView(){
   h += '<section class="hero' + (dw ? ' dw' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (a > b ? 'lead' : '') + '">' + a + '</b><b class="' + (b > a ? 'lead' : '') + '">' + b + '</b></div>' +
     (E && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
-    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
+    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (E && B ? wpRow(wa, true) : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x){ return '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
@@ -1206,7 +1258,7 @@ function matchView(){
 
 /* standings */
 function standingsView(){
-  let h = header('Standings');
+  let h = header('Standings') + onStrip();
   const st = S.standings, d = st && st.overall_standings && st.overall_standings.divisions;
   if(!Array.isArray(d) || !d.length){
     return h + (S.stErr ? '<div class="empty">Can’t load standings right now (' + esc(S.stErr) + ').</div>' : '<div class="empty">Getting standings from CBS…</div>');
@@ -1220,7 +1272,7 @@ function standingsView(){
       const wl = t.wins + '-' + t.losses + (num(t.ties) ? '-' + t.ties : '');
       const strk = String(t.streak || ''), sc = /^W/i.test(strk) ? 'w' : /^L/i.test(strk) ? 'l' : '';
       h += '<button class="strow' + (me ? ' me' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn">' + esc(trim(t.name)) + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span><span class="stgb">' + (num(t.games_back) ? esc(t.games_back) : '—') + '</span><span class="stk ' + sc + '">' + esc(strk || '—') + '</span></button>';
+        '<span class="stn">' + esc(trim(t.name)) + odot(id) + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span><span class="stgb">' + (num(t.games_back) ? esc(t.games_back) : '—') + '</span><span class="stk ' + sc + '">' + esc(strk || '—') + '</span></button>';
       if(open) h += '<div class="stdet" data-key="std-' + esc(id) + '"><div><small>Points for</small><b>' + esc(t.points_scored) + '</b></div><div><small>Points against</small><b>' + esc(t.points_against) + '</b></div><div><small>Division</small><b>' + esc(t.division_wins + '-' + t.division_losses + (num(t.division_ties) ? '-' + t.division_ties : '')) + '</b></div></div>';
     });
     h += '</section>';
@@ -1229,7 +1281,7 @@ function standingsView(){
   return h;
 }
 function chatView(){
-  return '<header class="top"><div><div class="kick">New Franchise League</div><h1>Chat</h1></div></header><div class="soon"><b>Coming soon</b><span>League chat, like the Pick’em pool chat.</span></div>';
+  return header('Chat') + onStrip();
 }
 
 /* ---------- tabs + light rail (Pick'em) ---------- */
@@ -2168,6 +2220,206 @@ function engPlayer(pid){ return engineReady() && ENG.res && ENG.res.p[pid] || nu
 setInterval(function(){ if(!document.hidden){ engineTick(); if(Date.now() - ENG.projAt > 600000) loadProj(); loadFuture(); } }, 2000);
 
 /* ---------- start ---------- */
+/* ---------- League chat + who's online (v1.3.0) ----------
+   Firebase Realtime Database over REST, no SDK (same pattern as the Pick'em app):
+   live push with EventSource on /fgt/presence and /fgt/chat/league, 5 s polling only if a stream fails.
+   Presence: PUT /fgt/presence/<device id> {name: team id, t: server time} on open + every 15 s; DELETE the moment
+   the app is hidden or closed (keepalive), so dots turn on/off within about a second. Online = seen in the last 45 s
+   by server time (phone clocks corrected with the server's timestamp). One device per entry; a team is online if
+   any of its devices is. Chat: last 200 messages, labeled "Team (First name)", tap your own message to delete it. */
+var DB = 'https://fgt-chat-f4d44-default-rtdb.firebaseio.com';
+var ROOM = 'league';
+var FIRST = { '1': 'Darrell', '2': 'Derek', '3': 'Mike', '4': 'Michael', '5': 'Perry', '6': 'Donald', '7': 'Mike', '8': 'Dale', '9': 'Mark', '10': 'Jason', '11': 'Wes', '12': 'Brett' };
+var TEAM_COLORS = { '1': '#ff9ecf', '2': '#7ee0c8', '3': '#8fb8ff', '4': '#ffae7a', '5': '#e59cff', '6': '#5fd6f2', '7': '#e3c9a3', '8': '#b99cff', '9': '#ffd36b', '10': '#a7b4ff', '11': '#3ddc84', '12': '#ff8f8f' };
+var CH = { pid: getLocal('pid'), msgs: {}, pres: {}, skew: 0, streams: { pres: null, chat: null }, live: { pres: false, chat: false }, blocked: { pres: 0, chat: 0 },
+  read: getLocal('chat-read') || 0, lastBeat: 0, lastPoll: { pres: 0, chat: 0 }, sig: '', pending: null };
+if(!CH.pid){ CH.pid = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); put('pid', CH.pid); }
+function srvNow(){ return Date.now() + CH.skew; }
+function teamName(id){ const t = stTeams().find(function(x){ return String(x.id) === String(id); }); return t ? trim(t.name) : ({ '1': 'Oakland', '2': 'Green Bay', '3': 'Buffalo', '4': 'Detroit', '5': 'New England', '6': 'Miami', '7': 'Jacksonville', '8': 'Indianapolis', '9': 'Baltimore', '10': 'New York', '11': 'Dallas', '12': 'Pittsburgh' })[String(id)] || ''; }
+function chatLabel(m){ const tn = m.team ? teamName(m.team) : ''; return tn ? tn + (FIRST[m.team] ? ' (' + FIRST[m.team] + ')' : '') : (m.name || ''); }
+function onlineTeams(){
+  const now = srvNow(), on = {};
+  Object.keys(CH.pres).forEach(function(k){ const p = CH.pres[k]; if(p && p.name && typeof p.t === 'number' && now - p.t < 45000) on[String(p.name)] = true; });
+  return on;
+}
+function isOnline(id){ return !!onlineTeams()[String(id)]; }
+function odot(id){ return isOnline(id) ? '<i class="odot" aria-label="online"></i>' : ''; }
+function onStrip(){
+  const on = onlineTeams(), ids = Object.keys(on);
+  if(!ids.length) return '';
+  const order = ['3', '12', '6', '11', '5', '4', '8', '9', '7', '10', '1', '2'];
+  ids.sort(function(a, b){ return order.indexOf(a) - order.indexOf(b); });
+  return '<div class="onstrip" data-key="onstrip"><small>ONLINE</small>' + ids.map(function(id){ return '<span data-key="on-' + id + '"><i class="odot"></i>' + esc(teamCode(id, teamName(id))) + '</span>'; }).join('') + '</div>';
+}
+function unread(){
+  let n = 0; Object.keys(CH.msgs).forEach(function(k){ const m = CH.msgs[k]; if(m && m.t > CH.read && m.pid !== CH.pid) n++; }); return n;
+}
+function markRead(){
+  let mx = CH.read; Object.keys(CH.msgs).forEach(function(k){ const m = CH.msgs[k]; if(m && m.t > mx) mx = m.t; });
+  if(mx !== CH.read){ CH.read = mx; put('chat-read', mx); }
+}
+function paintBadge(){
+  const b = document.querySelector('#tabBar .tabbtn[data-tab="chat"]'); if(!b) return;
+  let el = b.querySelector('.cbadge');
+  if(S.view === 'chat') markRead();
+  const n = S.view === 'chat' ? 0 : unread();
+  if(!n){ if(el) el.remove(); return; }
+  if(!el){ el = document.createElement('span'); el.className = 'cbadge'; b.appendChild(el); }
+  el.textContent = n > 99 ? '99+' : String(n);
+}
+/* --- streams (EventSource, Pick'em pattern) --- */
+function applyAt(root, path, data, patch){
+  const parts = String(path).split('/').filter(Boolean), out = Object.assign({}, root || {});
+  const merge = function(into, obj){ Object.keys(obj || {}).forEach(function(k){ if(obj[k] === null) delete into[k]; else into[k] = obj[k]; }); return into; };
+  if(!parts.length){ if(patch) return merge(out, data); return (data && typeof data === 'object') ? Object.assign({}, data) : {}; }
+  const k = parts[0];
+  if(parts.length === 1){ if(patch) out[k] = merge(Object.assign({}, out[k] || {}), data); else if(data === null) delete out[k]; else out[k] = data; return out; }
+  const cur = Object.assign({}, out[k] || {}); if(data === null) delete cur[parts[1]]; else cur[parts[1]] = data; out[k] = cur; return out;
+}
+var CHAT_Q = '?orderBy=%22t%22&limitToLast=200';
+function openStream(which){
+  if(CH.streams[which] || typeof EventSource !== 'function' || document.hidden) return;
+  if(Date.now() - CH.blocked[which] < 60000) return;
+  const url = DB + (which === 'pres' ? '/fgt/presence.json' : '/fgt/chat/' + ROOM + '.json' + CHAT_Q);
+  let es; try{ es = new EventSource(url); }catch(e){ CH.blocked[which] = Date.now(); return; }
+  CH.streams[which] = es;
+  const on = function(patch){ return function(e){
+    if(CH.streams[which] !== es) return;
+    let m = null; try{ m = JSON.parse(e.data); }catch(err){} if(!m || typeof m.path !== 'string') return;
+    if(which === 'pres') CH.pres = applyAt(CH.pres, m.path, m.data, patch); else CH.msgs = applyAt(CH.msgs, m.path, m.data, patch);
+    CH.live[which] = true; changed(which);
+  }; };
+  es.addEventListener('put', on(false)); es.addEventListener('patch', on(true));
+  es.onerror = function(){ if(CH.streams[which] !== es) return; CH.live[which] = false; if(es.readyState === 2) closeStream(which, true); };
+  ['cancel', 'auth_revoked'].forEach(function(ev){ es.addEventListener(ev, function(){ if(CH.streams[which] === es) closeStream(which, true); }); });
+}
+function closeStream(which, block){
+  const es = CH.streams[which]; CH.streams[which] = null; CH.live[which] = false;
+  if(es){ try{ es.close(); }catch(e){} }
+  if(block) CH.blocked[which] = Date.now();
+}
+function poll(which){
+  if(CH.live[which] || document.hidden || Date.now() - CH.lastPoll[which] < 5000) return;
+  CH.lastPoll[which] = Date.now();
+  const url = DB + (which === 'pres' ? '/fgt/presence.json' : '/fgt/chat/' + ROOM + '.json' + CHAT_Q);
+  fetch(url, { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if(which === 'pres') CH.pres = j || {}; else CH.msgs = j || {};
+    changed(which);
+  }).catch(function(){});
+}
+function changed(which){
+  if(which === 'chat') paintChat(true);
+  const sig = Object.keys(onlineTeams()).sort().join(',');
+  if(sig !== CH.sig){ CH.sig = sig; render(); }
+  paintBadge();
+}
+/* --- presence --- */
+function beat(force){
+  if(!S.team || document.hidden) return;
+  if(!force && Date.now() - CH.lastBeat < 15000) return;
+  CH.lastBeat = Date.now();
+  const sent = Date.now();
+  fetch(DB + '/fgt/presence/' + CH.pid + '.json', { method: 'PUT', body: JSON.stringify({ name: String(S.team), t: { '.sv': 'timestamp' } }) })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){ if(j && typeof j.t === 'number'){ CH.skew = j.t - Math.round((sent + Date.now()) / 2); CH.pres = Object.assign({}, CH.pres); CH.pres[CH.pid] = j; changed('pres'); } })
+    .catch(function(){});
+}
+function leave(){
+  try{ fetch(DB + '/fgt/presence/' + CH.pid + '.json', { method: 'DELETE', keepalive: true }); }catch(e){}
+  if(CH.pres[CH.pid]){ CH.pres = Object.assign({}, CH.pres); delete CH.pres[CH.pid]; }
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){ leave(); closeStream('pres'); closeStream('chat'); }
+  else { CH.blocked.pres = CH.blocked.chat = 0; beat(true); openStream('pres'); openStream('chat'); }
+});
+window.addEventListener('pagehide', leave);
+window.addEventListener('pageshow', function(){ if(!document.hidden) beat(true); });
+setInterval(function(){
+  if(document.hidden) return;
+  beat(false); openStream('pres'); openStream('chat'); poll('pres'); poll('chat');
+  const sig = Object.keys(onlineTeams()).sort().join(',');   // someone timed out (45 s) without saying goodbye
+  if(sig !== CH.sig){ CH.sig = sig; render(); }
+}, 1000);
+/* --- chat pane (lives outside #view so typing never gets re-rendered away) --- */
+var pane = document.createElement('section');
+pane.id = 'chatPane'; pane.hidden = true;
+pane.innerHTML = '<div class="chatlist" id="chatList"></div>' +
+  '<div class="chatcompose" id="chatCompose"><textarea id="chatInput" rows="1" maxlength="300" placeholder="Message the league" autocomplete="off" enterkeyhint="send"></textarea>' +
+  '<button class="chatsend" id="chatSend" type="button" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>' +
+  '<div class="chatpick" id="chatPick" hidden><button class="confirmyes" type="button" id="chatPickBtn">Select your team to chat</button></div>';
+document.body.appendChild(pane);
+var delOv = document.createElement('div');
+delOv.className = 'overlay'; delOv.id = 'chatDelOverlay';
+delOv.innerHTML = '<div class="confirmcard" role="dialog" aria-label="Delete message"><h2>Delete this message?</h2><p id="chatDelText"></p>' +
+  '<div class="confirmrow"><button class="confirmyes danger" type="button" id="chatDelYes">Delete message</button><button class="confirmcancel" type="button" data-close="chatDelOverlay">Cancel</button></div></div>';
+document.body.appendChild(delOv);
+var chatList = pane.querySelector('#chatList'), chatInput = pane.querySelector('#chatInput'), chatSend = pane.querySelector('#chatSend');
+function chatTime(t){ try{ return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }catch(e){ return ''; } }
+function chatDay(t){ try{ return new Date(t).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }); }catch(e){ return ''; } }
+var chatSig = '';
+function paintChat(keepBottom){
+  if(pane.hidden) return;
+  const list = Object.keys(CH.msgs).map(function(id){ const m = CH.msgs[id]; return m ? Object.assign({ id: id }, m) : null; })
+    .filter(function(m){ return m && typeof m.t === 'number' && typeof m.text === 'string'; }).sort(function(a, b){ return a.t - b.t; }).slice(-200);
+  const sig = list.map(function(m){ return m.id; }).join(',') + '|' + S.team;
+  if(sig === chatSig) return; chatSig = sig;
+  const near = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 80;
+  if(!list.length){ chatList.innerHTML = '<div class="chatempty">No messages yet. Say something to the league.</div>'; return; }
+  let prev = null, day = '', h = '';
+  list.forEach(function(m){
+    const d = chatDay(m.t); if(d !== day){ day = d; prev = null; h += '<div class="chatsys">' + esc(d) + '</div>'; }
+    const mine = m.pid === CH.pid, first = !(prev && prev.pid === m.pid); prev = m;
+    const lab = esc(chatLabel(m)), col = m.team ? (TEAM_COLORS[m.team] || '#b99cff') : '#b99cff';
+    const who = !first ? '' : mine ? '<span class="chatwho" style="color:var(--green)"><i>' + esc(chatTime(m.t)) + ' · </i>' + lab + '</span>'
+      : '<span class="chatwho" style="color:' + col + '">' + lab + ' <i>· ' + esc(chatTime(m.t)) + '</i></span>';
+    h += '<div class="chatmsg' + (mine ? ' mine' : '') + (first ? ' first' : '') + '">' + who + '<div class="chatbubble"' + (mine ? ' data-mid="' + esc(m.id) + '" role="button" tabindex="0" aria-label="Your message, tap for options"' : '') + '>' + esc(m.text) + '</div></div>';
+  });
+  chatList.innerHTML = h;
+  if(!keepBottom || near) chatList.scrollTop = chatList.scrollHeight;
+}
+function placePane(){
+  const on = S.view === 'chat';
+  if(pane.hidden === on){ pane.hidden = !on; if(on){ chatSig = ''; paintChat(false); } }
+  if(!on) return;
+  const v = $('#view'), r = v.getBoundingClientRect(), wrap = v.parentElement.getBoundingClientRect();
+  pane.style.top = Math.max(0, Math.round(r.bottom + 2)) + 'px';
+  pane.style.left = Math.round(wrap.left) + 'px'; pane.style.width = Math.round(wrap.width) + 'px';
+  const has = !!S.team;
+  $('#chatCompose').hidden = !has; $('#chatPick').hidden = has;
+}
+function grow(){ chatInput.style.height = 'auto'; chatInput.style.height = Math.min(124, chatInput.scrollHeight) + 'px'; }
+chatInput.addEventListener('input', grow);
+chatInput.addEventListener('focus', function(){ document.documentElement.classList.add('chattyping'); });
+chatInput.addEventListener('blur', function(){ setTimeout(function(){ document.documentElement.classList.remove('chattyping'); }, 120); });
+chatInput.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
+chatSend.addEventListener('click', sendChat);
+$('#chatPickBtn').addEventListener('click', function(){ openTeamSheet(false); });
+function sendChat(){
+  const text = chatInput.value.replace(/\s+$/, '').replace(/^\s+/, '').slice(0, 300);
+  if(!text || !S.team || chatSend.disabled) return;
+  chatSend.disabled = true;
+  const body = { pid: CH.pid, name: chatLabel({ team: String(S.team) }).slice(0, 40) || 'Team', text: text, t: { '.sv': 'timestamp' }, team: String(S.team) };
+  fetch(DB + '/fgt/chat/' + ROOM + '.json', { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .then(function(j){ chatInput.value = ''; grow(); if(j && j.name && !CH.live.chat){ CH.lastPoll.chat = 0; poll('chat'); } })
+    .catch(function(){ toast('Couldn’t send. Check your connection.'); })
+    .then(function(){ chatSend.disabled = false; });
+}
+chatList.addEventListener('click', function(e){
+  const b = e.target.closest('[data-mid]'); if(!b) return;
+  CH.pending = b.dataset.mid; $('#chatDelText').textContent = b.textContent.length > 80 ? b.textContent.slice(0, 80) + '…' : b.textContent;
+  openOverlay(delOv);
+});
+$('#chatDelYes').addEventListener('click', function(){
+  const id = CH.pending; closeOverlay(delOv); if(!id) return;
+  fetch(DB + '/fgt/chat/' + ROOM + '/' + encodeURIComponent(id) + '.json', { method: 'DELETE' })
+    .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); CH.msgs = Object.assign({}, CH.msgs); delete CH.msgs[id]; paintChat(true); paintBadge(); toast('Message deleted'); })
+    .catch(function(){ toast('Couldn’t delete that message'); });
+});
+window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); });
+beat(true); openStream('pres'); openStream('chat'); setTimeout(function(){ poll('pres'); poll('chat'); }, 3000);
+var chatHook = function(){ placePane(); paintBadge(); };
+
 window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, version: APP_VERSION };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
