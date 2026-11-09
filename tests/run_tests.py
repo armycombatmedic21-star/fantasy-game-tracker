@@ -215,7 +215,43 @@ with sync_playwright() as pw:
         check(f'[{tag}] your row highlighted', page.locator('.strow.me').count() == 1 and 'Dallas' in page.inner_text('.strow.me'))
         page.click('.strow.me')
         page.wait_for_timeout(250)
-        check(f'[{tag}] tap a team: points for/against', 'points for' in page.inner_text('#view').lower())
+        det = page.inner_text('.stdet').lower() if page.locator('.stdet').count() else ''
+        check(f'[{tag}] tap a team: Points Scored / Points Against', 'points scored' in det and 'points against' in det and 'differential' in det, det)
+        check(f'[{tag}] every team has an arrow', page.locator('.strow .stchev').count() == 12)
+        check(f'[{tag}] PLAYOFF % for every team', page.locator('.strow .stpo').count() == 12 and page.locator('.strow .stpo.na').count() == 0)
+        check(f'[{tag}] MOVE column for every team (GB gone)', page.locator('.strow .stmv').count() == 12 and 'MOVE' in page.inner_text('.sthead') and 'GB' not in page.inner_text('.sthead'))
+        # live: CBS 611 + Dallas's 63 so far this week (fixture), records unchanged until the week is final
+        import re as _re
+        lv = int(_re.search(r'points scored\n[\d,]+\n[\d.]+ per game\n\+(\d+) this week', det).group(1)) if _re.search(r'points scored\n[\d,]+\n[\d.]+ per game\n\+(\d+) this week', det) else -1
+        now_lv = page.evaluate("Math.round(window.__fgt.liveModel().live['11'].pts)")
+        check(f'[{tag}] this week = Dallas live score', abs(lv - now_lv) <= 12 and lv > 0, (lv, now_lv))
+        check(f'[{tag}] points scored live (CBS 611 + this week)', f'{611 + lv}' in det and f'+{lv} this week' in det and '76.4 per game' in det, (lv, det))
+        check(f'[{tag}] record unchanged while games are on', '3-5' in page.inner_text('.strow.me'))
+        page.locator('.strow').nth(0).click(); page.wait_for_timeout(200)
+        check(f'[{tag}] open several teams at once', page.locator('.stdet').count() == 2)
+        page.click('.strow.me'); page.wait_for_timeout(200)
+        check(f'[{tag}] tap again closes', page.locator('.stdet').count() == 1)
+        page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(300)
+        page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(300)
+        check(f'[{tag}] all closed when you come back to Standings', page.locator('.stdet').count() == 0)
+        check(f'[{tag}] finished game reads 100%', page.evaluate("[window.__fgt.fmtPct(1, true), window.__fgt.fmtPct(0, true), window.__fgt.fmtPct(0.9996)].join(' ')") == '100% 0% >99.9%')
+        # whole week final: Dallas beats its opponent -> 4-5, badge on Standings, banner once
+        page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(300)
+        page.evaluate("() => { window.__fgt.S._freeze = 1; }")
+        page.evaluate("""() => { const F = window.__fgt, c = F.curW(); const t = JSON.parse(JSON.stringify(c.teams));
+          Object.keys(t).forEach(id => { t[id].left = 0; t[id].bleft = 0; t[id].pts = 50; });
+          t['11'].pts = 150; F._setCurW({ week: c.week, teams: t, final: true, at: 'test' });
+          }""")
+        page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(400)
+        check(f'[{tag}] week final -> Dallas record 4-5', page.evaluate("(() => { const A = window.__fgt.stAdjust(true); const d = A.byId['11']; return d.wins + '-' + d.losses + ' ' + d.streak; })()") == '4-5 W1')
+        check(f'[{tag}] badge on Standings tab', page.locator('.tabbtn[data-tab="standings"] .cbadge').count() == 1)
+        page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(400)
+        check(f'[{tag}] records updated banner', 'Records updated' in page.inner_text('#view'))
+        check(f'[{tag}] badge cleared', page.locator('.tabbtn[data-tab="standings"] .cbadge').count() == 0)
+        if os.environ.get('FGT_SHOTS_ON'):
+            page.click('.strow.me'); page.locator('.strow').nth(0).click(); page.wait_for_timeout(300)
+            page.screenshot(path=f'{SHOTS}/{tag}-standings-open.png', full_page=False)
+        page.evaluate("() => { window.__fgt.S._freeze = 0; try{ localStorage.removeItem('fgt-rec-seen'); }catch(e){} }")
         # reopen to the last tab
         page.reload(); page.wait_for_timeout(1500)
         check(f'[{tag}] reopens on the last tab (Standings)', page.locator('.tabbtn.on[data-tab="standings"]').count() == 1)
