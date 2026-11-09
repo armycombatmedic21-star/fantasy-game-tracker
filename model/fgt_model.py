@@ -433,7 +433,7 @@ def build(week, fp_file=None, ov_file=None):
         if fpp is not None and FP_BLEND > 0 and sim.mean() > 0:
             target = (1 - FP_BLEND) * sim.mean() + FP_BLEND * fpp * prob
             scale = target / sim.mean()
-            basis += f"; FP {fpp:.1f} blended {FP_BLEND:.0%}"
+            basis += f"; FantasyPros blended {FP_BLEND:.0%}"
         rec.update(summ(sim, comps, scale, basis, flags))
         out.append(rec)
 

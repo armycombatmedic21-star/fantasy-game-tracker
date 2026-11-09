@@ -36,6 +36,8 @@ jobs:
           restore-keys: fp-
       - name: Run model
         id: run
+        env:
+          FP_API_KEY: ${{ secrets.FP_API_KEY }}   # FantasyPros personal API key (GitHub secret; never printed)
         run: python model/run_projections.py
       - uses: actions/cache/save@v4
         if: always()

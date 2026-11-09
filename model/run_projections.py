@@ -34,12 +34,13 @@ def main():
         os.makedirs(CACHE, exist_ok=True)
         fp_file, cached = os.path.join(CACHE, f"fp-week{week}.json"), None
         try:
-            players, info, code = fetch_fp.fetch(week)
+            players, info, code = fetch_fp.fetch_best(week)
         except Exception as e:
             players, info, code = None, {"error": str(e)[:300]}, 1
         st["fp_fetch"] = {"code": code, "info": info}
+        st["fp_source"] = (info or {}).get("source", "?")
         if code == 0:
-            json.dump({"source": f"FantasyPros consensus raw stats, week {week}", "at": now(), "week": week,
+            json.dump({"source": f"FantasyPros consensus raw stats ({st['fp_source']}), week {week}", "at": now(), "week": week,
                        "players": players}, open(fp_file, "w"), separators=(",", ":"))
             st["fp"] = "fresh"
         elif os.path.exists(fp_file):

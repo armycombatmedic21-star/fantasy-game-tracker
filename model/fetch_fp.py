@@ -1,14 +1,15 @@
 """Fetch FantasyPros consensus RAW stat projections (QB/RB/WR/TE) for one NFL week -> fp.json for fgt_model.py --fp.
 
-The public projection pages (fantasypros.com/nfl/projections/{qb,rb,wr,te}.php?week=N) embed the full table as JSON
-("rows":[{...}]) in the page itself, no login needed. We only take raw stats (yards, TDs, INTs), never FantasyPros'
-point totals (their points don't use our tiered scoring; Drop 1 §3.8).
+Preferred: FantasyPros' official API with Wes's personal key (env FP_API_KEY, GitHub secret) -> every player.
+Fallback: the public projection pages, which only embed the top 10 per position.
+We only take raw stats (yards, TDs, INTs), never FantasyPros' point totals (their points don't use our tiered
+scoring; Drop 1 §3.8). Data from FantasyPros: personal, non-commercial use under their API terms.
 
 Usage: python3 model/fetch_fp.py --week N --out fp.json
 Exit code 0 = fp.json written for exactly week N; 2 = FantasyPros hasn't posted week N yet (page shows another week);
 1 = fetch/parse problem. The page's own week is checked so we never blend last week's numbers.
 """
-import argparse, datetime, json, re, sys, time, urllib.request
+import argparse, datetime, json, re, sys, time, urllib.parse, urllib.request
 
 POS = ["qb", "rb", "wr", "te"]
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -66,8 +67,76 @@ def num(v):
         return 0.0
 
 
+API_HOSTS = ["https://api.fantasypros.com/public/v2/json/nfl/{season}/projections",
+             "https://api.fantasypros.com/v2/json/nfl/{season}/projections"]
+API_FIELDS = {"pyd": ["pass_yds"], "ptd": ["pass_tds"], "ints": ["pass_ints"], "ryd": ["rush_yds"], "rtd": ["rush_tds"],
+              "cyd": ["rec_yds"], "ctd": ["rec_tds"]}
+
+
+def fetch_api(week, key, season=2026):
+    """FantasyPros official API (personal key, sent as x-api-key). One request for QB/RB/WR/TE.
+    Returns (players, info, code) like fetch(). The key is never logged or written anywhere."""
+    import urllib.error
+    q = urllib.parse.urlencode({"week": week, "positions": "QB:RB:WR:TE", "scoring": "STD"})
+    info, last = {"source": "api"}, None
+    for host in API_HOSTS:
+        url = host.format(season=season) + "?" + q
+        try:
+            req = urllib.request.Request(url, headers={"x-api-key": key, "User-Agent": "fgt-projections/1.0", "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                j = json.loads(r.read().decode("utf-8", "replace"))
+        except urllib.error.HTTPError as e:
+            last = f"HTTP {e.code} at {host.split('/json')[0]}"
+            continue
+        except Exception as e:
+            last = f"{type(e).__name__} at {host.split('/json')[0]}"
+            continue
+        rows = j.get("players") or []
+        info.update({"endpoint": host.split("/json")[0], "api_week": j.get("week"), "count": j.get("count"), "rows": len(rows),
+                     "stat_keys": sorted({k for p in rows[:50] for k in (p.get("stats") or {})})[:40]})
+        try:
+            api_week = int(j.get("week"))
+        except (TypeError, ValueError):
+            api_week = None
+        if api_week != week:
+            return None, info, 2          # FantasyPros hasn't posted this week yet
+        if not rows:
+            return None, info, 1
+        players, by_pos = [], {}
+        for p in rows:
+            pos = (p.get("position_id") or p.get("position") or "").upper()
+            if pos not in ("QB", "RB", "WR", "TE"):
+                continue
+            st = p.get("stats") or {}
+            rec = {"name": p.get("name") or p.get("player_name") or "", "pos": pos, "team": (p.get("team_id") or p.get("team") or "").upper()}
+            for f, ks in API_FIELDS.items():
+                k = next((k for k in ks if k in st), None)
+                rec[f] = round(num(st[k]), 3) if k else 0.0
+            if rec["name"]:
+                players.append(rec)
+                by_pos[pos] = by_pos.get(pos, 0) + 1
+        info["by_pos"] = by_pos
+        return players, info, (0 if players else 1)
+    info["error"] = last
+    return None, info, 1
+
+
+def fetch_best(week):
+    """Official API when FP_API_KEY is set (full player list); otherwise the public pages (top 10 per position)."""
+    import os
+    key = os.environ.get("FP_API_KEY", "").strip()
+    if key:
+        players, info, code = fetch_api(week, key)
+        if code in (0, 2):
+            return players, info, code
+        p2, i2, c2 = fetch(week)          # API problem: fall back to the public pages
+        i2["api_problem"] = info
+        return p2, i2, c2
+    return fetch(week)
+
+
 def fetch(week):
-    players, info = [], {}
+    players, info = [], {"source": "pages"}
     for pos in POS:
         html = get(f"https://www.fantasypros.com/nfl/projections/{pos}.php?week={week}")
         wk = page_week(html)
@@ -102,7 +171,7 @@ if __name__ == "__main__":
     ap.add_argument("--out", default="fp.json")
     a = ap.parse_args()
     try:
-        players, info, code = fetch(a.week)
+        players, info, code = fetch_best(a.week)
     except Exception as e:
         print(json.dumps({"ok": False, "error": str(e)[:300]}))
         sys.exit(1)
