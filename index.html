@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark">
 <style>html,body{background:#060b16}</style>
 <meta name="theme-color" content="#060b16">
@@ -467,6 +467,16 @@ html.chattyping .tabbar{display:none}
 .chip.FLEX{box-shadow:0 0 7px rgba(40,220,180,.175)}
 .chip.QB{font-size:14.6px}.chip.RB{font-size:14.9px}.chip.WR{font-size:14.1px}.chip.TE{font-size:15px}.chip.K{font-size:15px}.chip.DST{font-size:13.6px}.chip.FLEX{font-size:13.2px}
 @media (prefers-reduced-motion:reduce){.odot,.odot::after,.onstrip small{animation:none}}
+/* ---- v1.3.1 ---- */
+html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%}
+button,a,[role=button]{touch-action:manipulation}
+html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
+#chatPane{will-change:transform}
+.onstrip span{font-size:12.5px;padding:2px 9px 2px 7px;gap:6px}
+.strow .stn{display:flex;flex-direction:column;justify-content:center;gap:1px;line-height:1.15}
+.strow .stnm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strow .sto{font-size:11px;font-weight:600;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plist .detail{cursor:pointer}
 </style>
 </head>
 <body>
@@ -523,10 +533,11 @@ html.chattyping .tabbar{display:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.3.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.3.1', 'Online strip shows full team names (Indianapolis = Indy). Owner names under every team in Standings. Fixed the chat typing cursor jumping around on iPhone. Pinch-zoom is off. Tap anywhere on an opened player’s stats to close them.'],
   ['1.3.0', 'League chat is live: one season-long chat (last 200 messages), every team in its own color as “Team (Owner)”, tap your own message to delete it, and an unread badge on the Chat tab. Who’s online: a blue dot next to every team with the app open, plus an Online strip on every tab; it turns on and off within about a second. Opening a player’s stats now outlines him and his stats as one block, with bolder lines between rows. Softer position pills with bigger letters. The ESPN/CBS status bar only shows up when something is wrong.'],
   ['1.2.0', 'Tighter matchup screen: rows about 20% shorter, bigger team logos, and a green score means that player is playing right now (projections are gray). Owner names under every team, “4 more rush yds”, “13 players left”, less empty space in the matchup header, and a DIV column (division record) in Standings.'],
   ['1.1.3', 'Player scores sit centered on the position square, with the projection underneath.'],
@@ -1272,7 +1283,7 @@ function standingsView(){
       const wl = t.wins + '-' + t.losses + (num(t.ties) ? '-' + t.ties : '');
       const strk = String(t.streak || ''), sc = /^W/i.test(strk) ? 'w' : /^L/i.test(strk) ? 'l' : '';
       h += '<button class="strow' + (me ? ' me' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn">' + esc(trim(t.name)) + odot(id) + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span><span class="stgb">' + (num(t.games_back) ? esc(t.games_back) : '—') + '</span><span class="stk ' + sc + '">' + esc(strk || '—') + '</span></button>';
+        '<span class="stn"><span class="stnm">' + esc(trim(t.name)) + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span><span class="stgb">' + (num(t.games_back) ? esc(t.games_back) : '—') + '</span><span class="stk ' + sc + '">' + esc(strk || '—') + '</span></button>';
       if(open) h += '<div class="stdet" data-key="std-' + esc(id) + '"><div><small>Points for</small><b>' + esc(t.points_scored) + '</b></div><div><small>Points against</small><b>' + esc(t.points_against) + '</b></div><div><small>Division</small><b>' + esc(t.division_wins + '-' + t.division_losses + (num(t.division_ties) ? '-' + t.division_ties : '')) + '</b></div></div>';
     });
     h += '</section>';
@@ -1549,6 +1560,8 @@ $('#view').addEventListener('click', function(e){
   if(t.closest('#back')){ setView('home'); return; }
   if(t.closest('#prev')){ go(-1); return; }
   if(t.closest('#next')){ go(1); return; }
+  const dt = t.closest('.detail');
+  if(dt && S.open){ S.open = null; render(); return; }
   const r = t.closest('[data-row]');
   if(r){ const i = +r.dataset.row; S.open = (S.open && S.open.k === S.curKey && S.open.i === i) ? null : { k: S.curKey, i: i }; render(); return; }
   const sr = t.closest('[data-st]'); if(sr){ S.stOpen = S.stOpen === sr.dataset.st ? null : sr.dataset.st; render(); return; }
@@ -2242,6 +2255,7 @@ function onlineTeams(){
   Object.keys(CH.pres).forEach(function(k){ const p = CH.pres[k]; if(p && p.name && typeof p.t === 'number' && now - p.t < 45000) on[String(p.name)] = true; });
   return on;
 }
+function stripName(id){ const n = teamName(id); return n === 'Indianapolis' ? 'Indy' : n; }
 function isOnline(id){ return !!onlineTeams()[String(id)]; }
 function odot(id){ return isOnline(id) ? '<i class="odot" aria-label="online"></i>' : ''; }
 function onStrip(){
@@ -2249,7 +2263,7 @@ function onStrip(){
   if(!ids.length) return '';
   const order = ['3', '12', '6', '11', '5', '4', '8', '9', '7', '10', '1', '2'];
   ids.sort(function(a, b){ return order.indexOf(a) - order.indexOf(b); });
-  return '<div class="onstrip" data-key="onstrip"><small>ONLINE</small>' + ids.map(function(id){ return '<span data-key="on-' + id + '"><i class="odot"></i>' + esc(teamCode(id, teamName(id))) + '</span>'; }).join('') + '</div>';
+  return '<div class="onstrip" data-key="onstrip"><small>ONLINE</small>' + ids.map(function(id){ return '<span data-key="on-' + id + '"><i class="odot"></i>' + esc(stripName(id)) + '</span>'; }).join('') + '</div>';
 }
 function unread(){
   let n = 0; Object.keys(CH.msgs).forEach(function(k){ const m = CH.msgs[k]; if(m && m.t > CH.read && m.pid !== CH.pid) n++; }); return n;
@@ -2377,8 +2391,24 @@ function paintChat(keepBottom){
   chatList.innerHTML = h;
   if(!keepBottom || near) chatList.scrollTop = chatList.scrollHeight;
 }
+function lockPage(on){
+  const H = document.documentElement, b = document.body.style;
+  if(on === H.classList.contains('chatmode')) return;
+  H.classList.toggle('chatmode', on);
+  if(on){ window.scrollTo(0, 0); b.position = 'fixed'; b.top = '0'; b.left = '0'; b.right = '0'; b.width = '100%'; }
+  else if(!openOverlays){ b.position = ''; b.top = ''; b.left = ''; b.right = ''; b.width = ''; }
+}
+function fitPane(){
+  if(pane.hidden) return;
+  const vv = window.visualViewport;
+  const bottom = vv ? Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop))) : 0;
+  pane.style.bottom = bottom + 'px';
+  if(vv && vv.offsetTop) pane.style.transform = 'translateY(' + Math.round(vv.offsetTop) + 'px)'; else pane.style.transform = '';
+}
+if(window.visualViewport){ ['resize', 'scroll'].forEach(function(ev){ window.visualViewport.addEventListener(ev, function(){ fitPane(); if(document.activeElement === chatInput) chatList.scrollTop = chatList.scrollHeight; }); }); }
 function placePane(){
   const on = S.view === 'chat';
+  lockPage(on);
   if(pane.hidden === on){ pane.hidden = !on; if(on){ chatSig = ''; paintChat(false); } }
   if(!on) return;
   const v = $('#view'), r = v.getBoundingClientRect(), wrap = v.parentElement.getBoundingClientRect();
@@ -2386,6 +2416,7 @@ function placePane(){
   pane.style.left = Math.round(wrap.left) + 'px'; pane.style.width = Math.round(wrap.width) + 'px';
   const has = !!S.team;
   $('#chatCompose').hidden = !has; $('#chatPick').hidden = has;
+  fitPane();
 }
 function grow(){ chatInput.style.height = 'auto'; chatInput.style.height = Math.min(124, chatInput.scrollHeight) + 'px'; }
 chatInput.addEventListener('input', grow);
@@ -2419,6 +2450,9 @@ $('#chatDelYes').addEventListener('click', function(){
 window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); });
 beat(true); openStream('pres'); openStream('chat'); setTimeout(function(){ poll('pres'); poll('chat'); }, 3000);
 var chatHook = function(){ placePane(); paintBadge(); };
+/* pinch-zoom off (iPhone Safari ignores user-scalable=no, so block the gesture itself) */
+['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
+document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
 window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, version: APP_VERSION };
 try{ history.replaceState({}, ''); }catch(e){}
