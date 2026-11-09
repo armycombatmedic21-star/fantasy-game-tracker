@@ -495,6 +495,18 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .benchlist .prow.bench .chip{border:1.5px solid rgba(220,230,245,.75);color:#e6edf8;background:#16223a}
 .benchlist .chev{background:#0b1321}
 .benchlist .prow[aria-expanded="true"] .chev{background:#13203a}
+/* ---- v1.3.3: next-tier arrow, projection beside the score, live line on one line ---- */
+.tg{display:block;flex:none}
+.dsub span:first-child{white-space:nowrap}
+.dsub .tgw{flex:1 1 auto;display:flex;justify-content:center;align-items:center;min-width:14px}
+.mini span.mrow{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.mini span.mrow .tgw{flex:1 1 auto;display:flex;justify-content:center}
+.mini span.mrow .tg{width:12px;height:10px}
+.ppt{flex-direction:row;align-items:baseline;gap:6px}
+.ppt small{position:static;margin:0}
+.pside:not(.r) .ppt small{order:-1}
+.pside .ppt,.pside.r .ppt{align-items:baseline}
+.pgm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 </style>
 </head>
 <body>
@@ -551,10 +563,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.3.2';
+const APP_VERSION = '1.3.3';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.3.3', 'A small white arrow now points from “29 more yds” to the points it gets you. Projections sit beside the score so they never run into player names, and live game lines stay on one line (clock and score).'],
   ['1.3.2', 'Matchup rows: a thin line down the middle like FantasyPros, a square stats arrow centered under the position pill, and scores moved a little away from the pill. The bench now has its own color with a Bench header, so you always know you’re looking at the bench.'],
   ['1.3.1', 'Online strip shows full team names (Indianapolis = Indy). Owner names under every team in Standings. Fixed the chat typing cursor jumping around on iPhone. Pinch-zoom is off. Tap anywhere on an opened player’s stats to close them.'],
   ['1.3.0', 'League chat is live: one season-long chat (last 200 messages), every team in its own color as “Team (Owner)”, tap your own message to delete it, and an unread badge on the Chat tab. Who’s online: a blue dot next to every team with the app open, plus an Online strip on every tab; it turns on and off within about a second. Opening a player’s stats now outlines him and his stats as one block, with bolder lines between rows. Softer position pills with bigger letters. The ESPN/CBS status bar only shows up when something is wrong.'],
@@ -1075,6 +1088,7 @@ function render(){
 }
 setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press && press.active) && !swipe.active) render(); }, 250);
 
+const TGA = '<svg class="tg" viewBox="0 0 14 12" width="13" height="11" aria-hidden="true"><path d="M2 6h8.2M7 2.2 10.8 6 7 9.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ICON = {
   chev: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>',
   gear: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
@@ -1194,7 +1208,7 @@ function hot(p, L){
   const n = nextTier(b.y, b.T);
   if(!n) return '<div class="mini"><div class="tb max"><i style="width:100%"></i></div><span>' + b.y + ' ' + b.k.toLowerCase() + ' yds · <em>MAX</em></span></div>';
   const pct = clamp((b.y - n.floor) / (n.at - n.floor) * 100, 4, 100);
-  return '<div class="mini"><div class="tb"><i style="width:' + pct.toFixed(1) + '%"></i></div><span>' + (n.at - b.y) + ' more ' + b.k.toLowerCase() + ' yds → <em>+' + n.gain + '</em></span></div>';
+  return '<div class="mini"><div class="tb"><i style="width:' + pct.toFixed(1) + '%"></i></div><span class="mrow"><span>' + (n.at - b.y) + ' more ' + b.k.toLowerCase() + ' yds</span><span class="tgw">' + TGA + '</span><em>+' + n.gain + '</em></span></div>';
 }
 function side(p, L, r){
   if(!p || !L) return '<div class="pside' + (r ? ' r' : '') + '"></div>';
@@ -1206,7 +1220,7 @@ function side(p, L, r){
     '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
     '<span class="pnm">' + esc(p.pos === 'DST' ? p.name : shortName(p.name)) + '<small>' + esc(p.nfl) + '</small></span>' +
     (L.evt ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
-    '<span class="pgm ' + cls + '">' + esc(L.line) + '</span>' + hot(p, L) + '</div>';
+    '<span class="pgm ' + cls + '">' + esc(L.state === 'in' ? L.line.replace(/\s+(@|vs\.?)\s+[A-Z]{2,3}$/, '') : L.line) + '</span>' + hot(p, L) + '</div>';
 }
 function pv(v, c){ return '<b class="pv ' + (c || '') + '">' + v + '</b>'; }
 function dcol(p, L){
@@ -1225,7 +1239,7 @@ function dcol(p, L){
     const pct = n ? clamp((b.y - n.floor) / (n.at - n.floor) * 100, 3, 100) : 100;
     h += '<div class="grp"><div class="dl"><span>' + b.k + ' <em>' + b.y + ' yds</em></span>' + pv(v) + '</div>' +
       '<div class="tb' + (n ? '' : ' max') + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
-      '<div class="dsub"><span>' + (n ? (n.at - b.y) + ' more yds' : 'Top tier') + '</span>' + (n ? '<span class="gain">+' + n.gain + '</span>' : '<span class="gain max">MAX</span>') + '</div></div>';
+      '<div class="dsub"><span>' + (n ? (n.at - b.y) + ' more yds' : 'Top tier') + '</span>' + (n ? '<span class="tgw">' + TGA + '</span><span class="gain">+' + n.gain + '</span>' : '<span class="gain max">MAX</span>') + '</div></div>';
   });
   L.sc.lines.forEach(function(l){
     const val = l.cls === 'td' ? '+' + l.v : String(l.v);
