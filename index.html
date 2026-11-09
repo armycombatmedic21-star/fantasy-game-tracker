@@ -386,6 +386,38 @@ body.dragmode .mc.dragging{transition:scale .14s}
 .pnm{font-size:15.75px}
 .mhead{margin-bottom:20px}
 .pv.proj{color:rgba(61,220,132,.9)}
+/* ---- v1.2.0 (round 7): tighter matchup rows, bigger logos, live = green score ---- */
+.prow{padding:9px 10px;gap:4px}
+.pside{gap:1px}
+.ptop{min-height:32px;margin-bottom:3px}
+.nfl{width:32px;height:32px;border-radius:9px}
+.nfl img{width:28px;height:28px}
+.ppt b{font-size:23.1px}
+.ppt small{font-size:11.55px}
+.ppt small.pj{color:#8b9bb4}
+.pnm{margin-top:0;line-height:1.15}
+.pgm{margin-top:2px;letter-spacing:-.1px}
+.chip{font-size:13.2px}
+.ctr{gap:4px}
+.chev{height:20px}
+.pside.lv .ppt b,.pside.lv .ppt b.zero{color:var(--green)}
+.mini{max-width:none;width:100%;margin-top:5px}
+.mini .tb{margin:0}
+.mini span{margin-top:3px;white-space:nowrap}
+.hero{padding-bottom:6px}
+.lstat{margin-top:6px}
+.hero .wp{margin-top:8px}
+.hero .wpl{margin-bottom:4px}
+.swipehint{margin-top:2px}
+.arrow{height:26px}
+.own{display:block;font-size:10.9px;font-weight:600;color:var(--faint);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc.lg .tn small.own{margin-left:0;font-size:10.9px}
+.fp2 .nm .own{font-size:11.4px;white-space:normal;overflow:visible}
+.sthead,.strow{grid-template-columns:18px 30px 1fr 38px 36px 26px 34px;gap:6px}
+.strow .stdv{font-size:14px;font-weight:800;color:#8fb6ff;text-align:right}
+.sthead span{text-align:right}
+.mc.mine .own{white-space:normal}
+@media (max-width:380px){ .pnm small{display:none} .sthead,.strow{grid-template-columns:16px 26px 1fr 34px 32px 22px 30px;gap:4px;padding:0 10px} .strow .badge{width:26px;height:26px} .strow .stn{font-size:15px} }
 </style>
 </head>
 <body>
@@ -442,8 +474,11 @@ body.dragmode .mc.dragging{transition:scale .14s}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.1.3';
+const APP_VERSION = '1.2.0';
+const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
+function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.2.0', 'Tighter matchup screen: rows about 20% shorter, bigger team logos, and a green score means that player is playing right now (projections are gray). Owner names under every team, “4 more rush yds”, “13 players left”, less empty space in the matchup header, and a DIV column (division record) in Standings.'],
   ['1.1.3', 'Player scores sit centered on the position square, with the projection underneath.'],
   ['1.1.2', 'Tab bar sits lower, closer to the bottom of the screen.'],
   ['1.1.1', 'Every game card shows each team\u2019s win % next to its name. Win % is less overconfident (calibrated against FantasyPros).'],
@@ -1036,7 +1071,7 @@ function card(mt, mine, LM){
   const wa = E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const done = left === 0 && (la && la.any);
   const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
-  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + '</b>' + chip(w) + '<small>' + esc(t ? t.record : '') + '</small></span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
+  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + '</b>' + chip(w) + '<small>' + esc(t ? t.record : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
     '<div class="mchead">' + (mine ? '<span class="tag">Your matchup</span><span class="tag">' + left + ' players left</span>' :
@@ -1077,7 +1112,7 @@ function hot(p, L){
   const n = nextTier(b.y, b.T);
   if(!n) return '<div class="mini"><div class="tb max"><i style="width:100%"></i></div><span>' + b.y + ' ' + b.k.toLowerCase() + ' yds · <em>MAX</em></span></div>';
   const pct = clamp((b.y - n.floor) / (n.at - n.floor) * 100, 4, 100);
-  return '<div class="mini"><div class="tb"><i style="width:' + pct.toFixed(1) + '%"></i></div><span>' + (n.at - b.y) + ' ' + b.k.toLowerCase() + ' yds → <em>+' + n.gain + '</em></span></div>';
+  return '<div class="mini"><div class="tb"><i style="width:' + pct.toFixed(1) + '%"></i></div><span>' + (n.at - b.y) + ' more ' + b.k.toLowerCase() + ' yds → <em>+' + n.gain + '</em></span></div>';
 }
 function side(p, L, r){
   if(!p || !L) return '<div class="pside' + (r ? ' r' : '') + '"></div>';
@@ -1085,7 +1120,7 @@ function side(p, L, r){
   const show = (st === 'pre' || st === 'bye' || L.pts == null) ? '–' : L.pts;
   const zero = !(L.pts > 0) ? ' zero' : '';
   const ep = (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null;
-  return '<div class="pside' + (r ? ' r' : '') + '">' +
+  return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + '">' +
     '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
     '<span class="pnm">' + esc(p.pos === 'DST' ? p.name : shortName(p.name)) + '<small>' + esc(p.nfl) + '</small></span>' +
     (L.evt ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
@@ -1139,14 +1174,14 @@ function matchView(){
   const la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
   const total = (la ? la.rows.filter(Boolean).length : 0) + (lb ? lb.rows.filter(Boolean).length : 0);
-  const status = left === 0 && total ? 'Final' : (left === total ? 'Not started' : 'Live · ' + left + ' left');
+  const status = left === 0 && total ? 'Final' : (left === total ? 'Not started' : 'Live · ' + left + ' players left');
   const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home, dw = isDivWeek(LM.model);
   const wa = E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null, note = engNote();
   const fl = function(t, r){ return '<span class="fplogo' + (r ? ' r' : '') + '">' + (t ? img(t.logo, t.code) : '') + '</span>'; };
   h += '<section class="hero' + (dw ? ' dw' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (a > b ? 'lead' : '') + '">' + a + '</b><b class="' + (b > a ? 'lead' : '') + '">' + b + '</b></div>' +
     (E && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
-    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + '</b><small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + esc(B ? B.name : 'Open') + '</b><small>' + esc(recLine(B)) + '</small></div></div>' +
+    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (E && B ? wpRow(wa, true) : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x){ return '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
@@ -1178,19 +1213,19 @@ function standingsView(){
   }
   d.forEach(function(div){
     const teams = (div.teams || []).slice().sort(function(a, b){ return num(a.order) - num(b.order); });
-    h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>GB</span><span>STRK</span></div>';
+    h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>DIV</span><span>GB</span><span>STRK</span></div>';
     teams.forEach(function(t, i){
       const id = String(t.id), me = id === S.team, open = S.stOpen === id;
       const T = { logo: t.logo, code: teamCode(id, t.name) };
       const wl = t.wins + '-' + t.losses + (num(t.ties) ? '-' + t.ties : '');
       const strk = String(t.streak || ''), sc = /^W/i.test(strk) ? 'w' : /^L/i.test(strk) ? 'l' : '';
       h += '<button class="strow' + (me ? ' me' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn">' + esc(trim(t.name)) + '</span><span class="stwl">' + esc(wl) + '</span><span class="stgb">' + (num(t.games_back) ? esc(t.games_back) : '—') + '</span><span class="stk ' + sc + '">' + esc(strk || '—') + '</span></button>';
+        '<span class="stn">' + esc(trim(t.name)) + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span><span class="stgb">' + (num(t.games_back) ? esc(t.games_back) : '—') + '</span><span class="stk ' + sc + '">' + esc(strk || '—') + '</span></button>';
       if(open) h += '<div class="stdet" data-key="std-' + esc(id) + '"><div><small>Points for</small><b>' + esc(t.points_scored) + '</b></div><div><small>Points against</small><b>' + esc(t.points_against) + '</b></div><div><small>Division</small><b>' + esc(t.division_wins + '-' + t.division_losses + (num(t.division_ties) ? '-' + t.division_ties : '')) + '</b></div></div>';
     });
     h += '</section>';
   });
-  h += '<p class="note">From CBS · updated ' + ago(S.stAt || (st && st._at)) + ' · tap a team for points and division record</p>';
+  h += '<p class="note">From CBS · updated ' + ago(S.stAt || (st && st._at)) + ' · DIV = record in division games · tap a team for points</p>';
   return h;
 }
 function chatView(){

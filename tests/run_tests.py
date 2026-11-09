@@ -178,7 +178,7 @@ with sync_playwright() as pw:
         ov = page.evaluate('document.documentElement.scrollWidth - window.innerWidth')
         check(f'[{tag}] no sideways scroll on matchup', ov <= 0, ov)
         if shots: page.screenshot(path=f'{SHOTS}/{tag}-05-matchup.png', full_page=True)
-        check(f'[{tag}] live tier bar on Gordon', '4 rush yds' in page.inner_text('.prow[data-row="1"]'), page.inner_text('.prow[data-row="1"]'))
+        check(f'[{tag}] live tier bar on Gordon', '4 more rush yds' in page.inner_text('.prow[data-row="1"]'), page.inner_text('.prow[data-row="1"]'))
 
         wa0 = page.evaluate("window.__fgt.ENG.res.m[Object.keys(window.__fgt.ENG.res.m).find(k => k.indexOf('5-11') >= 0)].wa")
         state.update({'lp': 'p2', 'gordon_td': True, 'gordon_rush': 90, 'det_mia': (13, 17)})
