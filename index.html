@@ -563,10 +563,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.3.3';
+const APP_VERSION = '1.3.4';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.3.4', 'Projections now refresh automatically every morning (plus Sunday before kickoffs and before Thursday and Monday night games). Win % spread checked against our league’s real Weeks 2–8 results.'],
   ['1.3.3', 'A small white arrow now points from “29 more yds” to the points it gets you. Projections sit beside the score so they never run into player names, and live game lines stay on one line (clock and score).'],
   ['1.3.2', 'Matchup rows: a thin line down the middle like FantasyPros, a square stats arrow centered under the position pill, and scores moved a little away from the pill. The bench now has its own color with a Bench header, so you always know you’re looking at the bench.'],
   ['1.3.1', 'Online strip shows full team names (Indianapolis = Indy). Owner names under every team in Standings. Fixed the chat typing cursor jumping around on iPhone. Pinch-zoom is off. Tap anywhere on an opened player’s stats to close them.'],
@@ -1954,7 +1955,7 @@ setInterval(function(){ checkUpdate('timer'); }, 300000);
 function engineWorker(){
   'use strict';
   const N = 20000;
-  const SPREAD_K = 1.35;   // temporary calibration vs FantasyPros (Nov 8, 2026); full calibration review pending
+  let SPREAD_K = 1.35;   // team-total spread; projections.json "spread_k" wins (set by model/calibrate.py: league Wks 2-8 backtest, Nov 9 2026)
   function widen(a){ let m = 0; for(let i = 0; i < a.length; i++) m += a[i]; m /= a.length; for(let i = 0; i < a.length; i++) a[i] = Math.round(m + SPREAD_K * (a[i] - m)); return a; }
   const SK = [[25,3],[50,6],[100,10],[150,12],[200,15]], PA = [[75,3],[150,5],[226,7],[300,10],[350,12],[400,15]];
   const TDP = { rush: [0.930, 0.959, 0.974, 1], rec: [0.893, 0.941, 0.963, 1], pass: [0.893, 0.941, 0.963, 1] };
@@ -2118,7 +2119,7 @@ function engineWorker(){
   }
   self.onmessage = function(e){
     const msg = e.data;
-    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; cache = {}; return; }
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35; cache = {}; return; }
     if(msg.type !== 'run') return;
     try{
       Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });

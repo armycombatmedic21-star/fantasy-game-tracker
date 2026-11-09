@@ -38,8 +38,8 @@ STALE_GAP = 2
 OUTLIER_PCT, OUTLIER_ABS = 0.40, 3.0
 WINDOW = {"WR": 5}
 FP_BLEND = 0.5
-# Team-total spread multiplier the app applies to win % (projections.json "spread_k"); set from the
-# league backtest in model/calibrate.py. The app falls back to its own value if this is missing.
+# Team-total spread multiplier the app applies to win % (projections.json "spread_k"). Nov 9 2026 league backtest
+# (model/calibrate.py, 42 matchups, Wks 2-8): 1.2-1.35 calibrated (1.35 -> 61% of totals in the 20-80% band).
 SPREAD_K = 1.35
 RNG = np.random.default_rng(7)
 FP_STATS = {"matched": 0}

@@ -31,6 +31,13 @@ def rho(a, b):
     return 0.0
 
 
+def fnum(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def team_code(t):
     t = (t or "").upper()
     return M.ALIAS.get(t, t)
@@ -141,12 +148,12 @@ def main():
         # player MAE: every rostered QB/RB/WR/TE with a projection and a game, actual = CBS official points
         for t in cbs["teams"]:
             for p in t["players"]:
-                if p["pos"] not in ("QB", "RB", "WR", "TE") or p.get("fpts") is None:
+                if p["pos"] not in ("QB", "RB", "WR", "TE") or fnum(p.get("fpts")) is None:
                     continue
                 r = variants["ours"].find(p["name"], p["pos"], p["nfl"])
                 if not r or not r.get("c") or r.get("pp", 1) == 0:
                     continue
-                y = float(p["fpts"])
+                y = fnum(p["fpts"])
                 pos = p["pos"]
                 pmae["ours"].append(abs(r["m"] - y))
                 d = pbypos.setdefault(pos, {"ours": [], "fp": [], "blend": []})
@@ -177,13 +184,13 @@ def main():
                         if not r:
                             miss += 1
                         mem.append({"pos": p["pos"], "nfl": team_code(p["nfl"]), "wr1": bool(r and r.get("wr1")),
-                                    "arr": sims_for(r, p["pos"], hash((w, T["id"], i, vname)) & 0xffffffff), "y": float(p.get("fpts") or 0)})
+                                    "arr": sims_for(r, p["pos"], hash((w, T["id"], i, vname)) & 0xffffffff), "y": fnum(p.get("fpts")) or 0.0})
                     bench = np.zeros(N)
                     for i, p in enumerate(bn):
                         r = P.find(p["name"], p["pos"], p["nfl"])
                         bench += sims_for(r, p["pos"], hash((w, T["id"], "b", i, vname)) & 0xffffffff)
-                    sides[side] = {"mem": mem, "bench": bench, "miss": miss, "actual": float(T.get("pts") or sum(m["y"] for m in mem)),
-                                   "bench_actual": sum(float(p.get("fpts") or 0) for p in bn), "name": T["name"]}
+                    sides[side] = {"mem": mem, "bench": bench, "miss": miss, "actual": fnum(T.get("pts")) if fnum(T.get("pts")) is not None else sum(m["y"] for m in mem),
+                                   "bench_actual": sum(fnum(p.get("fpts")) or 0.0 for p in bn), "name": T["name"]}
                 correlate(sides["A"]["mem"] + sides["B"]["mem"], hash((w, t["id"], vname)) & 0xffffffff)
                 for side in "AB":
                     tot = np.zeros(N)

@@ -5,7 +5,6 @@ on:
   push:
     branches: [main]
     paths: [calib-request.txt]
-  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -18,8 +17,6 @@ jobs:
         with:
           python-version: "3.13"
       - run: python model/calib_fetch.py
-        env:
-          SAVE_HTML: only
       - name: Push results to the calib-data branch
         if: always()
         run: |
