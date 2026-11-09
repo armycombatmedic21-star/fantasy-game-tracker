@@ -38,7 +38,11 @@ STALE_GAP = 2
 OUTLIER_PCT, OUTLIER_ABS = 0.40, 3.0
 WINDOW = {"WR": 5}
 FP_BLEND = 0.5
+# Team-total spread multiplier the app applies to win % (projections.json "spread_k"); set from the
+# league backtest in model/calibrate.py. The app falls back to its own value if this is missing.
+SPREAD_K = 1.35
 RNG = np.random.default_rng(7)
+FP_STATS = {"matched": 0}
 
 
 def norm_name(n):
@@ -255,11 +259,23 @@ def build(week, fp_file=None, ov_file=None):
     def_rates = {r["opponent_team"]: (r["sk"], r["int"]) for r in g.group_by("opponent_team").agg(pl.col("sk").mean(), pl.col("int").mean()).iter_rows(named=True)}
     off_rates = {r["team"]: (r["sk"], r["int"]) for r in g.group_by("team").agg(pl.col("sk").mean(), pl.col("int").mean()).iter_rows(named=True)}
 
-    fp = {}
+    # FantasyPros raw stats -> league points. Matched by name + team (+ position); name alone only when unique.
+    fp, fp_by_name = {}, {}
     if fp_file:
         fj = json.load(open(fp_file))
         for p in fj.get("players", []):
-            fp[norm_name(p["name"])] = fp_to_league(p["pos"], *(p.get(k, 0) or 0 for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd")))
+            v = fp_to_league(p["pos"], *(p.get(k, 0) or 0 for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd")))
+            nn, tm_ = norm_name(p["name"]), ALIAS.get((p.get("team") or "").upper(), (p.get("team") or "").upper())
+            fp[(nn, tm_, p["pos"])] = v
+            fp_by_name.setdefault((nn, p["pos"]), []).append(v)
+    FP_STATS["matched"] = 0
+
+    def fp_lookup(name, tm_, pos_):
+        nn = norm_name(name)
+        if (nn, tm_, pos_) in fp:
+            return fp[(nn, tm_, pos_)]
+        same = fp_by_name.get((nn, pos_), [])
+        return same[0] if len(same) == 1 else None
     ovr = {}
     if ov_file:
         for o in json.load(open(ov_file)):
@@ -411,7 +427,9 @@ def build(week, fp_file=None, ov_file=None):
         if wx.get(tm):
             basis += f"; WEATHER: {wx[tm]}"
         scale = 1.0
-        fpp = fp.get(norm_name(p["name"]))
+        fpp = fp_lookup(p["name"], tm, pos) if fp else None
+        if fpp is not None:
+            FP_STATS["matched"] += 1
         if fpp is not None and FP_BLEND > 0 and sim.mean() > 0:
             target = (1 - FP_BLEND) * sim.mean() + FP_BLEND * fpp * prob
             scale = target / sim.mean()
@@ -456,6 +474,7 @@ def build(week, fp_file=None, ov_file=None):
         "season": SEASON, "week": week, "model": "Drop 1 Appendix A (Nov 6 2026) port",
         "generated": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "fp_blended": bool(fp), "fp_source": (json.load(open(fp_file)).get("source", "") if fp_file else ""),
+        "fp_matched": FP_STATS["matched"], "spread_k": SPREAD_K,
         "lg_ppg": round(lg_ppg, 2), "byes": byes,
         "players": out + dst,
     }

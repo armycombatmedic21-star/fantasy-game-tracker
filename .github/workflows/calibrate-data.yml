@@ -1,0 +1,33 @@
+# One-time: pull past CBS lineups + FantasyPros projections for the win % backtest.
+# Results go to a temporary branch "calib-data" (deleted after the backtest). Runs when calib-request.txt changes.
+name: Calibration data (one-time)
+on:
+  push:
+    branches: [main]
+    paths: [calib-request.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python model/calib_fetch.py
+      - name: Push results to the calib-data branch
+        if: always()
+        run: |
+          mkdir -p /tmp/out && cp -r calib-out/. /tmp/out/ 2>/dev/null || true
+          git config user.name "fgt-bot"
+          git config user.email "fgt-bot@users.noreply.github.com"
+          git checkout --orphan calib-data
+          git rm -rf --cached . >/dev/null
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r /tmp/out/. .
+          git add -A
+          git commit -m "calibration data $(date -u +%FT%TZ)"
+          git push -f origin calib-data

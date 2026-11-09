@@ -1,0 +1,54 @@
+# Automated projections: FantasyPros consensus raw stats + our model (50/50 blend) -> projections.json.
+# Runs on GitHub's servers: no Claude usage, no laptop. Times are UTC (Eastern Standard Time + 5 h).
+name: Projections
+on:
+  schedule:
+    - cron: "0 13 * * *"      # every day 8:00 AM ET
+    - cron: "0 16 * * 0"      # Sunday 11:00 AM ET (after most injury news, before 1 PM kickoffs)
+    - cron: "30 17 * * 0"     # Sunday 12:30 PM ET (1 PM inactives are out)
+    - cron: "30 23 * * 1,4"   # Monday + Thursday 6:30 PM ET (before the night games)
+  push:
+    branches: [main]
+    paths: [model/fgt_model.py, model/fetch_fp.py, model/run_projections.py, .github/workflows/projections.yml, run-now.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: projections
+  cancel-in-progress: false
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: model/requirements.txt
+      - run: pip install -r model/requirements.txt
+      # last good FantasyPros pull per week (private to Actions; reused if FantasyPros is briefly unreachable)
+      - uses: actions/cache/restore@v4
+        with:
+          path: fp-cache
+          key: fp-${{ github.run_id }}
+          restore-keys: fp-
+      - name: Run model
+        id: run
+        run: python model/run_projections.py
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: fp-cache
+          key: fp-${{ github.run_id }}
+      - name: Save projections
+        if: always()
+        run: |
+          git config user.name "fgt-bot"
+          git config user.email "fgt-bot@users.noreply.github.com"
+          git add projections.json projections-status.json
+          if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
+          WK=$(python -c "import json;s=json.load(open('projections-status.json'));print(s.get('week','?'), 'FP-blended' if s.get('fp_blended') else 'unblended', 'OK' if s.get('ok') else 'FAILED')")
+          git commit -m "projections: week $WK"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin HEAD:main && break; sleep 5; done
