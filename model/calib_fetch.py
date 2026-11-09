@@ -35,6 +35,12 @@ def compact(body):
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    if os.environ.get("SAVE_HTML"):   # debugging: keep one raw page to see how the full table is delivered
+        for pos in ("rb",):
+            open(f"{OUT}/raw-{pos}.html", "w").write(fetch_fp.get(f"https://www.fantasypros.com/nfl/projections/{pos}.php?week=9"))
+            open(f"{OUT}/raw-{pos}-std.html", "w").write(fetch_fp.get(f"https://www.fantasypros.com/nfl/projections/{pos}.php?week=9&scoring=STD&max-yes=true"))
+        if os.environ.get("SAVE_HTML") == "only":
+            sys.exit(0)
     summary = {"cbs": {}, "fp": {}}
     for w in WEEKS:
         try:
