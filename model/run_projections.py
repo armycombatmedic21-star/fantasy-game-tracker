@@ -68,7 +68,8 @@ def main():
         json.dump(res, open(tmp, "w"), separators=(",", ":"))
         shutil.move(tmp, OUT)
         st.update({"ok": True, "fp_blended": res["fp_blended"], "fp_matched": res.get("fp_matched", 0),
-                   "players": len(pl_), "spread_k": res.get("spread_k")})
+                   "players": len(pl_), "spread_k": res.get("spread_k"), "spread_rho": res.get("spread_rho"),
+                   "no_games_yet": sum(1 for p in pl_ if any("NO 2026 GAMES" in f for f in p.get("f", [])))})
         return st, 0
     except Exception as e:
         st["error"] = f"{type(e).__name__}: {e}"[:500]

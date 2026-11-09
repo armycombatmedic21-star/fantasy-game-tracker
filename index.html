@@ -564,10 +564,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.3.5';
+const APP_VERSION = '1.3.6';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Weston Sutherland & Richard LaPointe', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.3.6', 'More accurate win % late in the week: when only a player or two is left, the app now uses that position’s real range instead of a whole-team stretch (it overstated a lone kicker’s chances), and exact ties count again. Players back from injury or newly signed (no games yet this season) now get a projection instead of 0.'],
   ['1.3.5', 'Projections now blend our model 50/50 with FantasyPros consensus for every player (official FantasyPros API), refreshed automatically.'],
   ['1.3.4', 'Projections now refresh automatically every morning (plus Sunday before kickoffs and before Thursday and Monday night games). Win % spread checked against our league’s real Weeks 2–8 results.'],
   ['1.3.3', 'A small white arrow now points from “29 more yds” to the points it gets you. Projections sit beside the score so they never run into player names, and live game lines stay on one line (clock and score).'],
@@ -1958,8 +1959,28 @@ setInterval(function(){ checkUpdate('timer'); }, 300000);
 function engineWorker(){
   'use strict';
   const N = 20000;
-  let SPREAD_K = 1.35;   // team-total spread; projections.json "spread_k" wins (set by model/calibrate.py: league Wks 2-8 backtest, Nov 9 2026)
-  function widen(a){ let m = 0; for(let i = 0; i < a.length; i++) m += a[i]; m /= a.length; for(let i = 0; i < a.length; i++) a[i] = Math.round(m + SPREAD_K * (a[i] - m)); return a; }
+  // v1.3.6 range width (projections.json spread_pos / spread_rho win; model/calibrate_live.py, league Wks 2-9, Nov 9 2026):
+  // each player still to play is widened by his position's measured factor, plus a small same-week correlation that only
+  // counts while several players are left. Players already final add nothing. So a full team before kickoff is ~1.3x,
+  // and one kicker left on Monday night gets the kicker range only (v1.3.5 stretched him 1.35x: Dallas-NE Wk 9 showed 18%, real kicker games say ~14-15%).
+  // Dithered rounding keeps exact ties possible (plain rounding after stretching skipped some scores).
+  const SPOS0 = { QB: 1.10, RB: 1.15, WR: 1.13, TE: 1.12, K: 1.18, DST: 1.08 };
+  let SPOS = Object.assign({}, SPOS0), SRHO = 0.06;
+  let SPREAD_K = 1.35;   // future weeks (playoff odds) only; projections.json "spread_k" wins
+  function varOf(a){ let m = 0; for(let i = 0; i < a.length; i++) m += a[i]; m /= a.length; let v = 0; for(let i = 0; i < a.length; i++){ const d = a[i] - m; v += d * d; } return v / a.length; }
+  function stretch(tot, parts, R){
+    const n = tot.length; let mu = 0, lo = Infinity;
+    for(let i = 0; i < n; i++){ mu += tot[i]; if(tot[i] < lo) lo = tot[i]; }
+    mu /= n;
+    let vs = 0; for(let i = 0; i < n; i++){ const d = tot[i] - mu; vs += d * d; }
+    vs /= n;
+    if(vs <= 1e-9) return tot;
+    let a = 0, b = 0, c = 0;
+    parts.forEach(function(p){ if(!(p.v > 0)) return; const k = SPOS[p.pos] || 1.1; a += (k * k - 1) * p.v; b += k * Math.sqrt(p.v); c += k * k * p.v; });
+    const K = Math.sqrt(Math.max(vs + a + SRHO * (b * b - c), vs) / vs);
+    for(let i = 0; i < n; i++){ const x = Math.floor(mu + K * (tot[i] - mu) + R.u()); tot[i] = x < lo ? lo : x; }
+    return tot;
+  }
   const SK = [[25,3],[50,6],[100,10],[150,12],[200,15]], PA = [[75,3],[150,5],[226,7],[300,10],[350,12],[400,15]];
   const TDP = { rush: [0.930, 0.959, 0.974, 1], rec: [0.893, 0.941, 0.963, 1], pass: [0.893, 0.941, 0.963, 1] };
   const TDV = [6, 8, 10, 12];
@@ -2057,10 +2078,11 @@ function engineWorker(){
     });
   }
   function teamArrays(T, live, seed){
-    const st = T.starters.map(function(q){ return { pid: q.pid, pos: q.pos, nfl: q.nfl, wr1: q.wr1, arr: simPlayer(live ? q : Object.assign({}, q, { mode: q.mode === 'none' ? 'none' : 'pre' })) }; });
-    const bn = new Float32Array(N);
-    T.bench.forEach(function(q){ const a = simPlayer(live ? q : Object.assign({}, q, { mode: 'pre' })); for(let i = 0; i < N; i++) bn[i] += a[i]; });
-    return { st: st, bench: bn };
+    const st = T.starters.map(function(q){ const a = simPlayer(live ? q : Object.assign({}, q, { mode: q.mode === 'none' ? 'none' : 'pre' }));
+      return { pid: q.pid, pos: q.pos, nfl: q.nfl, wr1: q.wr1, arr: a, v: varOf(a) }; });
+    const bn = new Float32Array(N), bp = [];
+    T.bench.forEach(function(q){ const a = simPlayer(live ? q : Object.assign({}, q, { mode: 'pre' })); for(let i = 0; i < N; i++) bn[i] += a[i]; bp.push({ pos: q.pos, v: varOf(a) }); });
+    return { st: st, bench: bn, bp: bp };
   }
   function mean(a){ let s = 0; for(let i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
   function pct(a, p){ const s = Float32Array.from(a).sort(); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; }
@@ -2072,7 +2094,8 @@ function engineWorker(){
       const ta = new Float32Array(N), tb = new Float32Array(N);
       A.st.forEach(function(m){ for(let i = 0; i < N; i++) ta[i] += m.arr[i]; if(live) res.p[m.pid] = [mean(m.arr), pct(m.arr, 0.2), pct(m.arr, 0.8)]; });
       if(B) B.st.forEach(function(m){ for(let i = 0; i < N; i++) tb[i] += m.arr[i]; if(live) res.p[m.pid] = [mean(m.arr), pct(m.arr, 0.2), pct(m.arr, 0.8)]; });
-      widen(ta); widen(tb); widen(A.bench); if(B) widen(B.bench);
+      const RS = RNG('stretch|' + msg.week + '|' + mt.key + (live ? '|L' : '|P'));
+      stretch(ta, A.st, RS); if(B){ stretch(tb, B.st, RS); } stretch(A.bench, A.bp, RS); if(B) stretch(B.bench, B.bp, RS);
       const wa = new Uint8Array(N); let w = 0;
       for(let i = 0; i < N; i++){ let x = ta[i] > tb[i] ? 1 : ta[i] < tb[i] ? 0 : (A.bench[i] > (B ? B.bench[i] : 0) ? 1 : A.bench[i] < (B ? B.bench[i] : 0) ? 0 : 0.5); if(x === 0.5) x = (i & 1); wa[i] = x; w += x; }
       res.m[mt.key] = { wa: w / N, pa: mean(ta), pb: B ? mean(tb) : 0 };
@@ -2122,7 +2145,9 @@ function engineWorker(){
   }
   self.onmessage = function(e){
     const msg = e.data;
-    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35; cache = {}; return; }
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
+      const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
+      const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
     if(msg.type !== 'run') return;
     try{
       Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });

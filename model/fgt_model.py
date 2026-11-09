@@ -38,11 +38,16 @@ STALE_GAP = 2
 OUTLIER_PCT, OUTLIER_ABS = 0.40, 3.0
 WINDOW = {"WR": 5}
 FP_BLEND = 0.5
-# Team-total spread multiplier the app applies to win % (projections.json "spread_k"). Nov 9 2026 league backtest
-# (model/calibrate.py, 42 matchups, Wks 2-8): 1.2-1.35 calibrated (1.35 -> 61% of totals in the 20-80% band).
+# How much wider than the raw simulation the app makes each range (v1.3.6, Nov 9 2026 league backtest, Wks 2-9):
+# SPREAD_POS: each still-to-play player's own range, by position (1,287 rostered player-games vs CBS official points).
+# SPREAD_RHO: small same-week correlation; only matters while several players are left (full team ~1.3x, 1 player = his own).
+# SPREAD_K: future weeks (playoff odds) only. Checked with model/calibrate.py (pregame) and model/calibrate_live.py (live).
+SPREAD_POS = {"QB": 1.10, "RB": 1.15, "WR": 1.13, "TE": 1.12, "K": 1.18, "DST": 1.08}
+SPREAD_RHO = 0.06
 SPREAD_K = 1.35
 RNG = np.random.default_rng(7)
 FP_STATS = {"matched": 0}
+FP_RAW = {}   # (name, team, pos) -> FantasyPros raw stats, for rookies with no NFL games yet
 
 
 def norm_name(n):
@@ -245,6 +250,103 @@ def target_week(sched):
     return int(open_["week"].min()) if open_.height else int(reg["week"].max())
 
 
+# ---------- players with no game yet this season (back from injury, new signing, late-season rookie) ----------
+# Without this they had no projection at all and the app counted them as 0 (Josh Jacobs Wk 7, McManus Wk 7,
+# Grupe Wk 6 in our league). Source: last season's per-game averages, with this week's Vegas total and matchup;
+# rookies with no NFL games use FantasyPros' raw stats when FantasyPros has them. Only players on an NFL roster
+# as active (nflverse weekly rosters) are added.
+DEPTH_MAX = {"QB": 1, "RB": 2, "WR": 3, "TE": 2, "K": 1}   # deepest depth-chart spot that still gets a projection
+
+
+def no_games_yet(week, first_day, have_keys, have_pids, implied, opp_of, playing, inj, ppg, lg_ppg, dratio, fp_lookup):
+    try:
+        ro = nfl.load_rosters_weekly([SEASON]).filter((pl.col("week") <= week) & pl.col("position").is_in(["QB", "RB", "WR", "TE", "K", "FB"]))
+        ro = ro.sort("week").group_by("gsis_id").agg(pl.col("full_name").last(), pl.col("team").last(), pl.col("position").last(),
+                                                     pl.col("status").last(), pl.col("week").max().alias("rw"))
+        prev = nfl.load_player_stats([SEASON - 1]).filter(pl.col("season_type") == "REG")
+    except Exception:
+        return []
+    # depth chart as of the week's first game (latest snapshot per team): backups who haven't played stay out
+    rank = {}
+    try:
+        dc = nfl.load_depth_charts([SEASON]).filter(pl.col("pos_abb").is_in(["QB", "RB", "WR", "TE", "PK"]) & (pl.col("dt").str.slice(0, 10) <= first_day))
+        last = dc.group_by("team").agg(pl.col("dt").max().alias("mx"))
+        dc = dc.join(last, on="team").filter(pl.col("dt") == pl.col("mx"))
+        for r in dc.iter_rows(named=True):
+            if r["gsis_id"]:
+                rank[r["gsis_id"]] = min(rank.get(r["gsis_id"], 99), r["pos_rank"] or 99)
+    except Exception:
+        rank = None
+    num = ["carries", "rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds", "passing_yards", "passing_tds", "passing_interceptions"]
+    prev = prev.with_columns([pl.col(c).fill_null(0) for c in num])
+    out = []
+    for r in ro.iter_rows(named=True):
+        pid, name = r["gsis_id"], r["full_name"] or ""
+        tm, pos = ALIAS.get(r["team"], r["team"]), ("RB" if r["position"] == "FB" else r["position"])
+        if not pid or not name or r["status"] != "ACT" or pid in have_pids or (norm_name(name) + "|" + tm) in have_keys:
+            continue
+        if rank is not None and rank.get(pid, 99) > DEPTH_MAX.get(pos, 1) and not (pos == "K" and pid not in rank):
+            continue
+        me = prev.filter(pl.col("player_id") == pid)
+        fpp = fp_lookup(name, tm, pos) if fp_lookup else None
+        if me.height == 0 and fpp is None:
+            continue
+        status = inj.get(pid)
+        prob = {"Out": 0.0, "Doubtful": 0.25, "Questionable": 0.75}.get(status[0], 1.0) if status else 1.0
+        rec = {"k": norm_name(name) + "|" + tm, "n": name, "t": tm, "p": pos, "o": opp_of.get(tm), "pp": round(prob, 2)}
+        if status:
+            rec.update({"inj": status[0] or "", "pr": status[1] or "", "ij": status[2] or ""})
+        imp, opp = implied.get(tm), opp_of.get(tm)
+        flags = ["NO 2026 GAMES YET: based on %s" % ("last season" if me.height else "FantasyPros only")]
+
+        def comps_for(imp_, opp_):
+            env = shrink((imp_ / ppg.get(tm, imp_)) if imp_ else 1.0, ENV_K)
+            m = shrink(dratio.get((opp_, pos), 1.0), DEF_K) if opp_ else 1.0
+            if pos == "K":
+                hist = k_pts_rows(me)
+                vegas = (imp_ or lg_ppg) * 0.36
+                return {"km": round(0.5 * vegas + 0.5 * float(np.mean(hist)) if len(hist) >= 3 else vegas, 3)}
+            if me.height:
+                g = lambda c: float(me[c].mean())
+                py, pt, it, qry, qrt = g("passing_yards"), g("passing_tds"), g("passing_interceptions"), g("rushing_yards"), g("rushing_tds")
+                ry, rt, cy, ct = g("rushing_yards"), g("rushing_tds"), g("receiving_yards"), g("receiving_tds")
+            else:   # rookie with no NFL games: FantasyPros raw stats (already this week's matchup)
+                st = fpp_raw
+                py, pt, it, qry, qrt = st["pyd"], st["ptd"], st["ints"], st["ryd"], st["rtd"]
+                ry, rt, cy, ct = st["ryd"], st["rtd"], st["cyd"], st["ctd"]
+                env, m = 1.0, 1.0
+            if pos == "QB":
+                pm = py * env * m
+                return {"py": round(pm, 2), "ps": round(0.28 * pm + 20, 2), "pt": round(pt * env * m, 4), "it": round(it, 4),
+                        "ry": round(QB_RY[0] + QB_RY[1] * qry, 2), "rt": round(qrt, 4)}
+            cv_r, cv_c = CV.get(pos, CV["WR"])
+            return {"ry": round(ry * env * m, 2), "rv": cv_r, "cy": round(cy * env * m, 2), "cv": cv_c,
+                    "rt": round(rt * env * m, 4), "ct": round(ct * env * m, 4)}
+        fpp_raw = FP_RAW.get((norm_name(name), tm, pos)) if me.height == 0 else None
+        if me.height == 0 and pos == "K":
+            continue
+        if me.height == 0 and not fpp_raw:
+            continue
+        nc = comps_for(ppg.get(tm, lg_ppg), None)
+        nsim = np.round(sim_comp(RNG, pos, nc, 1.0, N))
+        rec["nm"], rec["ns"] = round(float(nsim.mean()), 2), round(float(nsim.std()), 2)
+        if tm not in playing or imp is None:
+            rec.update({"bye": tm not in playing, "m": 0, "lo": 0, "hi": 0, "c": [], "f": flags + ["NO GAME / LINE"]})
+            out.append(rec); continue
+        c = comps_for(imp, opp)
+        c["w"] = 1
+        sim = np.round(sim_player(RNG, pos, [c], prob))
+        basis = ("last season per-game averages" if me.height else "FantasyPros raw stats") + f" (no 2026 games yet); vs {opp}"
+        scale = 1.0
+        if fpp is not None and me.height and FP_BLEND > 0 and sim.mean() > 0:
+            FP_STATS["matched"] += 1
+            scale = ((1 - FP_BLEND) * sim.mean() + FP_BLEND * fpp * prob) / sim.mean()
+            basis += f"; FantasyPros blended {FP_BLEND:.0%}"
+        rec.update(summ(sim, [c], scale, basis, flags))
+        out.append(rec)
+    return out
+
+
 # ---------- the model ----------
 def build(week, fp_file=None, ov_file=None):
     sched = nfl.load_schedules([SEASON])
@@ -261,12 +363,14 @@ def build(week, fp_file=None, ov_file=None):
 
     # FantasyPros raw stats -> league points. Matched by name + team (+ position); name alone only when unique.
     fp, fp_by_name = {}, {}
+    FP_RAW.clear()
     if fp_file:
         fj = json.load(open(fp_file))
         for p in fj.get("players", []):
             v = fp_to_league(p["pos"], *(p.get(k, 0) or 0 for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd")))
             nn, tm_ = norm_name(p["name"]), ALIAS.get((p.get("team") or "").upper(), (p.get("team") or "").upper())
             fp[(nn, tm_, p["pos"])] = v
+            FP_RAW[(nn, tm_, p["pos"])] = {k: float(p.get(k, 0) or 0) for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd")}
             fp_by_name.setdefault((nn, p["pos"]), []).append(v)
     FP_STATS["matched"] = 0
 
@@ -437,6 +541,9 @@ def build(week, fp_file=None, ov_file=None):
         rec.update(summ(sim, comps, scale, basis, flags))
         out.append(rec)
 
+    first_day = sched.filter((pl.col("week") == week) & (pl.col("game_type") == "REG"))["gameday"].min() or "9999-12-31"
+    out += no_games_yet(week, first_day, {r["k"] for r in out}, {p["pid"] for p in players}, implied, opp_of, playing, inj, ppg, lg_ppg, dratio, fp_lookup if fp else None)
+
     for tm, (k, _) in wr1.items():
         for r in out:
             if r["k"] == k:
@@ -474,7 +581,7 @@ def build(week, fp_file=None, ov_file=None):
         "season": SEASON, "week": week, "model": "Drop 1 Appendix A (Nov 6 2026) port",
         "generated": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "fp_blended": bool(fp), "fp_source": (json.load(open(fp_file)).get("source", "") if fp_file else ""),
-        "fp_matched": FP_STATS["matched"], "spread_k": SPREAD_K,
+        "fp_matched": FP_STATS["matched"], "spread_k": SPREAD_K, "spread_pos": SPREAD_POS, "spread_rho": SPREAD_RHO,
         "lg_ppg": round(lg_ppg, 2), "byes": byes,
         "players": out + dst,
     }

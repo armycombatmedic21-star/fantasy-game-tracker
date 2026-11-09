@@ -10,6 +10,8 @@ Reports:
   - team totals: bias, how often the actual total lands inside the 20-80% range, CRPS for each spread multiplier K
   - matchups: Brier score / log loss of the pregame win % for each K, and a calibration table
 Usage: python3 model/calibrate.py DATA_DIR [--weeks 4,5,6,7,8,9] [--k-grid 0.9,1.0,...]
+Note (v1.3.6): the app no longer stretches the whole team by one K; it uses per-position factors plus a small
+correlation term (fgt_model.SPREAD_POS / SPREAD_RHO). model/calibrate_live.py tests that, before kickoff and live.
 """
 import argparse, glob, json, math, os, sys
 import numpy as np
