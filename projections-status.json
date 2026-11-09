@@ -1,0 +1,116 @@
+{
+ "at": "2026-11-09T15:07:55+00:00",
+ "ok": true,
+ "runner": "github-actions",
+ "week": 9,
+ "fp_fetch": {
+  "code": 0,
+  "info": {
+   "qb": {
+    "page_week": 9,
+    "rows": 10,
+    "keys": [
+     "_filterGame",
+     "fpts",
+     "fumbles",
+     "id",
+     "pass_att",
+     "pass_cmp",
+     "pass_ints",
+     "pass_tds",
+     "pass_yds",
+     "player",
+     "rush_att",
+     "rush_tds",
+     "rush_yds"
+    ]
+   },
+   "rb": {
+    "page_week": 9,
+    "rows": 10,
+    "keys": [
+     "_filterGame",
+     "fpts",
+     "fumbles",
+     "id",
+     "player",
+     "rec_att",
+     "rec_tds",
+     "rec_yds",
+     "rush_att",
+     "rush_tds",
+     "rush_yds"
+    ]
+   },
+   "wr": {
+    "page_week": 9,
+    "rows": 10,
+    "keys": [
+     "_filterGame",
+     "fpts",
+     "fumbles",
+     "id",
+     "player",
+     "rec_att",
+     "rec_tds",
+     "rec_yds",
+     "rush_att",
+     "rush_tds",
+     "rush_yds"
+    ]
+   },
+   "te": {
+    "page_week": 9,
+    "rows": 10,
+    "keys": [
+     "_filterGame",
+     "fpts",
+     "fumbles",
+     "id",
+     "player",
+     "rec_att",
+     "rec_tds",
+     "rec_yds"
+    ]
+   }
+  }
+ },
+ "fp": "fresh",
+ "checks": {
+  "players": 616,
+  "week_ok": true,
+  "outliers": []
+ },
+ "fp_unmatched_5plus": [
+  "KC Concepcion CLE",
+  "Dameon Pierce PHI",
+  "Malik Willis MIA",
+  "Makai Lemon PHI",
+  "Jaxson Dart NYG",
+  "Bhayshul Tuten JAX",
+  "Zach Charbonnet SEA",
+  "Drew Lock SEA",
+  "Jordan Love GB",
+  "Tyrod Taylor GB",
+  "Greg Dulcich MIA",
+  "Pierre Strong GB",
+  "Tyler Allgeier ARI",
+  "Stetson Bennett LA",
+  "De'Von Achane MIA",
+  "Zay Flowers BAL",
+  "Bryce Young CAR",
+  "Rachaad White WAS",
+  "Michael Penix Jr. ATL",
+  "Travis Etienne NO",
+  "Matthew Golden GB",
+  "Jalen Coker CAR",
+  "Jack Strand ATL",
+  "Mac Jones SF",
+  "Ollie Gordon II MIA"
+ ],
+ "fp_unmatched_5plus_count": 113,
+ "fp_blended": true,
+ "fp_matched": 40,
+ "players": 616,
+ "spread_k": 1.35
+}
