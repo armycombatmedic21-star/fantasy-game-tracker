@@ -216,12 +216,12 @@ with sync_playwright() as pw:
         page.click('.strow.me')
         page.wait_for_timeout(250)
         det = page.inner_text('.stdet').lower() if page.locator('.stdet').count() else ''
-        check(f'[{tag}] tap a team: Points Scored / Points Against', 'points scored' in det and 'points against' in det and 'differential' in det, det)
+        check(f'[{tag}] tap a team: Scored / Against / Differential', 'scored' in det and 'against' in det and 'differential' in det, det)
         check(f'[{tag}] every team has an arrow', page.locator('.strow .stchev').count() == 12)
         check(f'[{tag}] PLAYOFF % for every team', page.locator('.strow .stpo').count() == 12 and page.locator('.strow .stpo.na').count() == 0)
         check(f'[{tag}] MOVE column for every team (GB gone)', page.locator('.strow .stmv').count() == 12 and 'MOVE' in page.inner_text('.sthead') and 'GB' not in page.inner_text('.sthead'))
         # live: CBS 611 + Dallas's 63 so far this week (fixture), records unchanged until the week is final
-        check(f'[{tag}] Avg. per game, no +this week', '76.4 avg. per game' in det and 'this week' not in det, det)
+        check(f'[{tag}] Avg., no +this week', '76.4 avg.' in det and 'this week' not in det, det)
         check(f'[{tag}] record unchanged while games are on', '3-5' in page.inner_text('.strow.me'))
         page.locator('.strow').nth(0).click(); page.wait_for_timeout(200)
         check(f'[{tag}] open several teams at once', page.locator('.stdet').count() == 2)

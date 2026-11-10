@@ -609,6 +609,31 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .sthead,.strow{grid-template-columns:16px 29px minmax(0,1fr) 34px 32px 32px 48px}
 .sthead .poh{justify-self:center}
 @media (max-width:380px){ .sthead,.strow{grid-template-columns:13px 26px minmax(0,1fr) 31px 29px 29px 46px} }
+
+/* v1.4.2 (Wes tuner Nov 9): open row background 70%, outline 100%, no glows; earned yards points "+7" green; next-tier "+3" plain white */
+.plist .prow[aria-expanded="true"],.plist .detail{background:#0f1a30}
+.prow[aria-expanded="true"] .chev,.benchlist .prow[aria-expanded="true"] .chev{background:#0f1a30}
+.pv.total{box-shadow:none}
+.pv.earn{color:#3ddc84}
+.pv.zero{color:var(--faint)}
+.gain:not(.max){background:none;border:0;box-shadow:none;padding:0;color:#fff;font-size:12px}
+.mini span em{color:#fff}
+
+/* v1.4.2 standings: open team + numbers = one card (matchup look, bg 70%); Option C tiles; bigger white ranks */
+.strow[aria-expanded="true"]{background:#0f1a30;border:1.5px solid rgba(79,141,255,.6);border-bottom:0;border-radius:14px 14px 0 0;width:calc(100% - 12px);margin:8px 6px 0;padding-left:7px;padding-right:7px}
+.stdet{background:#0f1a30;border:1.5px solid rgba(79,141,255,.6);border-top:1px solid rgba(147,174,200,.16);border-radius:0 0 14px 14px;margin:0 6px 8px;padding:0;display:block}
+.stdet + .strow{border-top:0}
+.strow[aria-expanded="true"] .stchev{color:#fff}
+.stdet .stc{display:grid;grid-template-columns:1fr 1fr 1fr}
+.stdet .stt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 8px;text-align:center;min-width:0}
+.stdet .stt+.stt{border-left:1px solid rgba(147,174,200,.14)}
+.stdet .stt small{font-size:9.5px;font-weight:800;letter-spacing:1.2px;color:var(--faint);text-transform:uppercase}
+.stdet .stt b{font-size:21px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1.15}
+.stdet .stt em{font-style:normal;font-size:11px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.stdet .stt.pos b{color:#3ddc84} .stdet .stt.neg b{color:#ff5c6c}
+.strow .rk{font-size:14px;color:#fff}
+.strow.out5 .rk{color:#e0707c}
+.strow.me .rk{color:var(--acc)}
 </style>
 </head>
 <body>
@@ -665,10 +690,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.4.2';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.2', 'Cleaner look: an open player or team is one card with a softer blue background, no glows. Earned yards points show as green “+7”, and the next milestone “+3” is plain white. Standings drop-down shows Scored, Against and Differential side by side. Ranks are bigger and white; 6th place (outside the playoff spots) is red.'],
   ['1.4.1', 'Standings cleanup: a small drop-down arrow centered at the bottom of each team (tap anywhere on a team to open or close it), the streak column is gone so names get more room, the drop-down shows Avg. per game, and playoff odds read 100% (green) when a team is in and 0% (red) when it’s out. Dallas owners now show as Rick L. & Wes S.'],
   ['1.4.0', 'Standings update themselves: Points Scored and Points Against go up live during games, and records, division records, games back and streaks update the moment the whole week is final (after Monday night, overtime included) — no waiting for CBS. A badge and a “Records updated” banner tell you when. New MOVE column: green or red arrows show how many spots each team moved in its division since last week. New PLAYOFF % column: every team’s live chance to make the playoffs. Every team has its own drop-down arrow: open as many as you want to compare. Finished games now read 100% / 0%.'],
   ['1.3.6', 'More accurate win % late in the week: when only a player or two is left, the app now uses that position’s real range instead of a whole-team stretch (it overstated a lone kicker’s chances), and exact ties count again. Players back from injury or newly signed (no games yet this season) now get a projection instead of 0.'],
@@ -1349,7 +1375,7 @@ function dcol(p, L){
   L.sc.bars.forEach(function(b){
     const v = tierPts(b.y, b.T), n = nextTier(b.y, b.T);
     const pct = n ? clamp((b.y - n.floor) / (n.at - n.floor) * 100, 3, 100) : 100;
-    h += '<div class="grp"><div class="dl"><span>' + b.k + ' <em>' + b.y + ' yds</em></span>' + pv(v) + '</div>' +
+    h += '<div class="grp"><div class="dl"><span>' + b.k + ' <em>' + b.y + ' yds</em></span>' + (v > 0 ? pv('+' + v, 'earn') : v < 0 ? pv(v, 'neg') : pv(0, 'zero')) + '</div>' +
       '<div class="tb' + (n ? '' : ' max') + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
       '<div class="dsub"><span>' + (n ? (n.at - b.y) + ' more yds' : 'Top tier') + '</span>' + (n ? '<span class="tgw">' + TGA + '</span><span class="gain">+' + n.gain + '</span>' : '<span class="gain max">MAX</span>') + '</div></div>';
   });
@@ -1573,17 +1599,18 @@ function standingsView(){
       const mv = t._mv, mvc = mv > 0 ? 'up' : mv < 0 ? 'dn' : 'eq';
       const mvh = mv == null ? '<span class="stmv na">—</span>' : mv === 0 ? '<span class="stmv eq" aria-label="No change"><i></i></span>' :
         '<span class="stmv ' + mvc + '" aria-label="' + (mv > 0 ? 'Up ' : 'Down ') + Math.abs(mv) + '"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (mv > 0 ? 'M5 1.5 9 7.5H1z' : 'M5 8.5 1 2.5h8z') + '"/></svg>' + Math.abs(mv) + '</span>';
-      h += '<button class="strow' + (me ? ' me' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
+      h += '<button class="strow' + (me ? ' me' : '') + (i >= 5 ? ' out5' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
         '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
       if(open){
         const g = num(t._g), pf = num(t.points_scored), pa = num(t.points_against), live = t._live != null;
         const pfd = num(t._pfDone), pad = num(t._paDone);
-        const avg = function(v){ return g ? (Math.round(v / g * 10) / 10).toFixed(1) + ' Avg. per game' : '—'; };
-        const diff = pf - pa, share = pf + pa > 0 ? pf / (pf + pa) * 100 : 50;
-        h += '<div class="stdet" data-std="' + esc(id) + '" data-key="std-' + esc(id) + '"><div class="stx">' +
-          '<div class="sts"><small>Points Scored</small><b>' + fmtN(pf) + '</b><em>' + avg(pfd) + '</em></div>' +
-          '<div class="sts"><small>Points Against</small><b>' + fmtN(pa) + '</b><em>' + avg(pad) + '</em></div></div>' +
-          '<div class="stdf"><span>Point differential</span><b class="' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : '') + '">' + (diff > 0 ? '+' : '') + fmtN(diff) + '</b></div></div>';
+        const avg = function(v){ return g ? (Math.round(v / g * 10) / 10).toFixed(1) + ' Avg.' : '—'; };
+        const diff = pf - pa;
+        // Option C (Wes, Nov 9): three tiles inside one card with the team row
+        h += '<div class="stdet" data-std="' + esc(id) + '" data-key="std-' + esc(id) + '"><div class="stc">' +
+          '<div class="stt"><small>Scored</small><b>' + fmtN(pf) + '</b><em>' + avg(pfd) + '</em></div>' +
+          '<div class="stt"><small>Against</small><b>' + fmtN(pa) + '</b><em>' + avg(pad) + '</em></div>' +
+          '<div class="stt ' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : '') + '"><small>Differential</small><b>' + (diff > 0 ? '+' : '') + fmtN(diff) + '</b><em>season</em></div></div></div>';
       }
     });
     h += '</section>';
