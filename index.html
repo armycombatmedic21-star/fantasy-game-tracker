@@ -716,6 +716,8 @@ const APP_VERSION = '1.5.3';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.5.3', 'Playoff odds are more realistic: every team plays its best healthy lineup in the weeks left (an owner who hasn’t set his lineup yet still will), open spots get a waiver pickup, and Week 12 is included — 1st AFC vs 1st NFC, 2nd vs 2nd and so on, by the standings after Week 11. Matchups and the scoreboard still show the real CBS lineups.'],
+  ['1.5.2', 'Lineup changes show up within about a minute, even before CBS moves to the new week. Projections no longer show 0 for a game that doesn’t have a betting line yet.'],
   ['1.5.1', 'New week arrives on its own: every Tuesday at 6 AM the app switches to the new week by itself (no waiting for CBS). Lineup changes show up in about a minute.'],
   ['1.5.0', 'Standings are now built week by week: past weeks use CBS’s official scores, this week uses our live scores, and season totals add those up, so points and records can never be counted twice. Points Scored and Against now include games in progress, updating live.'],
   ['1.4.8', 'Playoff odds fixed: the regular season ends after Week 11, so odds now play out only the 2 weeks that are actually left (it was adding a made-up Week 12).'],
@@ -2718,6 +2720,9 @@ function engineWorker(){
     const cnt = {}; ids.forEach(function(id){ cnt[id] = 0; });
     const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
     const W = {}, DW = {}, PF = {}, PAg = {};
+    // league tiebreakers (CBS): win %, division record, total points, head to head, points against.
+    // Head to head is skipped: simulated total points never tie, so it would never be reached.
+    const rank = function(a, b){ return (W[b] - W[a]) || (DW[b] - DW[a]) || (PF[b] - PF[a]) || (PAg[b] - PAg[a]); };
     for(let i = 0; i < N; i++){
       ids.forEach(function(id){ const t = S.teams[id]; W[id] = t.w + 0.5 * t.t; DW[id] = t.dw + 0.5 * t.dt; PF[id] = t.pf; PAg[id] = t.pa; });
       const game = function(a, b, sa, sb, ba, bb){ let x = sa > sb ? 1 : sa < sb ? 0 : (ba > bb ? 1 : ba < bb ? 0 : R.u() < 0.5 ? 1 : 0);
@@ -2726,13 +2731,19 @@ function engineWorker(){
         W[pr[0]] += x; W[pr[1]] += 1 - x; PF[pr[0]] += ta[i]; PF[pr[1]] += tb[i]; PAg[pr[0]] += tb[i]; PAg[pr[1]] += ta[i]; if(S.teams[pr[0]].div === S.teams[pr[1]].div){ DW[pr[0]] += x; DW[pr[1]] += 1 - x; } });
       S.future.forEach(function(F){
         let pairs = F.pairs;
+        if(pairs === 'rank'){   // v1.5.3: Week 12 = 1st AFC vs 1st NFC, 2nd vs 2nd ... (standings after Week 11)
+          const dv = {}; ids.forEach(function(id){ (dv[S.teams[id].div] || (dv[S.teams[id].div] = [])).push(id); });
+          const ks = Object.keys(dv).sort(); pairs = [];
+          if(ks.length === 2){ const a = dv[ks[0]].sort(rank), b = dv[ks[1]].sort(rank); for(let k = 0; k < Math.min(a.length, b.length); k++) pairs.push([a[k], b[k]]); }
+          else pairs = null;
+        }
         if(!pairs){ const sh = ids.slice(); for(let k = sh.length - 1; k > 0; k--){ const j = Math.floor(R.u() * (k + 1)); const t = sh[k]; sh[k] = sh[j]; sh[j] = t; } pairs = []; for(let k = 0; k + 1 < sh.length; k += 2) pairs.push([sh[k], sh[k + 1]]); }
         pairs.forEach(function(pr){ const A = fut[F.w][pr[0]], B = fut[F.w][pr[1]]; if(!A || !B) return;
           game(pr[0], pr[1], Math.round(A.m + A.s * R.n()), Math.round(B.m + B.s * R.n()), A.bm + A.bs * R.n(), B.bm + B.bs * R.n()); });
       });
       const divs = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); });
       Object.keys(divs).forEach(function(d){
-        divs[d].sort(function(a, b){ return (W[b] - W[a]) || (DW[b] - DW[a]) || (PF[b] - PF[a]) || (PAg[b] - PAg[a]); });
+        divs[d].sort(rank);
         divs[d].slice(0, 5).forEach(function(id){ cnt[id]++; });
       });
     }
@@ -2837,8 +2848,9 @@ function engState(pl, L){
   }
   return q;
 }
-// last regular-season week (Wes, CBS schedule Nov 10: Week 11 is the last; playoff odds simulate only weeks left through it)
-const REG_END = 11;
+// last regular-season week. v1.5.3 (Wes + Dale, Nov 10): Week 12 counts — AFC vs NFC by standing after Week 11
+// (1st vs 1st ... 6th vs 6th), not on CBS's schedule yet. Top 5 per division after Week 12 make the playoffs.
+const REG_END = 12, RANK_WEEK = 12;
 function seasonInputs(m){
   const SA = stAdjust(false), st = SA && SA.divs;
   if(!Array.isArray(st)) return null;
@@ -2854,6 +2866,7 @@ function seasonInputs(m){
     const f = ENG.fut[w];
     let pairs = null;
     if(f){ const used = {}; pairs = []; Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); }); if(pairs.length < ids.length / 2) pairs = null; }
+    if(!pairs && w === RANK_WEEK) pairs = 'rank';   // CBS has no Week 12 opponents: pair by standings in each simulated season
     future.push({ w: w, pairs: pairs });
   }
   return { teams: teams, countCur: countCur, curPairs: curPairs, future: future };
