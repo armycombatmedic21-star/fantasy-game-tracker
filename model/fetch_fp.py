@@ -116,6 +116,8 @@ def fetch_api(week, key, season=2026):
             for f, ks in API_FIELDS.items():
                 k = next((k for k in ks if k in st), None)
                 rec[f] = round(num(st[k]), 3) if k else 0.0
+            if "points" in st:            # FantasyPros' own standard-scoring points (what its app shows); for the scorecard only
+                rec["std"] = round(num(st["points"]), 2)
             if rec["name"]:
                 players.append(rec)
                 by_pos[pos] = by_pos.get(pos, 0) + 1

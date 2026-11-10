@@ -48,6 +48,16 @@ SPREAD_K = 1.35
 RNG = np.random.default_rng(7)
 FP_STATS = {"matched": 0}
 FP_RAW = {}   # (name, team, pos) -> FantasyPros raw stats, for rookies with no NFL games yet
+FP_STD = {}   # (name, team, pos) -> FantasyPros' own standard-scoring points (scorecard only, never used in projections)
+
+
+def score_fields(rec, fpp, own, prob, name, tm, pos):
+    """Projection scorecard (Nov 10 2026): keep FantasyPros alone (in league scoring), our model alone, and FantasyPros'
+    own standard points next to the blended projection, so each can be graded against the real results."""
+    rec["fp"], rec["own"] = round(fpp * prob, 2), round(float(own), 2)
+    v = FP_STD.get((norm_name(name), tm, pos))
+    if v is not None:
+        rec["fps"] = round(v, 2)
 
 
 def norm_name(n):
@@ -342,6 +352,7 @@ def no_games_yet(week, first_day, have_keys, have_pids, implied, opp_of, playing
             FP_STATS["matched"] += 1
             scale = ((1 - FP_BLEND) * sim.mean() + FP_BLEND * fpp * prob) / sim.mean()
             basis += f"; FantasyPros blended {FP_BLEND:.0%}"
+            score_fields(rec, fpp, sim.mean(), prob, name, tm, pos)
         rec.update(summ(sim, [c], scale, basis, flags))
         out.append(rec)
     return out
@@ -370,6 +381,7 @@ def build(week, fp_file=None, ov_file=None):
     # FantasyPros raw stats -> league points. Matched by name + team (+ position); name alone only when unique.
     fp, fp_by_name = {}, {}
     FP_RAW.clear()
+    FP_STD.clear()
     if fp_file:
         fj = json.load(open(fp_file))
         for p in fj.get("players", []):
@@ -377,6 +389,8 @@ def build(week, fp_file=None, ov_file=None):
             nn, tm_ = norm_name(p["name"]), ALIAS.get((p.get("team") or "").upper(), (p.get("team") or "").upper())
             fp[(nn, tm_, p["pos"])] = v
             FP_RAW[(nn, tm_, p["pos"])] = {k: float(p.get(k, 0) or 0) for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd")}
+            if p.get("std") is not None:
+                FP_STD[(nn, tm_, p["pos"])] = float(p["std"])
             fp_by_name.setdefault((nn, p["pos"]), []).append(v)
     FP_STATS["matched"] = 0
 
@@ -544,6 +558,7 @@ def build(week, fp_file=None, ov_file=None):
             target = (1 - FP_BLEND) * sim.mean() + FP_BLEND * fpp * prob
             scale = target / sim.mean()
             basis += f"; FantasyPros blended {FP_BLEND:.0%}"
+            score_fields(rec, fpp, sim.mean(), prob, p["name"], tm, pos)
         rec.update(summ(sim, comps, scale, basis, flags))
         out.append(rec)
 

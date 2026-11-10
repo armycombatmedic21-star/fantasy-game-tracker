@@ -67,6 +67,10 @@ def main():
         tmp = OUT + ".tmp"
         json.dump(res, open(tmp, "w"), separators=(",", ":"))
         shutil.move(tmp, OUT)
+        try:
+            st["scorecard"] = snapshot(week, res)
+        except Exception as e:
+            st["scorecard"] = f"snapshot failed: {type(e).__name__}: {e}"[:200]
         st.update({"ok": True, "fp_blended": res["fp_blended"], "fp_matched": res.get("fp_matched", 0),
                    "players": len(pl_), "spread_k": res.get("spread_k"), "spread_rho": res.get("spread_rho"),
                    "no_games_yet": sum(1 for p in pl_ if any("NO 2026 GAMES" in f for f in p.get("f", [])))})
@@ -75,6 +79,41 @@ def main():
         st["error"] = f"{type(e).__name__}: {e}"[:500]
         st["trace"] = traceback.format_exc()[-1500:]
         return st, 1
+
+
+def snapshot(week, res):
+    """Projection scorecard: keep each player's last projection made BEFORE his game kicked off (history/proj-wN.json),
+    so model/grade.py can grade ours, FantasyPros alone and our model alone against the real CBS points afterwards."""
+    import zoneinfo
+    hist = os.path.join(ROOT, "history"); os.makedirs(hist, exist_ok=True)
+    path = os.path.join(hist, f"proj-w{week}.json")
+    old = json.load(open(path)) if os.path.exists(path) else {"week": week, "players": {}}
+    sched = nfl.load_schedules([M.SEASON])
+    s = sched.filter((sched["week"] == week) & (sched["game_type"] == "REG"))
+    et = zoneinfo.ZoneInfo("America/New_York")
+    kick = {}
+    for r in s.iter_rows(named=True):
+        try:
+            t = datetime.datetime.strptime(f"{r['gameday']} {r['gametime']}", "%Y-%m-%d %H:%M").replace(tzinfo=et)
+        except Exception:
+            continue
+        for tm in (r["home_team"], r["away_team"]):
+            kick[M.ALIAS.get(tm, tm)] = t
+    t_now = datetime.datetime.now(datetime.timezone.utc)
+    n = 0
+    for p in res["players"]:
+        k = kick.get(p.get("t"))
+        if p.get("bye") or k is None or t_now >= k:
+            continue                      # no game, or his game already started: keep the pre-kickoff snapshot
+        e = {"m": p.get("m"), "pos": p.get("p")}
+        for f in ("fp", "own", "fps"):
+            if p.get(f) is not None:
+                e[f] = p[f]
+        old["players"][p["k"]] = e
+        n += 1
+    old["at"] = now()
+    json.dump(old, open(path, "w"), separators=(",", ":"))
+    return f"week {week}: {n} pre-kickoff projections saved"
 
 
 if __name__ == "__main__":

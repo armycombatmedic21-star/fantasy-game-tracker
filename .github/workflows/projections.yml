@@ -9,7 +9,7 @@ on:
     - cron: "30 23 * * 1,4"   # Monday + Thursday 6:30 PM ET (before the night games)
   push:
     branches: [main]
-    paths: [model/fgt_model.py, model/fetch_fp.py, model/run_projections.py, .github/workflows/projections.yml, run-now.txt]
+    paths: [model/fgt_model.py, model/fetch_fp.py, model/run_projections.py, model/grade.py, .github/workflows/projections.yml, run-now.txt]
   workflow_dispatch:
 permissions:
   contents: write
@@ -39,6 +39,10 @@ jobs:
         env:
           FP_API_KEY: ${{ secrets.FP_API_KEY }}   # FantasyPros personal API key (GitHub secret; never printed)
         run: python model/run_projections.py
+      - name: Grade past weeks (projection scorecard)
+        if: always()
+        continue-on-error: true
+        run: python model/grade.py
       - uses: actions/cache/save@v4
         if: always()
         with:
@@ -49,7 +53,7 @@ jobs:
         run: |
           git config user.name "fgt-bot"
           git config user.email "fgt-bot@users.noreply.github.com"
-          git add projections.json projections-status.json
+          git add projections.json projections-status.json history
           if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
           WK=$(python -c "import json;s=json.load(open('projections-status.json'));print(s.get('week','?'), 'FP-blended' if s.get('fp_blended') else 'unblended', 'OK' if s.get('ok') else 'FAILED')")
           git commit -m "projections: week $WK"
