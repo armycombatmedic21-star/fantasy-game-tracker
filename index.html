@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.3';
+const APP_VERSION = '1.4.4';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.4', 'When CBS moves to the next week, the app moves with you right away if you were on the current week. Looking at an older week on purpose? It leaves you there.'],
   ['1.4.3', 'Updates install themselves within about 20 seconds (no more tap to update), with a quick “Updated to …” note. End of the week: the first time you open Standings, teams slide from last week’s spots to their new ones, the movers pulse, then “Records updated” shows. 6th place is white again.'],
   ['1.4.2', 'Cleaner look: an open player or team is one card with a softer blue background, no glows. Earned yards points show as green “+7”, and the next milestone “+3” is plain white. Standings drop-down shows Scored, Against and Differential side by side. Ranks are bigger and white; 6th place (outside the playoff spots) is red.'],
   ['1.4.1', 'Standings cleanup: a small drop-down arrow centered at the bottom of each team (tap anywhere on a team to open or close it), the streak column is gone so names get more room, the drop-down shows Avg. per game, and playoff odds read 100% (green) when a team is in and 0% (red) when it’s out. Dallas owners now show as Rick L. & Wes S.'],
@@ -1785,6 +1786,8 @@ function snapToCurrentWeek(){
   last.sb = 0; last.cbs = 0; tick(); render(); saveView();
   toast('Back to Current Week \u00B7 Week ' + S.curWeek);
 }
+// v1.4.4: CBS moved to a new week while you were on the current one -> go with it (waits out a tap or open sheet)
+function followNewWeek(){ setTimeout(function(){ if(overlayStack.length || press){ followNewWeek(); return; } snapToCurrentWeek(); }, overlayStack.length || press ? 1500 : 0); }
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', function(){
   if(document.hidden){ hiddenAt = Date.now(); saveView(); return; }
@@ -2148,8 +2151,10 @@ function loadCbs(week){
       if(!j || !j.ok || !j.data || !j.data.live_scoring) throw Object.assign(new Error((j && j.error) || 'bad'), { code: (j && j.error) || 'bad' });
       const w = num(j.data.live_scoring.period) || week;
       if(!week){
+        const prevCur = S.curWeek;
         S.curWeek = w; put('cur-week', w);
         if(!S.week) S.week = w;
+        else if(prevCur && w !== prevCur && S.week === prevCur) followNewWeek();   // CBS rolled over while you were on the current week
       }
       const old = S.cbs[w];
       S.cbs[w] = { data: j.data, at: j.at || Date.now(), err: j.source === 'stale' ? (j.error || 'stale') : '' };
