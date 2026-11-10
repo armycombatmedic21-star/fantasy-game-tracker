@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.5';
+const APP_VERSION = '1.5.6';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.5.6', 'Faster lineups: changes made on CBS show up in about 15–25 seconds.'],
   ['1.5.5', 'Playoff odds also wait for next week’s schedule from CBS before showing, so the first number you see is the real one.'],
   ['1.5.4', 'No more stale numbers when you open the app: lineups, projections and playoff odds wait the second or two it takes to get this week’s lineups from CBS, instead of briefly showing old ones.'],
   ['1.5.3', 'Playoff odds are more realistic: every team plays its best healthy lineup in the weeks left (an owner who hasn’t set his lineup yet still will), open spots get a waiver pickup, and Week 12 is included — 1st AFC vs 1st NFC, 2nd vs 2nd and so on, by the standings after Week 11. Matchups and the scoreboard still show the real CBS lineups.'],
@@ -2420,8 +2421,9 @@ function tick(){
   const ahead = num(S.curWeek) > num(S.cbsPeriod) && num(S.cbsPeriod) > 0;     // app already on next week: lineups every 20 s
   if(ahead && now - (last.next || 0) >= 20000){ last.next = now; loadCbs(S.curWeek); }
   if(now - last.cbs >= (live || soon ? 60000 : 300000)){ last.cbs = now; loadCbs(); }
-  if(S.curWeek && (now - (last.ros || 0) >= 60000 || !S.ros[S.curWeek])){ last.ros = now; loadRos(S.curWeek); }   // new week or first open: right away
-  if(num(S.week) > num(S.curWeek) && (now - (last.rosF || 0) >= 60000 || !S.ros[S.week])){ last.rosF = now; loadRos(S.week); }   // lineup changes within ~1 min
+  // v1.5.6 (Wes): lineups every 15 s (the relay asks CBS at most every 10 s) -> a lineup change shows in ~15-25 s
+  if(S.curWeek && (now - (last.ros || 0) >= 15000 || !S.ros[S.curWeek])){ last.ros = now; loadRos(S.curWeek); }   // new week or first open: right away
+  if(num(S.week) > num(S.curWeek) && (now - (last.rosF || 0) >= 15000 || !S.ros[S.week])){ last.rosF = now; loadRos(S.week); }   // lineup changes within ~1 min
   const settle = !live && isCurrentWeek() && boxSettling();
   if(S.curWeek && isCurrentWeek() && now - last.sb >= (live ? 10000 : (soon || settle ? 30000 : 300000))){ last.sb = now; loadSb(S.curWeek); }
   if(now - last.st >= 600000){ last.st = now; loadStandings(); }
