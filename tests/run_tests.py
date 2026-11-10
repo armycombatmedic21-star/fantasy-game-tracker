@@ -21,11 +21,16 @@ def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + ((' :: ' + str(extra)) if extra and not cond else ''))
     if not cond: fails.append(name)
 
+LEAGUE_WEEKS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'league-weeks-2026.json')))
 def route(r):
     u = r.request.url
     if 'workers.dev/live' in u:
         if 'week=' in u:
-            return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_future(int(u.split('week=')[1].split('&')[0]))})
+            wk = int(u.split('week=')[1].split('&')[0])
+            if wk < 9 and str(wk) in LEAGUE_WEEKS:   # past weeks: the league's real official CBS team scores (Nov 10 pull)
+                return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": {"live_scoring": {"period": wk, "teams": [
+                    {"id": t[0], "pts": t[1], "opp_team_id": t[2], "players": [{"id": "b" + t[0], "status": "Reserve", "fpts": t[3]}]} for t in LEAGUE_WEEKS[str(wk)]]}}})
+            return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_future(wk)})
         return r.fulfill(json={"ok": True, "source": "cbs", "feed": "league/scoring/live", "at": int(time.time() * 1000) - 20000, "data": F.build_live()})
     if 'workers.dev/standings' in u:
         return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_standings()})
@@ -223,7 +228,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] PLAYOFF % for every team', page.locator('.strow .stpo').count() == 12 and page.locator('.strow .stpo.na').count() == 0)
         check(f'[{tag}] MOVE column for every team (GB gone)', page.locator('.strow .stmv').count() == 12 and 'MOVE' in page.inner_text('.sthead') and 'GB' not in page.inner_text('.sthead'))
         # live: CBS 611 + Dallas's 63 so far this week (fixture), records unchanged until the week is final
-        check(f'[{tag}] Avg., no +this week', '76.4 avg.' in det and 'this week' not in det, det)
+        check(f'[{tag}] Avg., no +this week', '83.0 avg.' in det and 'this week' not in det, det)
         check(f'[{tag}] record unchanged while games are on', '3-5' in page.inner_text('.strow.me'))
         page.locator('.strow').nth(0).click(); page.wait_for_timeout(200)
         check(f'[{tag}] open several teams at once', page.locator('.stdet').count() == 2)
