@@ -712,7 +712,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
@@ -2584,7 +2584,20 @@ function engineWorker(){
     }
     return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec');
   }
-  let P = {}, LG = 22, BYES = {}, cache = {};
+  let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {};
+  // v1.5.3 (Wes, Nov 10): playoff odds assume every owner fills a position nobody healthy can play with a waiver pickup.
+  // Conservative: the player just past what 12 teams typically roster at that position (this week and neutral).
+  const REPL_RANK = { QB: 26, RB: 62, WR: 62, TE: 20, K: 14, DST: 14 };
+  function setRepl(players){
+    REPL = {}; REPLN = {};
+    Object.keys(REPL_RANK).forEach(function(pos){
+      const n = REPL_RANK[pos] - 1;
+      const wk = players.filter(function(r){ return r.p === pos && !r.bye && r.m > 0 && r.c && r.c.length; }).sort(function(a, b){ return b.m - a.m; });
+      if(wk.length) REPL[pos] = wk[Math.min(n, wk.length - 1)].k;
+      const nt = players.filter(function(r){ return r.p === pos && r.nm > 0; }).sort(function(a, b){ return b.nm - a.nm; });
+      if(nt.length){ const r = nt[Math.min(n, nt.length - 1)]; REPLN[pos] = { m: r.nm, v: Math.pow(r.ns || 0, 2) }; }
+    });
+  }
   function simPlayer(q){
     // q = { pid, key, pos, mode: pre|live|final|none, pts, live }
     const out = new Float32Array(N);
@@ -2668,13 +2681,37 @@ function engineWorker(){
     const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
     T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push({ m: r.nm || 0, v: Math.pow(r.ns || 0, 2) }); });
     Object.keys(pool).forEach(function(k){ pool[k].sort(function(a, b){ return b.m - a.m; }); });
-    const take = function(k){ return pool[k].length ? pool[k].shift() : { m: 0, v: 0 }; };
+    const take = function(k){ return pool[k].length ? pool[k].shift() : (REPLN[k] || { m: 0, v: 0 }); };
     const L = [take('QB'), take('RB'), take('WR'), take('WR'), take('TE'), take('K'), take('DST')];
     const fx = (pool.RB[0] || { m: -1 }).m >= (pool.WR[0] || { m: -1 }).m ? take('RB') : take('WR'); L.push(fx);
     let m = 0, v = 0; L.forEach(function(x){ m += x.m; v += x.v; });
     let bm = 0, bv = 0; Object.keys(pool).forEach(function(k){ pool[k].forEach(function(x){ bm += x.m; bv += x.v; }); });
     return { m: m, s: SPREAD_K * Math.sqrt(v), bm: bm, bs: SPREAD_K * Math.sqrt(bv) };
   }
+  // v1.5.3 (Wes, Nov 10): playoff odds play every team's best lineup this week, not the one set on CBS right now
+  // (an owner who hasn't set his lineup yet still will). Players whose game has started stay where CBS has them
+  // (locked); every open slot gets the best healthy, not-on-bye player left, by this week's projection; nobody left
+  // -> waiver fill. Matchup screens and the scoreboard keep the real CBS lineup.
+  const SLOTS = ['QB', 'RB', 'WR', 'WR', 'TE', 'K', 'DST', 'FLEX'];
+  function locked(q){ return q.mode === 'live' || (q.mode === 'final' && !q.bye); }
+  function optTeam(T){
+    const open = SLOTS.slice(), st = [], bench = [];
+    const fit = function(pos){ let i = open.indexOf(pos); if(i < 0 && (pos === 'RB' || pos === 'WR')) i = open.indexOf('FLEX'); if(i < 0) return false; open.splice(i, 1); return true; };
+    T.starters.forEach(function(q){ if(locked(q) && fit(q.pos)) st.push(q); });
+    const pool = [];
+    T.starters.concat(T.bench).forEach(function(q){
+      if(st.indexOf(q) >= 0) return;
+      if(locked(q)){ bench.push(q); return; }                                   // started on the bench: stays there
+      const r = P[q.key];
+      if(q.bye || !r || r.bye || !(r.pp > 0) || !(r.m > 0)){ bench.push(q); return; }
+      pool.push({ q: q, m: r.m });
+    });
+    pool.sort(function(a, b){ return b.m - a.m; });
+    pool.forEach(function(x){ if(fit(x.q.pos)) st.push(Object.assign({}, x.q, { mode: x.q.mode === 'final' ? 'pre' : x.q.mode })); else bench.push(x.q); });
+    open.forEach(function(sl){ const pos = sl === 'FLEX' ? 'RB' : sl; if(REPL[pos]) st.push({ pid: 'repl-' + sl, key: REPL[pos], pos: pos, nfl: 'repl-' + sl, mode: 'pre' }); });
+    return { starters: st, bench: bench };
+  }
+  function optMsg(msg){ const t = {}; Object.keys(msg.teams).forEach(function(id){ t[id] = optTeam(msg.teams[id]); }); return Object.assign({}, msg, { teams: t }); }
   function playoff(msg, wk){
     const S = msg.season; if(!S) return null;
     const ids = Object.keys(S.teams), R = RNG('season|' + msg.week + '|' + (wk ? 'live' : 'pre'));
@@ -2703,14 +2740,15 @@ function engineWorker(){
   }
   self.onmessage = function(e){
     const msg = e.data;
-    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
       const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
       const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
     if(msg.type !== 'run') return;
     try{
       Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });
-      const live = runWeek(msg, true), pre = msg.season ? runWeek(msg, false) : null;
-      const po = msg.season ? playoff(msg, live) : null, po0 = msg.season ? playoff(msg, pre) : null;
+      const live = runWeek(msg, true);
+      let po = null, po0 = null;
+      if(msg.season){ const om = optMsg(msg); po = playoff(msg, runWeek(om, true)); po0 = playoff(msg, runWeek(om, false)); }
       const keep = {}; Object.keys(cache).forEach(function(k){ keep[k] = 1; });
       self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0 });
     }catch(err){ self.postMessage({ type: 'error', id: msg.id, err: String(err && err.message || err) }); }
@@ -2785,7 +2823,7 @@ function engState(pl, L){
   const q = { pid: pl.id, key: r ? r.k : '', pos: pl.pos, nfl: nvTeam(pl.nfl), wr1: !!(r && r.wr1), mode: 'pre' };
   if(!r) q.mode = 'none';
   if(!L) return q;
-  if(L.state === 'bye'){ q.mode = 'final'; q.pts = 0; return q; }
+  if(L.state === 'bye'){ q.mode = 'final'; q.pts = 0; q.bye = true; return q; }
   if(L.state === 'post'){ q.mode = 'final'; q.pts = L.pts || 0; return q; }
   if(L.state === 'in' && L.s){
     const s = L.s, sum = function(a){ return (a || []).reduce(function(t, l){ return t + tdPts(l); }, 0); };
