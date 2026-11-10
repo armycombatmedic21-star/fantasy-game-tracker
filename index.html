@@ -632,8 +632,34 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .stdet .stt em{font-style:normal;font-size:11px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
 .stdet .stt.pos b{color:#3ddc84} .stdet .stt.neg b{color:#ff5c6c}
 .strow .rk{font-size:14px;color:#fff}
-.strow.out5 .rk{color:#e0707c}
 .strow.me .rk{color:var(--acc)}
+
+/* v1.4.3 "Updated to X" banner */
+.updok{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:60;display:flex;align-items:center;gap:9px;padding:10px 16px 10px 10px;border-radius:999px;background:#0f1a30;border:1.5px solid rgba(79,141,255,.6);box-shadow:0 10px 26px rgba(0,0,0,.5);color:#fff;font-size:14px;font-weight:800;transform:translate(-50%,-140%);opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s}
+.updok.in{transform:translate(-50%,0);opacity:1}
+.updok .uoi{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#2a62f5;color:#fff}
+
+/* v1.4.3 end-of-week shuffle */
+.recban{max-height:120px;overflow:hidden;transition:max-height .6s cubic-bezier(.2,.8,.2,1),opacity .6s ease,margin .6s cubic-bezier(.2,.8,.2,1),padding .6s cubic-bezier(.2,.8,.2,1),border-width .6s}
+.recban.later{max-height:0;opacity:0;margin-bottom:0;padding-top:0;padding-bottom:0;border-width:0;animation:none}
+.strow.lifted,.strow.dropped,.strow.blink,.strow.lit{background-color:#0d1626}
+.strow.me.lifted,.strow.me.dropped,.strow.me.blink,.strow.me.lit{background:linear-gradient(90deg,rgba(var(--acc-rgb),.20),rgba(var(--acc-rgb),.05) 70%,rgba(var(--acc-rgb),.02)),#0d1626}
+.strow.lifted{box-shadow:0 16px 32px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(79,141,255,.55);border-radius:12px}
+.strow.dropped,.strow.lit{box-shadow:inset 0 0 0 1.5px rgba(79,141,255,.5);border-radius:12px}
+.strow.blink{border-radius:12px;animation:stBlink .9s linear}
+@keyframes stBlink{0%{box-shadow:inset 0 0 0 1.5px rgba(79,141,255,.5)}12%{box-shadow:inset 0 0 0 2px rgba(120,170,255,1)}28%{box-shadow:inset 0 0 0 1.5px rgba(79,141,255,.25)}46%{box-shadow:inset 0 0 0 2px rgba(120,170,255,1)}64%,100%{box-shadow:inset 0 0 0 1.5px rgba(79,141,255,.5)}}
+.strow.lit.fade{transition:box-shadow 4s ease-out,background-color 4s ease-out;box-shadow:inset 0 0 0 1.5px rgba(79,141,255,0)}
+.strow.me.lit.fade{box-shadow:inset 3px 0 0 var(--acc)}
+
+.strow .stwl.x,.strow .stdv.x{font-size:11px;letter-spacing:-.6px}
+
+.strow .flip{animation:stFlip .6s ease-out}
+@keyframes stFlip{0%{color:#fff;text-shadow:0 0 12px rgba(79,141,255,.95)}100%{text-shadow:none}}
+.stmv.pop{animation:stPop .38s cubic-bezier(.3,1.6,.5,1)}
+@keyframes stPop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+
+.stcard .strow{transition:opacity .35s ease}
+.stcard.shuf .strow:not(.lifted){opacity:.4}
 </style>
 </head>
 <body>
@@ -676,10 +702,6 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 
 <div class="gate" id="gate" hidden><div class="gatein" id="gateIn"></div></div>
 <div class="toast" id="toast"></div>
-<button type="button" class="updbar" id="updBar" hidden aria-label="New version ready. Tap to update.">
-  <span class="updtxt"><span class="updkick" id="updKick">NEW VERSION READY</span><strong id="updTitle">Tap to update the app</strong><small id="updSub"></small></span>
-  <span class="updgo" id="updGo">Update</span>
-</button>
 
 <script>
 (function(){
@@ -690,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.2';
+const APP_VERSION = '1.4.3';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.3', 'Updates install themselves within about 20 seconds (no more tap to update), with a quick “Updated to …” note. End of the week: the first time you open Standings, teams slide from last week’s spots to their new ones, the movers pulse, then “Records updated” shows. 6th place is white again.'],
   ['1.4.2', 'Cleaner look: an open player or team is one card with a softer blue background, no glows. Earned yards points show as green “+7”, and the next milestone “+3” is plain white. Standings drop-down shows Scored, Against and Differential side by side. Ranks are bigger and white; 6th place (outside the playoff spots) is red.'],
   ['1.4.1', 'Standings cleanup: a small drop-down arrow centered at the bottom of each team (tap anywhere on a team to open or close it), the streak column is gone so names get more room, the drop-down shows Avg. per game, and playoff odds read 100% (green) when a team is in and 0% (red) when it’s out. Dallas owners now show as Rick L. & Wes S.'],
   ['1.4.0', 'Standings update themselves: Points Scored and Points Against go up live during games, and records, division records, games back and streaks update the moment the whole week is final (after Monday night, overtime included) — no waiting for CBS. A badge and a “Records updated” banner tell you when. New MOVE column: green or red arrows show how many spots each team moved in its division since last week. New PLAYOFF % column: every team’s live chance to make the playoffs. Every team has its own drop-down arrow: open as many as you want to compare. Finished games now read 100% / 0%.'],
@@ -1222,6 +1245,7 @@ function render(){
   morph(v, html);
   lightTabs(S.view);
   paintRecBadge();
+  if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
   if(chatHook){ try{ chatHook(); }catch(e){} }
 }
 setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press && press.active) && !swipe.active) render(); }, 250);
@@ -1544,7 +1568,7 @@ function stAdjust(withLive){
     });
     const pc = function(w, l, tt){ const g = w + l + tt; return g ? (w + tt / 2) / g : 0; };
     prev.sort(function(a, b){ return (pc(b.w, b.l, b.t) - pc(a.w, a.l, a.t)) || (pc(b.dw, b.dl, b.dt) - pc(a.dw, a.dl, a.dt)) || (b.pf - a.pf) || (a.pa - b.pa) || (a.i - b.i); });
-    prev.forEach(function(p, j){ byId[p.id]._mv = j - p.i; });   // + = moved up
+    prev.forEach(function(p, j){ byId[p.id]._mv = j - p.i; byId[p.id]._prev = { i: j, w: p.w, l: p.l, t: p.t, dw: p.dw, dl: p.dl, dt: p.dt }; });   // + = moved up
   });
   const out = { divs: divs, byId: byId, changed: changed, applied: applied, live: liveOn };
   stMemo.v[withLive] = out;
@@ -1560,7 +1584,7 @@ function recOf(t){
 function lastFinalWeek(){ const C = num(S.curWeek); if(!C) return 0; return (CURW && CURW.week === C && CURW.final) ? C : C - 1; }
 function recSeen(){ let v = getLocal('rec-seen'); const lf = lastFinalWeek(); if((v == null || v === '') && lf >= 1 && S.standings){ put('rec-seen', lf); v = lf; } return num(v); }
 function recNew(){ const lf = lastFinalWeek(); return !!(S.standings && lf >= 1 && lf > recSeen()); }
-function recOnEnter(){ if(recNew()){ const lf = lastFinalWeek(); S.recBanner = { w: lf }; put('rec-seen', lf); } }
+function recOnEnter(){ if(recNew()){ const lf = lastFinalWeek(); S.recBanner = { w: lf, anim: true }; put('rec-seen', lf); } }
 function paintRecBadge(){
   const b = document.querySelector('#tabBar .tabbtn[data-tab="standings"]'); if(!b) return;
   let el = b.querySelector('.cbadge');
@@ -1580,6 +1604,60 @@ function poCell(id){
   const r = v >= 99.5 ? 99 : v < 1 ? '<1' : Math.round(v), c = v >= 90 ? 'hi' : v >= 50 ? 'mid' : v >= 20 ? 'lo' : 'vlo';
   return '<span class="stpo ' + c + '" aria-label="' + Math.round(v) + ' percent playoff chance"><b>' + r + '<sup>%</sup></b><i><u style="width:' + Math.max(4, Math.min(100, v)).toFixed(0) + '%"></u></i></span>';
 }
+/* end-of-week shuffle (v1.4.3): first Standings visit after the week is final. Shows last week's order and records,
+   slides each team to its new spot (slow), ticks the records over, teams that moved pulse twice, then the banner. */
+function runShuffle(){
+  const RB = S.recBanner; RB.anim = false;
+  const A = stAdjust(true), ban = document.querySelector('#view .recban');
+  const rec3 = function(a, b, c){ return a + '-' + b + (c ? '-' + c : ''); };
+  const moves = [];
+  if(A) document.querySelectorAll('#view .stcard').forEach(function(card){
+    const rows = Array.prototype.slice.call(card.querySelectorAll('.strow')), tops = rows.map(function(r){ return r.offsetTop; });
+    rows.forEach(function(r, idx){
+      const t = A.byId[r.dataset.st], pv = t && t._prev; if(!pv || tops[pv.i] == null) return;
+      const wl = r.querySelector('.stwl'), dv = r.querySelector('.stdv'), rk = r.querySelector('.rk'), mv = r.querySelector('.stmv');
+      const now = { wl: wl.textContent, dv: dv.textContent, rk: rk.textContent };
+      wl.textContent = rec3(pv.w, pv.l, pv.t); dv.textContent = rec3(pv.dw, pv.dl, pv.dt); rk.textContent = String(pv.i + 1);
+      if(mv) mv.style.opacity = '0';
+      const dy = tops[pv.i] - tops[idx];
+      r.style.transition = 'none'; r.style.transform = dy ? 'translateY(' + dy + 'px)' : '';
+      moves.push({ r: r, dy: dy, now: now, wl: wl, dv: dv, rk: rk, mv: mv, up: pv.i > idx });
+    });
+  });
+  if(!moves.length){ RB.wait = false; if(ban) ban.classList.remove('later'); return; }
+  RB.wait = true;
+  holdRender = Date.now() + 9000;                          // no re-render until the fade is done (keeps it smooth)
+  const movers = moves.filter(function(m){ return m.dy; });
+  // 1) 1.0 s: numbers flip + flash; teams that moved LIFT (rise, grow a touch, shadow, border lit)
+  setTimeout(function(){
+    moves.forEach(function(m){ [[m.wl, m.now.wl], [m.dv, m.now.dv], [m.rk, m.now.rk]].forEach(function(x){ if(x[0].textContent !== x[1]){ x[0].textContent = x[1]; x[0].classList.add('flip'); } }); });
+    if(movers.length) document.querySelectorAll('#view .stcard').forEach(function(c){ if(c.querySelector('.strow') && movers.some(function(m){ return c.contains(m.r); })) c.classList.add('shuf'); });
+    movers.forEach(function(m){ m.r.style.zIndex = m.up ? '4' : '3'; m.r.classList.add('lifted');
+      m.r.style.transition = 'transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s'; m.r.style.transform = 'translateY(' + m.dy + 'px) scale(1.03)'; });
+  }, 1000);
+  // 2) 1.4 s: SLIDE slowly to the new spot
+  setTimeout(function(){ movers.forEach(function(m){ m.r.style.transition = 'transform 1.6s cubic-bezier(.45,0,.2,1), box-shadow .35s'; m.r.style.transform = 'scale(1.03)'; }); }, 1400);
+  // 3) 3.05 s: DROP back down (shadow off, border stays lit)
+  setTimeout(function(){ movers.forEach(function(m){ m.r.style.transition = 'transform .3s ease-out, box-shadow .3s'; m.r.style.transform = ''; m.r.classList.remove('lifted'); m.r.classList.add('dropped'); });
+    document.querySelectorAll('#view .stcard.shuf').forEach(function(c){ c.classList.remove('shuf'); }); }, 3050);
+  // 4) 3.4 s: border BLINKS twice; MOVE badges pop in top to bottom
+  setTimeout(function(){
+    movers.forEach(function(m){ m.r.classList.add('blink'); });
+    moves.forEach(function(m, k){ if(m.mv) setTimeout(function(){ m.mv.style.opacity = ''; m.mv.classList.add('pop'); }, 80 * k); });
+  }, 3400);
+  // 5) 4.3 s: border stays slightly lit, then fades over 4 s; banner slides in
+  setTimeout(function(){
+    movers.forEach(function(m){ m.r.classList.remove('blink'); m.r.classList.add('lit'); });
+    RB.wait = false; const b = document.querySelector('#view .recban'); if(b) b.classList.remove('later');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ movers.forEach(function(m){ m.r.classList.add('fade'); }); }); });
+  }, 4300);
+  // 6) 8.5 s: back to normal
+  setTimeout(function(){
+    moves.forEach(function(m){ m.r.classList.remove('dropped', 'lit', 'fade'); m.r.style.transition = ''; m.r.style.zIndex = ''; m.r.style.transform = '';
+      if(m.mv) m.mv.classList.remove('pop'); [m.wl, m.dv, m.rk].forEach(function(e){ e.classList.remove('flip'); }); });
+    holdRender = 0; if(renderQueued) render();
+  }, 8500);
+}
 function standingsView(){
   let h = header('Standings') + onStrip();
   if(isCurrentWeek()) liveModel();                       // keeps this week's live points fresh on this tab too
@@ -1587,7 +1665,7 @@ function standingsView(){
   if(!Array.isArray(d) || !d.length){
     return h + (S.stErr ? '<div class="empty">Can’t load standings right now (' + esc(S.stErr) + ').</div>' : '<div class="empty">Getting standings from CBS…</div>');
   }
-  if(S.recBanner) h += '<div class="recban" data-key="recban"><span class="rbi"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="rbt"><b>Records updated</b><small>Week ' + esc(S.recBanner.w) + ' is final · standings are up to date</small></span></div>';
+  if(S.recBanner) h += '<div class="recban' + (S.recBanner.anim || S.recBanner.wait ? ' later' : '') + '" data-key="recban"><span class="rbi"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="rbt"><b>Records updated</b><small>Week ' + esc(S.recBanner.w) + ' is final · standings are up to date</small></span></div>';
   d.forEach(function(div){
     const teams = (div.teams || []).slice().sort(function(a, b){ return num(a.order) - num(b.order); });
     h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>DIV</span><span class="mvh">MOVE</span><span class="poh">PLAYOFF %</span></div>';
@@ -1600,7 +1678,7 @@ function standingsView(){
       const mvh = mv == null ? '<span class="stmv na">—</span>' : mv === 0 ? '<span class="stmv eq" aria-label="No change"><i></i></span>' :
         '<span class="stmv ' + mvc + '" aria-label="' + (mv > 0 ? 'Up ' : 'Down ') + Math.abs(mv) + '"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (mv > 0 ? 'M5 1.5 9 7.5H1z' : 'M5 8.5 1 2.5h8z') + '"/></svg>' + Math.abs(mv) + '</span>';
       h += '<button class="strow' + (me ? ' me' : '') + (i >= 5 ? ' out5' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl">' + esc(wl) + '</span><span class="stdv">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
+        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl' + (wl.length > 3 ? ' x' : '') + '">' + esc(wl) + '</span><span class="stdv' + (num(t.division_ties) ? ' x' : '') + '">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
       if(open){
         const g = num(t._g), pf = num(t.points_scored), pa = num(t.points_against), live = t._live != null;
         const pfd = num(t._pfDone), pad = num(t._paDone);
@@ -2181,41 +2259,67 @@ document.addEventListener('visibilitychange', function(){ if(!document.hidden){ 
 window.addEventListener('pageshow', function(){ last.sb = 0; tick(); });
 window.addEventListener('online', function(){ last.sb = 0; last.cbs = 0; tick(); });
 
-/* ---------- automatic updates (Pick'em 3.8.1) ---------- */
+/* ---------- automatic updates (v1.4.3): never ask, refresh once, say so ----------
+   Every 20 s (and on open / coming back to the app) it reads version.txt (a few bytes, fresh address each time).
+   When a newer version is out it downloads the new page first and checks it really is newer, then refreshes once
+   to that exact address (so GitHub can't hand back the old copy). Waits only while a finger is down, a sheet is
+   open or a chat message is being typed. After the refresh a small "Updated to X" banner shows for 3 s.
+   At most 3 tries per version in 10 minutes, so it can never loop. Full-page check every 5 min as a backup. */
 const UPD_KEY = 'fgt-upd';
-(function(){ try{ if(/[?&]v=/.test(location.search) && history.replaceState) history.replaceState(history.state, '', location.pathname + location.hash); }catch(e){} })();
+(function(){ try{ if(/[?&](v|r)=/.test(location.search) && history.replaceState) history.replaceState(history.state, '', location.pathname + location.hash); }catch(e){} })();
 function verParts(v){ return String(v || '').split('.').map(function(x){ return parseInt(x, 10) || 0; }); }
 function isNewerVer(a, b){ const x = verParts(a), y = verParts(b); for(let i = 0; i < Math.max(x.length, y.length); i++){ const d = (x[i] || 0) - (y[i] || 0); if(d) return d > 0; } return false; }
 function updMemo(){ try{ return JSON.parse(sessionStorage.getItem(UPD_KEY) || 'null'); }catch(e){ return null; } }
-function setUpdMemo(v){ try{ sessionStorage.setItem(UPD_KEY, JSON.stringify(v)); }catch(e){} }
-let updLastCheck = 0, updFound = '', updChecking = false;
+function setUpdMemo(v){ try{ if(v) sessionStorage.setItem(UPD_KEY, JSON.stringify(v)); else sessionStorage.removeItem(UPD_KEY); }catch(e){} }
+let updLastFull = 0, updChecking = false, updWait = 0;
 const UPD_T0 = Date.now(), UPD_START_DELAY = 3000;
-function appBusy(){ if(document.querySelector('.overlay.show')) return true; if(press || swipe.active) return true; if(!gate.hidden) return true; return false; }
-function goUpdate(ver, force){
-  const m = updMemo(); if(!force && m && m.to === ver && Date.now() - m.t < 600000) return false;
-  setUpdMemo({ to: ver, t: Date.now() });
-  try{ location.replace(location.pathname + '?v=' + encodeURIComponent(ver) + location.hash); }catch(e){ return false; }
-  return true;
+function appBusy(){
+  if(document.querySelector('.overlay.show')) return true; if(press || swipe.active) return true; if(!gate.hidden) return true;
+  const ae = document.activeElement; if(ae && /TEXTAREA|INPUT/.test(ae.tagName) && ae.value) return true;   // typing a chat message
+  return false;
+}
+// after a refresh: say which version we're on now (or try again if the refresh landed on the old copy)
+(function(){
+  const m = updMemo(); if(!m || !m.to) return;
+  if(!isNewerVer(m.to, APP_VERSION)){ setUpdMemo(null); setTimeout(function(){ showUpdated(APP_VERSION); }, 400); }
+  else if((m.n || 0) < 3 && Date.now() - m.t < 600000) setTimeout(function(){ goUpdate(m.to); }, 1500);
+})();
+function showUpdated(v){
+  const el = document.createElement('div'); el.className = 'updok'; el.setAttribute('role', 'status');
+  el.innerHTML = '<span class="uoi"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Updated to ' + esc(v);
+  document.body.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('in'); });
+  setTimeout(function(){ el.classList.remove('in'); setTimeout(function(){ el.remove(); }, 500); }, 3000);
+}
+function goUpdate(ver){
+  if(appBusy()){ clearTimeout(updWait); updWait = setTimeout(function(){ goUpdate(ver); }, 700); return; }
+  const m = updMemo(), same = m && m.to === ver && Date.now() - m.t < 600000, n = same ? (m.n || 0) : 0;
+  if(n >= 3) return;                                                     // tried 3 times: wait for the next check after 10 min
+  const url = location.pathname + '?v=' + encodeURIComponent(ver) + '&r=' + Date.now().toString(36) + location.hash;
+  // download the new page into the browser's cache first, check it, then refresh to that same address
+  fetch(url.split('#')[0], { cache: 'reload' }).then(function(r){ return r && r.ok ? r.text() : ''; }).then(function(html){
+    const mm = /const APP_VERSION = '([0-9.]+)'/.exec(html || '');
+    if(!mm || isNewerVer(APP_VERSION, mm[1]) || mm[1] === APP_VERSION) return;   // not actually newer yet: next check tries again
+    if(appBusy()){ updWait = setTimeout(function(){ goUpdate(ver); }, 700); return; }
+    setUpdMemo({ to: ver, t: same ? m.t : Date.now(), n: n + 1 });
+    try{ location.replace(url); }catch(e){}
+  }).catch(function(){});
 }
 function checkUpdate(reason){
   if(typeof fetch !== 'function' || document.hidden || updChecking) return;
-  const now = Date.now();
-  if(reason === 'wake' && now - UPD_T0 < UPD_START_DELAY - 50) return;
-  if(now - updLastCheck < (reason === 'wake' ? 60000 : 240000)) return;
+  if(reason === 'wake' && Date.now() - UPD_T0 < UPD_START_DELAY - 50) return;
   updChecking = true;
-  fetch(location.pathname + '?check=' + now, { cache: 'no-store' })
-    .then(function(r){ if(!(r && r.ok)) return ''; updLastCheck = Date.now(); return r.text(); })
-    .then(function(html){
-      const m = /const APP_VERSION = '([0-9.]+)'/.exec(html || '');
-      if(!m || !isNewerVer(m[1], APP_VERSION)) return;
-      updFound = m[1];
-      if(!appBusy() && goUpdate(updFound, false)) return;
-      $('#updSub').textContent = 'Version ' + updFound + ' · takes a second'; $('#updBar').hidden = false;
+  const full = Date.now() - updLastFull > 300000;                       // every 5 min also read the page itself (backup)
+  fetch(full ? location.pathname + '?check=' + Date.now() : 'version.txt?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r && r.ok ? r.text() : ''; })
+    .then(function(t){
+      if(full) updLastFull = Date.now();
+      const m = full ? /const APP_VERSION = '([0-9.]+)'/.exec(t || '') : /^\s*([0-9]+(?:\.[0-9]+)+)\s*$/.exec(t || '');
+      if(m && isNewerVer(m[1], APP_VERSION)) goUpdate(m[1]);
     })
     .catch(function(){}).then(function(){ updChecking = false; });
 }
-$('#updBar').addEventListener('click', function(){ if(!updFound) return; $('#updKick').textContent = 'UPDATING'; $('#updTitle').textContent = 'Getting ' + updFound + '…'; setTimeout(function(){ goUpdate(updFound, true); }, 350); });
-setInterval(function(){ checkUpdate('timer'); }, 300000);
+setInterval(function(){ checkUpdate('timer'); }, 20000);
 
 /* ---------- single-file PWA: manifest + home-screen icon built at runtime ---------- */
 (function(){

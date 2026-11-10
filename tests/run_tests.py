@@ -242,6 +242,14 @@ with sync_playwright() as pw:
         check(f'[{tag}] week final -> Dallas record 4-5', page.evaluate("(() => { const A = window.__fgt.stAdjust(true); const d = A.byId['11']; return d.wins + '-' + d.losses + ' ' + d.streak; })()") == '4-5 W1')
         check(f'[{tag}] badge on Standings tab', page.locator('.tabbtn[data-tab="standings"] .cbadge').count() == 1)
         page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(400)
+        old_wl = page.inner_text('.strow.me .stwl')
+        check(f'[{tag}] shuffle starts on last week (Dallas 3-5, banner waits)', old_wl == '3-5' and page.locator('.recban.later').count() == 1, old_wl)
+        if os.environ.get('FGT_SHOTS_ON'):
+            page.screenshot(path=f'{SHOTS}/{tag}-shuffle-1.png'); page.wait_for_timeout(1600)
+            page.screenshot(path=f'{SHOTS}/{tag}-shuffle-2.png'); page.wait_for_timeout(1000)
+            page.screenshot(path=f'{SHOTS}/{tag}-shuffle-3.png')
+        page.wait_for_timeout(4600)
+        check(f'[{tag}] after shuffle: Dallas 4-5, banner shows', page.inner_text('.strow.me .stwl') == '4-5' and page.locator('.recban.later').count() == 0)
         check(f'[{tag}] records updated banner', 'Records updated' in page.inner_text('#view'))
         check(f'[{tag}] badge cleared', page.locator('.tabbtn[data-tab="standings"] .cbadge').count() == 0)
         if os.environ.get('FGT_SHOTS_ON'):
@@ -293,5 +301,10 @@ with sync_playwright() as pw:
         ctx.close()
     br.close()
 srv.shutdown()
+# version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
+import re as _re2
+_app = _re2.search(r"const APP_VERSION = '([0-9.]+)'", open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'index.html')).read()).group(1)
+_vt = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'version.txt')).read().strip()
+check('version.txt matches APP_VERSION', _vt == _app, (_vt, _app))
 print('\nFAILED: ' + ', '.join(fails) if fails else '\nALL PASSED')
 sys.exit(1 if fails else 0)
