@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.6';
+const APP_VERSION = '1.4.7';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.7', 'After the week ends, playoff odds and the win bar stay on: finished games show 100% / 0% from the final scores, and playoff odds keep running while next week’s projections are already in.'],
   ['1.4.6', 'Once the week is final your phone remembers it, so reopening the app shows the new standings right away (no flicker back to last week). A game only counts as over when ESPN says Final.'],
   ['1.4.5', 'Faster end of week: after a game ends, the app checks every 30 seconds until ESPN’s final box score is in, so records update about 1–2 minutes after the final whistle.'],
   ['1.4.4', 'When CBS moves to the next week, the app moves with you right away if you were on the current week. Looking at an older week on purpose? It leaves you there.'],
@@ -1323,14 +1324,22 @@ function statusStrip(){
   cls = 'bad';
   return '<div class="status"><span class="dot ' + cls + '"></span><span>' + lead + (parts.length ? ' · ' + parts.join(' · ') : '') + (warn ? '<br>' + warn : '') + '</span></div>';
 }
+// a finished matchup's result from the final scores (ties go to bench points); null while anything can still change
+function finalWa(la, lb){
+  if(!la || !lb || la.left || lb.left || !la.any) return null;
+  if(la.pts !== lb.pts) return la.pts > lb.pts ? 1 : 0;
+  if(la.bleft || lb.bleft) return null;
+  return la.bpts > lb.bpts ? 1 : la.bpts < lb.bpts ? 0 : 0.5;
+}
 function card(mt, mine, LM){
   const A = mine && mt.away && mt.away.id === S.team ? mt.away : mt.home, B = A === mt.home ? mt.away : mt.home;
   const la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
   const pinned = !mine && !!mt._pin;
   const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home;
-  const wa = E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const done = left === 0 && (la && la.any);
+  const fw = done && B ? finalWa(la, lb) : null;
+  const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
   const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
@@ -1339,7 +1348,7 @@ function card(mt, mine, LM){
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
     (mine ? '' : '<span class="tag left">' + left + ' left</span>') +
     '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
-    (E && B && mine ? wpRow(wa, true, done) : (mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
+    (wa != null && B && mine ? wpRow(wa, true, done) : (mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
 }
 function homeView(){
   let h = header('Game Tracker') + onStrip() + statusStrip();
@@ -1437,14 +1446,15 @@ function matchView(){
   const total = (la ? la.rows.filter(Boolean).length : 0) + (lb ? lb.rows.filter(Boolean).length : 0);
   const status = left === 0 && total ? 'Final' : (left === total ? 'Not started' : 'Live · ' + left + ' players left');
   const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home, dw = isDivWeek(LM.model);
-  const wa = E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null, note = engNote();
+  const fw = status === 'Final' && B ? finalWa(la, lb) : null;
+  const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null, note = engNote();
   const fl = function(t, r){ return '<span class="fplogo' + (r ? ' r' : '') + '">' + (t ? img(t.logo, t.code) : '') + '</span>'; };
   h += '<section class="hero' + (dw ? ' dw' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (a > b ? 'lead' : '') + '">' + a + '</b><b class="' + (b > a ? 'lead' : '') + '">' + b + '</b></div>' +
     (E && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
     '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
     '<div class="lstat">' + status + '</div>' +
-    (E && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
+    (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x){ return '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
   h += '<div id="mrows" data-key="rows-' + mt.key + '">';
   h += '<div class="plist"><div class="plabel"><span>Starters · points</span><span>Tap for stats</span></div>';
@@ -2636,7 +2646,13 @@ function projFor(pl){
   const c2 = c.filter(function(r){ return r.k[0] === fi; });
   return c2.length === 1 ? c2[0] : (c.length === 1 ? c[0] : null);
 }
-function engineReady(){ return !!(S.proj && S.curWeek && S.proj.week === S.curWeek && S.week === S.curWeek); }
+function engineReady(){
+  if(!(S.proj && S.curWeek && S.week === S.curWeek)) return false;
+  if(S.proj.week === S.curWeek) return true;
+  // v1.4.7: the week is over (every score locked) and projections already moved on -> keep running:
+  // this week's results are fixed and playoff odds use the next weeks' projections
+  return S.proj.week === S.curWeek + 1 && lastFinalWeek() === S.curWeek;
+}
 // minutes left in regulation -> fraction of the game still to play
 function gameFrac(g){
   if(!g) return 1;

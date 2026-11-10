@@ -37,6 +37,8 @@ def route(r):
         ev = u.split('event=')[1].split('&')[0]
         data = {'1': F.sum_cin_atl, '2': lambda: F.sum_det_mia(state['gordon_rush'], state['gordon_td'], state['gordon_fl']), '3': F.sum_nyj_kc}.get(ev)
         return r.fulfill(json=data() if data else {"boxscore": {}, "scoringPlays": []})
+    if u.startswith('http://127.0.0.1') and '/projections.json' in u:     # pinned Week 9 projections (the live file moves on each week)
+        return r.fulfill(path=os.path.join(os.path.dirname(os.path.abspath(__file__)), os.environ.get('FGT_PROJ', 'projections-week9.json')), content_type='application/json')
     if u.startswith('http://127.0.0.1'):
         return r.continue_()
     return r.abort()   # fonts, logos: offline in tests
