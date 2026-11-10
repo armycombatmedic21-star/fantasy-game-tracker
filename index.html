@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.5.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.5.1', 'New week arrives on its own: every Tuesday at 6 AM the app switches to the new week by itself (no waiting for CBS). Lineup changes show up in about a minute.'],
   ['1.5.0', 'Standings are now built week by week: past weeks use CBS’s official scores, this week uses our live scores, and season totals add those up, so points and records can never be counted twice. Points Scored and Against now include games in progress, updating live.'],
   ['1.4.8', 'Playoff odds fixed: the regular season ends after Week 11, so odds now play out only the 2 weeks that are actually left (it was adding a made-up Week 12).'],
   ['1.4.7', 'After the week ends, playoff odds and the win bar stay on: finished games show 100% / 0% from the final scores, and playoff odds keep running while next week’s projections are already in.'],
@@ -2213,6 +2214,31 @@ window.addEventListener('pointercancel', function(e){ if(swipe.id === e.pointerI
 
 /* ---------- data: CBS (through the Worker), ESPN scoreboard + box scores ---------- */
 const busy = {};
+// v1.5.1 (Wes): every Tuesday 6 AM ET the app rolls to the new week, like FantasyPros. Week P counts as over when
+// this phone saw it final (rolls at the next 6 AM ET after that) or CBS's standings show its games. CBS rollover = backup.
+function next6amET(t){
+  const et = new Date(new Date(t).toLocaleString('en-US', { timeZone: 'America/New_York' })), off = t - et.getTime();
+  const d = new Date(et.getTime()); if(d.getHours() >= 6) d.setDate(d.getDate() + 1); d.setHours(6, 0, 0, 0);
+  return d.getTime() + off;
+}
+function effWeek(P){
+  P = num(P); if(!P) return P;
+  const sv = savedFinal(P);
+  let posted = false; const d = S.standings && S.standings.overall_standings && S.standings.overall_standings.divisions;
+  if(Array.isArray(d)) d.forEach(function(x){ (x.teams || []).forEach(function(t){ if(num(t.wins) + num(t.losses) + num(t.ties) >= P) posted = true; }); });
+  if(posted) return P + 1;
+  if(sv && Date.now() >= next6amET(sv.at)) return P + 1;
+  return P;
+}
+function applyWeek(){                             // set the app's current week (CBS period, or the next week after Tuesday 6 AM)
+  const P = num(S.cbsPeriod); if(!P) return;
+  const eff = effWeek(P), prevCur = S.curWeek;
+  if(eff === prevCur && S.week) return;
+  S.curWeek = eff; put('cur-week', eff);
+  if(eff !== P && !(S.cbs[eff] && S.cbs[eff].data)) loadCbs(eff);
+  if(!S.week) S.week = eff;
+  else if(prevCur && eff !== prevCur && S.week === prevCur) followNewWeek();   // you were on the current week: go with it
+}
 function loadCbs(week){
   const key = 'cbs' + (week || 'cur');
   if(busy[key]) return;
@@ -2222,10 +2248,8 @@ function loadCbs(week){
       if(!j || !j.ok || !j.data || !j.data.live_scoring) throw Object.assign(new Error((j && j.error) || 'bad'), { code: (j && j.error) || 'bad' });
       const w = num(j.data.live_scoring.period) || week;
       if(!week){
-        const prevCur = S.curWeek;
-        S.curWeek = w; put('cur-week', w);
-        if(!S.week) S.week = w;
-        else if(prevCur && w !== prevCur && S.week === prevCur) followNewWeek();   // CBS rolled over while you were on the current week
+        S.cbsPeriod = w;
+        applyWeek();
       }
       const old = S.cbs[w];
       S.cbs[w] = { data: j.data, at: j.at || Date.now(), err: j.source === 'stale' ? (j.error || 'stale') : '' };
@@ -2339,6 +2363,9 @@ function tick(){
   const now = Date.now();
   const live = isCurrentWeek() && anyLive();
   const nk = nextKick(), soon = !!(nk && nk - now < 10 * 60000);
+  applyWeek();
+  const ahead = num(S.curWeek) > num(S.cbsPeriod) && num(S.cbsPeriod) > 0;     // app already on next week: lineups every 20 s
+  if(ahead && now - (last.next || 0) >= 20000){ last.next = now; loadCbs(S.curWeek); }
   if(now - last.cbs >= (live || soon ? 60000 : 300000)){ last.cbs = now; loadCbs(); }
   const settle = !live && isCurrentWeek() && boxSettling();
   if(S.curWeek && isCurrentWeek() && now - last.sb >= (live ? 10000 : (soon || settle ? 30000 : 300000))){ last.sb = now; loadSb(S.curWeek); }
