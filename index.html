@@ -712,10 +712,12 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.5.3', 'Playoff odds are more realistic: every team plays its best healthy lineup in the weeks left (an owner who hasn’t set his lineup yet still will), open spots get a waiver pickup, and Week 12 is included — 1st AFC vs 1st NFC, 2nd vs 2nd and so on, by the standings after Week 11. Matchups and the scoreboard still show the real CBS lineups.'],
+  ['1.5.2', 'Lineup changes show up within about a minute, even before CBS moves to the new week. Projections no longer show 0 for a game that doesn’t have a betting line yet.'],
   ['1.5.1', 'New week arrives on its own: every Tuesday at 6 AM the app switches to the new week by itself (no waiting for CBS). Lineup changes show up in about a minute.'],
   ['1.5.0', 'Standings are now built week by week: past weeks use CBS’s official scores, this week uses our live scores, and season totals add those up, so points and records can never be counted twice. Points Scored and Against now include games in progress, updating live.'],
   ['1.4.8', 'Playoff odds fixed: the regular season ends after Week 11, so odds now play out only the 2 weeks that are actually left (it was adding a made-up Week 12).'],
@@ -2584,7 +2586,20 @@ function engineWorker(){
     }
     return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec');
   }
-  let P = {}, LG = 22, BYES = {}, cache = {};
+  let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {};
+  // v1.5.3 (Wes, Nov 10): playoff odds assume every owner fills a position nobody healthy can play with a waiver pickup.
+  // Conservative: the player just past what 12 teams typically roster at that position (this week and neutral).
+  const REPL_RANK = { QB: 26, RB: 62, WR: 62, TE: 20, K: 14, DST: 14 };
+  function setRepl(players){
+    REPL = {}; REPLN = {};
+    Object.keys(REPL_RANK).forEach(function(pos){
+      const n = REPL_RANK[pos] - 1;
+      const wk = players.filter(function(r){ return r.p === pos && !r.bye && r.m > 0 && r.c && r.c.length; }).sort(function(a, b){ return b.m - a.m; });
+      if(wk.length) REPL[pos] = wk[Math.min(n, wk.length - 1)].k;
+      const nt = players.filter(function(r){ return r.p === pos && r.nm > 0; }).sort(function(a, b){ return b.nm - a.nm; });
+      if(nt.length){ const r = nt[Math.min(n, nt.length - 1)]; REPLN[pos] = { m: r.nm, v: Math.pow(r.ns || 0, 2) }; }
+    });
+  }
   function simPlayer(q){
     // q = { pid, key, pos, mode: pre|live|final|none, pts, live }
     const out = new Float32Array(N);
@@ -2668,19 +2683,46 @@ function engineWorker(){
     const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
     T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push({ m: r.nm || 0, v: Math.pow(r.ns || 0, 2) }); });
     Object.keys(pool).forEach(function(k){ pool[k].sort(function(a, b){ return b.m - a.m; }); });
-    const take = function(k){ return pool[k].length ? pool[k].shift() : { m: 0, v: 0 }; };
+    const take = function(k){ return pool[k].length ? pool[k].shift() : (REPLN[k] || { m: 0, v: 0 }); };
     const L = [take('QB'), take('RB'), take('WR'), take('WR'), take('TE'), take('K'), take('DST')];
     const fx = (pool.RB[0] || { m: -1 }).m >= (pool.WR[0] || { m: -1 }).m ? take('RB') : take('WR'); L.push(fx);
     let m = 0, v = 0; L.forEach(function(x){ m += x.m; v += x.v; });
     let bm = 0, bv = 0; Object.keys(pool).forEach(function(k){ pool[k].forEach(function(x){ bm += x.m; bv += x.v; }); });
     return { m: m, s: SPREAD_K * Math.sqrt(v), bm: bm, bs: SPREAD_K * Math.sqrt(bv) };
   }
+  // v1.5.3 (Wes, Nov 10): playoff odds play every team's best lineup this week, not the one set on CBS right now
+  // (an owner who hasn't set his lineup yet still will). Players whose game has started stay where CBS has them
+  // (locked); every open slot gets the best healthy, not-on-bye player left, by this week's projection; nobody left
+  // -> waiver fill. Matchup screens and the scoreboard keep the real CBS lineup.
+  const SLOTS = ['QB', 'RB', 'WR', 'WR', 'TE', 'K', 'DST', 'FLEX'];
+  function locked(q){ return q.mode === 'live' || (q.mode === 'final' && !q.bye); }
+  function optTeam(T){
+    const open = SLOTS.slice(), st = [], bench = [];
+    const fit = function(pos){ let i = open.indexOf(pos); if(i < 0 && (pos === 'RB' || pos === 'WR')) i = open.indexOf('FLEX'); if(i < 0) return false; open.splice(i, 1); return true; };
+    T.starters.forEach(function(q){ if(locked(q) && fit(q.pos)) st.push(q); });
+    const pool = [];
+    T.starters.concat(T.bench).forEach(function(q){
+      if(st.indexOf(q) >= 0) return;
+      if(locked(q)){ bench.push(q); return; }                                   // started on the bench: stays there
+      const r = P[q.key];
+      if(q.bye || !r || r.bye || !(r.pp > 0) || !(r.m > 0)){ bench.push(q); return; }
+      pool.push({ q: q, m: r.m });
+    });
+    pool.sort(function(a, b){ return b.m - a.m; });
+    pool.forEach(function(x){ if(fit(x.q.pos)) st.push(Object.assign({}, x.q, { mode: x.q.mode === 'final' ? 'pre' : x.q.mode })); else bench.push(x.q); });
+    open.forEach(function(sl){ const pos = sl === 'FLEX' ? 'RB' : sl; if(REPL[pos]) st.push({ pid: 'repl-' + sl, key: REPL[pos], pos: pos, nfl: 'repl-' + sl, mode: 'pre' }); });
+    return { starters: st, bench: bench };
+  }
+  function optMsg(msg){ const t = {}; Object.keys(msg.teams).forEach(function(id){ t[id] = optTeam(msg.teams[id]); }); return Object.assign({}, msg, { teams: t }); }
   function playoff(msg, wk){
     const S = msg.season; if(!S) return null;
     const ids = Object.keys(S.teams), R = RNG('season|' + msg.week + '|' + (wk ? 'live' : 'pre'));
     const cnt = {}; ids.forEach(function(id){ cnt[id] = 0; });
     const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
     const W = {}, DW = {}, PF = {}, PAg = {};
+    // league tiebreakers (CBS): win %, division record, total points, head to head, points against.
+    // Head to head is skipped: simulated total points never tie, so it would never be reached.
+    const rank = function(a, b){ return (W[b] - W[a]) || (DW[b] - DW[a]) || (PF[b] - PF[a]) || (PAg[b] - PAg[a]); };
     for(let i = 0; i < N; i++){
       ids.forEach(function(id){ const t = S.teams[id]; W[id] = t.w + 0.5 * t.t; DW[id] = t.dw + 0.5 * t.dt; PF[id] = t.pf; PAg[id] = t.pa; });
       const game = function(a, b, sa, sb, ba, bb){ let x = sa > sb ? 1 : sa < sb ? 0 : (ba > bb ? 1 : ba < bb ? 0 : R.u() < 0.5 ? 1 : 0);
@@ -2689,13 +2731,19 @@ function engineWorker(){
         W[pr[0]] += x; W[pr[1]] += 1 - x; PF[pr[0]] += ta[i]; PF[pr[1]] += tb[i]; PAg[pr[0]] += tb[i]; PAg[pr[1]] += ta[i]; if(S.teams[pr[0]].div === S.teams[pr[1]].div){ DW[pr[0]] += x; DW[pr[1]] += 1 - x; } });
       S.future.forEach(function(F){
         let pairs = F.pairs;
+        if(pairs === 'rank'){   // v1.5.3: Week 12 = 1st AFC vs 1st NFC, 2nd vs 2nd ... (standings after Week 11)
+          const dv = {}; ids.forEach(function(id){ (dv[S.teams[id].div] || (dv[S.teams[id].div] = [])).push(id); });
+          const ks = Object.keys(dv).sort(); pairs = [];
+          if(ks.length === 2){ const a = dv[ks[0]].sort(rank), b = dv[ks[1]].sort(rank); for(let k = 0; k < Math.min(a.length, b.length); k++) pairs.push([a[k], b[k]]); }
+          else pairs = null;
+        }
         if(!pairs){ const sh = ids.slice(); for(let k = sh.length - 1; k > 0; k--){ const j = Math.floor(R.u() * (k + 1)); const t = sh[k]; sh[k] = sh[j]; sh[j] = t; } pairs = []; for(let k = 0; k + 1 < sh.length; k += 2) pairs.push([sh[k], sh[k + 1]]); }
         pairs.forEach(function(pr){ const A = fut[F.w][pr[0]], B = fut[F.w][pr[1]]; if(!A || !B) return;
           game(pr[0], pr[1], Math.round(A.m + A.s * R.n()), Math.round(B.m + B.s * R.n()), A.bm + A.bs * R.n(), B.bm + B.bs * R.n()); });
       });
       const divs = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); });
       Object.keys(divs).forEach(function(d){
-        divs[d].sort(function(a, b){ return (W[b] - W[a]) || (DW[b] - DW[a]) || (PF[b] - PF[a]) || (PAg[b] - PAg[a]); });
+        divs[d].sort(rank);
         divs[d].slice(0, 5).forEach(function(id){ cnt[id]++; });
       });
     }
@@ -2703,14 +2751,15 @@ function engineWorker(){
   }
   self.onmessage = function(e){
     const msg = e.data;
-    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
       const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
       const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
     if(msg.type !== 'run') return;
     try{
       Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });
-      const live = runWeek(msg, true), pre = msg.season ? runWeek(msg, false) : null;
-      const po = msg.season ? playoff(msg, live) : null, po0 = msg.season ? playoff(msg, pre) : null;
+      const live = runWeek(msg, true);
+      let po = null, po0 = null;
+      if(msg.season){ const om = optMsg(msg); po = playoff(msg, runWeek(om, true)); po0 = playoff(msg, runWeek(om, false)); }
       const keep = {}; Object.keys(cache).forEach(function(k){ keep[k] = 1; });
       self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0 });
     }catch(err){ self.postMessage({ type: 'error', id: msg.id, err: String(err && err.message || err) }); }
@@ -2785,7 +2834,7 @@ function engState(pl, L){
   const q = { pid: pl.id, key: r ? r.k : '', pos: pl.pos, nfl: nvTeam(pl.nfl), wr1: !!(r && r.wr1), mode: 'pre' };
   if(!r) q.mode = 'none';
   if(!L) return q;
-  if(L.state === 'bye'){ q.mode = 'final'; q.pts = 0; return q; }
+  if(L.state === 'bye'){ q.mode = 'final'; q.pts = 0; q.bye = true; return q; }
   if(L.state === 'post'){ q.mode = 'final'; q.pts = L.pts || 0; return q; }
   if(L.state === 'in' && L.s){
     const s = L.s, sum = function(a){ return (a || []).reduce(function(t, l){ return t + tdPts(l); }, 0); };
@@ -2799,8 +2848,9 @@ function engState(pl, L){
   }
   return q;
 }
-// last regular-season week (Wes, CBS schedule Nov 10: Week 11 is the last; playoff odds simulate only weeks left through it)
-const REG_END = 11;
+// last regular-season week. v1.5.3 (Wes + Dale, Nov 10): Week 12 counts — AFC vs NFC by standing after Week 11
+// (1st vs 1st ... 6th vs 6th), not on CBS's schedule yet. Top 5 per division after Week 12 make the playoffs.
+const REG_END = 12, RANK_WEEK = 12;
 function seasonInputs(m){
   const SA = stAdjust(false), st = SA && SA.divs;
   if(!Array.isArray(st)) return null;
@@ -2816,6 +2866,7 @@ function seasonInputs(m){
     const f = ENG.fut[w];
     let pairs = null;
     if(f){ const used = {}; pairs = []; Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); }); if(pairs.length < ids.length / 2) pairs = null; }
+    if(!pairs && w === RANK_WEEK) pairs = 'rank';   // CBS has no Week 12 opponents: pair by standings in each simulated season
     future.push({ w: w, pairs: pairs });
   }
   return { teams: teams, countCur: countCur, curPairs: curPairs, future: future };
