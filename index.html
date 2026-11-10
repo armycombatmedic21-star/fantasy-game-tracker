@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.5';
+const APP_VERSION = '1.4.6';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.6', 'Once the week is final your phone remembers it, so reopening the app shows the new standings right away (no flicker back to last week). A game only counts as over when ESPN says Final.'],
   ['1.4.5', 'Faster end of week: after a game ends, the app checks every 30 seconds until ESPN’s final box score is in, so records update about 1–2 minutes after the final whistle.'],
   ['1.4.4', 'When CBS moves to the next week, the app moves with you right away if you were on the current week. Looking at an older week on purpose? It leaves you there.'],
   ['1.4.3', 'Updates install themselves within about 20 seconds (no more tap to update), with a quick “Updated to …” note. End of the week: the first time you open Standings, teams slide from last week’s spots to their new ones, the movers pulse, then “Records updated” shows. 6th place is white again.'],
@@ -1473,6 +1474,19 @@ function matchView(){
    final box score (overtime = still live), ties settled on bench points, and the week has stayed final for a minute.
    Once CBS posts the week (its games-played count catches up), CBS's own numbers take over. */
 let CURW = null, finSince = 0, finTimer = 0;
+// v1.4.6: a week that went final is saved on the phone (fgt-wkfin-N) and used right away on every reopen
+const WKFIN = {};
+function savedFinal(w){
+  if(!w) return null;
+  if(!(w in WKFIN)){ const v = getLocal('wkfin-' + w); WKFIN[w] = (v && v.teams && Date.now() - (v.at || 0) < 10 * 86400000) ? v : null; }
+  return WKFIN[w];
+}
+function saveFinal(w, teams){
+  const prev = WKFIN[w], sig = JSON.stringify(teams);
+  if(prev && prev.sig === sig) return;
+  const v = { teams: JSON.parse(sig), at: Date.now(), sig: sig };
+  WKFIN[w] = v; put('wkfin-' + w, v);
+}
 function noteCurWeek(LM){
   const m = LM && LM.model; if(!m || !S.curWeek || m.week !== S.curWeek || S._freeze) return;   // _freeze: tests only
   const sb = S.sb[S.curWeek] && S.sb[S.curWeek].parsed;
@@ -1483,7 +1497,7 @@ function noteCurWeek(LM){
     if(fin) t.lineup.concat(t.bench).forEach(function(p){
       if(!p || p.ir) return;
       const g = gameFor(p.nfl); if(!g) return;                                   // bye
-      if(g.state !== 'post' || /POSTPONED|CANCEL|SUSPEND|DELAY/i.test(g.statusName || '')) fin = false;
+      if(g.state !== 'post' || !/FINAL/i.test(g.statusName || '') || /POSTPONED|CANCEL|SUSPEND|DELAY/i.test(g.statusName || '')) fin = false;
       else { const sm = S.sums[g.id]; if(!sm || !sm.P || !sm.P.final) fin = false; }   // wait for ESPN's final box score
     });
   });
@@ -1492,7 +1506,11 @@ function noteCurWeek(LM){
   fin = fin && n >= 2;
   const now = Date.now();
   if(!fin) finSince = 0; else if(!finSince) finSince = now;
-  CURW = { week: m.week, teams: teams, final: fin && now - finSince >= 60000, at: Math.floor(now / 5000) + (fin ? 'f' : '') };
+  const finalNow = fin && now - finSince >= 60000;
+  if(finalNow) saveFinal(m.week, teams);
+  const sv = savedFinal(m.week);
+  if(!finalNow && sv){ CURW = { week: m.week, teams: sv.teams, final: true, at: 'saved' + sv.at }; return; }   // already final on this phone
+  CURW = { week: m.week, teams: teams, final: finalNow, at: Math.floor(now / 5000) + (fin ? 'f' : '') };
   if(fin && now - finSince < 60000 && !finTimer) finTimer = setTimeout(function(){ finTimer = 0; liveMemo.sig = ''; render(); }, 61000 - (now - finSince));
 }
 function needGap(w){
@@ -1515,7 +1533,7 @@ function stAdjust(withLive){
   const st = S.standings, d = st && st.overall_standings && st.overall_standings.divisions;
   if(!Array.isArray(d) || !d.length) return null;
   const C = num(S.curWeek);
-  const sig = (st._at || 0) + '|' + C + '|' + (CURW ? CURW.week + ':' + CURW.at : '') + '|' + Object.keys(S.gap).map(function(w){ return w + ':' + (S.gap[w] && S.gap[w].at); }).join(',');
+  const sig = (st._at || 0) + '|' + C + '|' + (CURW ? CURW.week + ':' + CURW.at : '') + '|' + (savedFinal(C) ? savedFinal(C).at : '') + '|' + Object.keys(S.gap).map(function(w){ return w + ':' + (S.gap[w] && S.gap[w].at); }).join(',');
   if(stMemo.sig !== sig) stMemo = { sig: sig, v: {} };
   if(stMemo.v[withLive]) return stMemo.v[withLive];
   const divOf = {}, byId = {};
@@ -1526,7 +1544,7 @@ function stAdjust(withLive){
     t._g = played; t._pfDone = num(t.points_scored); t._paDone = num(t.points_against);
     if(!C) return;
     for(let w = played + 1; w <= C; w++){
-      const src = w === C ? (CURW && CURW.week === C ? CURW : null) : (S.gap[w] && S.gap[w].teams ? S.gap[w] : null);
+      const src = w === C ? ((CURW && CURW.week === C && CURW.final) ? CURW : (savedFinal(C) ? Object.assign({ final: true }, savedFinal(C)) : (CURW && CURW.week === C ? CURW : null))) : (S.gap[w] && S.gap[w].teams ? S.gap[w] : null);
       if(!src){ if(w < C) needGap(w); continue; }
       const me = src.teams[id]; if(!me) continue;
       const op = src.teams[me.opp], fin = w < C || src.final;
@@ -1553,7 +1571,7 @@ function stAdjust(withLive){
   });
   // movement since last week: undo the newest finished week (week N) and rank each division again
   let N = 0; Object.keys(byId).forEach(function(id){ if(byId[id]._g > N) N = byId[id]._g; });
-  const srcN = N < 2 ? null : (N === C && CURW && CURW.week === C && CURW.final) ? CURW : (S.gap[N] && S.gap[N].teams ? S.gap[N] : null);
+  const srcN = N < 2 ? null : (N === C && CURW && CURW.week === C && CURW.final) ? CURW : (N === C && savedFinal(C)) ? savedFinal(C) : (S.gap[N] && S.gap[N].teams ? S.gap[N] : null);
   if(N >= 2 && !srcN) needGap(N);
   if(srcN) divs.forEach(function(x){
     const cur = x.teams.slice().sort(function(a, b){ return num(a.order) - num(b.order); });
@@ -1583,7 +1601,7 @@ function recOf(t){
   return num(x.wins) + '-' + num(x.losses) + (num(x.ties) ? '-' + num(x.ties) : '');
 }
 // newest week whose results are final (this week once Monday night is over, otherwise last week)
-function lastFinalWeek(){ const C = num(S.curWeek); if(!C) return 0; return (CURW && CURW.week === C && CURW.final) ? C : C - 1; }
+function lastFinalWeek(){ const C = num(S.curWeek); if(!C) return 0; return ((CURW && CURW.week === C && CURW.final) || savedFinal(C)) ? C : C - 1; }
 function recSeen(){ let v = getLocal('rec-seen'); const lf = lastFinalWeek(); if((v == null || v === '') && lf >= 1 && S.standings){ put('rec-seen', lf); v = lf; } return num(v); }
 function recNew(){ const lf = lastFinalWeek(); return !!(S.standings && lf >= 1 && lf > recSeen()); }
 function recOnEnter(){ if(recNew()){ const lf = lastFinalWeek(); S.recBanner = { w: lf, anim: true }; put('rec-seen', lf); } }
