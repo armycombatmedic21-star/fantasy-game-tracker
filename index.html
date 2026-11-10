@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.7';
+const APP_VERSION = '1.4.8';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.8', 'Playoff odds fixed: the regular season ends after Week 11, so odds now play out only the 2 weeks that are actually left (it was adding a made-up Week 12).'],
   ['1.4.7', 'After the week ends, playoff odds and the win bar stay on: finished games show 100% / 0% from the final scores, and playoff odds keep running while next week’s projections are already in.'],
   ['1.4.6', 'Once the week is final your phone remembers it, so reopening the app shows the new standings right away (no flicker back to last week). A game only counts as over when ESPN says Final.'],
   ['1.4.5', 'Faster end of week: after a game ends, the app checks every 30 seconds until ESPN’s final box score is in, so records update about 1–2 minutes after the final whistle.'],
@@ -2684,6 +2685,8 @@ function engState(pl, L){
   }
   return q;
 }
+// last regular-season week (Wes, CBS schedule Nov 10: Week 11 is the last; playoff odds simulate only weeks left through it)
+const REG_END = 11;
 function seasonInputs(m){
   const SA = stAdjust(false), st = SA && SA.divs;
   if(!Array.isArray(st)) return null;
@@ -2695,7 +2698,7 @@ function seasonInputs(m){
   const countCur = played < m.week;
   const curPairs = m.matchups.filter(function(x){ return x.home && x.away; }).map(function(x){ return [x.home.id, x.away.id]; });
   const future = [];
-  for(let w = m.week + 1; w <= 12; w++){
+  for(let w = m.week + 1; w <= REG_END; w++){
     const f = ENG.fut[w];
     let pairs = null;
     if(f){ const used = {}; pairs = []; Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); }); if(pairs.length < ids.length / 2) pairs = null; }
@@ -2705,7 +2708,7 @@ function seasonInputs(m){
 }
 function loadFuture(){
   const m = weekModel(); if(!m || !S.curWeek || S.week !== S.curWeek) return;
-  for(let w = S.curWeek + 1; w <= 12; w++){
+  for(let w = S.curWeek + 1; w <= REG_END; w++){
     if(busy['fut' + w] || (ENG.futAt[w] && Date.now() - ENG.futAt[w] < 6 * 3600000)) continue;
     busy['fut' + w] = true;
     (function(w){
