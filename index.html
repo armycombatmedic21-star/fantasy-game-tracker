@@ -712,7 +712,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.5.2';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
@@ -1041,6 +1041,7 @@ const S = {
   curWeek: getLocal('cur-week') || null,   // the league's current week (CBS period)
   week: null,                              // the week on screen
   cbs: {},          // week -> { data, at, err, source }
+  ros: {},          // week -> { data, at, err }  CBS rosters feed: who's starting (v1.5.2)
   sb: {},           // week -> { parsed, at, err }
   sums: {},         // eventId -> { P, at, key, busy }
   standings: getLocal('standings') || null,
@@ -1054,6 +1055,12 @@ const S = {
 S.week = S.curWeek;
 if(S.curWeek){ const c = getLocal('cbs-w' + S.curWeek); if(c && c.data) S.cbs[S.curWeek] = { data: c.data, at: c.at, cached: true }; }
 
+const ROS_ST = { A: 'Active', RS: 'Reserve', I: 'Injured' };
+function rosFor(w){                               // rosters feed for week w, only for the current week and later (past weeks: the live feed is final)
+  const r = S.ros[w];
+  if(!w || !r || !r.data || num(w) < num(S.curWeek)) return null;
+  return r;
+}
 function curSb(){ const x = S.sb[S.week]; return x && x.parsed; }
 function isCurrentWeek(){ return !S.curWeek || S.week === S.curWeek; }
 
@@ -1063,10 +1070,14 @@ function weekModel(){
   const c = S.cbs[S.week];
   const L = c && c.data && c.data.live_scoring;
   if(!L || !Array.isArray(L.teams)) return null;
-  if(modelMemo.src === L) return modelMemo.m;
+  const R = rosFor(S.week);
+  if(modelMemo.src === L && modelMemo.ros === R) return modelMemo.m;
+  const rmap = {};
+  if(R) R.data.teams.forEach(function(t){ rmap[String(t.id)] = t; });
   const teams = {};
   L.teams.forEach(function(t){
-    const id = String(t.id), seen = {}, list = [];
+    const id = String(t.id), seen = {};
+    let list = [];
     (t.players || []).forEach(function(p){
       const pid = String(p.id), st = p.status;
       if(seen[pid]){
@@ -1082,6 +1093,21 @@ function weekModel(){
                    nfl: nflAb(p.pro_team), cbsPts: (p.fpts === '' || p.fpts == null) ? null : num(p.fpts), cbsStats: p.stats_period || '', gi: p.game_info || {}, ord: list.length };
       seen[pid] = pl; list.push(pl);
     });
+    // v1.5.2 (Wes, Nov 10): CBS's live feed keeps last week's lineup until CBS rolls the week, but the rosters feed
+    // has lineup changes right away. For the current and future weeks the rosters feed decides who starts.
+    const rt = rmap[id];
+    if(rt && Array.isArray(rt.players) && rt.players.length){
+      const want = {};
+      rt.players.forEach(function(rp){
+        const pid = String(rp.id), st = ROS_ST[rp.roster_status] || 'Reserve'; want[pid] = 1;
+        if(seen[pid]){ seen[pid].status = st; seen[pid].ir = st === 'Injured'; return; }
+        const pos = String(rp.position || '').toUpperCase();
+        const pl = { id: pid, name: trim(rp.fullname), pos: pos === 'D' || pos === 'DEF' ? 'DST' : pos, rpos: String(rp.roster_pos || '').toUpperCase(), status: st, ir: st === 'Injured',
+                     nfl: nflAb(rp.pro_team), cbsPts: null, cbsStats: '', gi: {}, ord: list.length };
+        seen[pid] = pl; list.push(pl);
+      });
+      list = list.filter(function(p){ return want[p.id]; });   // dropped players leave the roster
+    }
     const starters = list.filter(function(p){ return p.status === 'Active'; });
     const bucket = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
     starters.forEach(function(p){ const r = p.rpos === 'D' || p.rpos === 'DEF' ? 'DST' : (bucket[p.rpos] ? p.rpos : p.pos); (bucket[r] || (bucket[r] = [])).push(p); });
@@ -1104,7 +1130,7 @@ function weekModel(){
     matchups.push({ key: 'm' + [home.id, away ? away.id : 'x'].sort(function(a, b){ return a - b; }).join('-'), home: home, away: away || null });
   });
   const m = { week: num(L.period) || S.week, teams: teams, matchups: matchups };
-  modelMemo = { src: L, m: m };
+  modelMemo = { src: L, ros: R, m: m };
   return m;
 }
 
@@ -1323,6 +1349,8 @@ function statusStrip(){
   if(c.err === 'cbs_key') warn = '<b class="warn">CBS key expired</b> · lineups can’t refresh';
   else if(c.err) warn = '<b class="warn">CBS slow</b> · showing lineups from ' + ago(c.at);
   if(sb && sb.err) warn = (warn ? warn + ' · ' : '') + '<b class="warn">Can’t reach ESPN</b>';
+  const rs = S.ros[S.week];
+  if(num(S.week) >= num(S.curWeek) && rs && rs.err && !rosFor(S.week)) warn = (warn ? warn + ' · ' : '') + '<b class="warn">Lineups may be stale</b> · can’t read this week’s lineup changes yet';
   if(!warn) return '';
   cls = 'bad';
   return '<div class="status"><span class="dot ' + cls + '"></span><span>' + lead + (parts.length ? ' · ' + parts.join(' · ') : '') + (warn ? '<br>' + warn : '') + '</span></div>';
@@ -2270,6 +2298,22 @@ function loadCbs(week){
       render();
     });
 }
+function loadRos(week){
+  if(!week || busy['ros' + week]) return;
+  busy['ros' + week] = true;
+  return getJSON(WORKER + '/rosters?week=' + week)
+    .then(function(j){
+      const d = j && j.ok && j.data && j.data.rosters;
+      if(!d || !Array.isArray(d.teams)) throw new Error('bad');
+      if(num(d.period) && num(d.period) !== num(week)) throw new Error('wrong week');   // never show another week's lineup
+      const old = S.ros[week];
+      S.ros[week] = { data: d, at: j.at || Date.now(), err: j.source === 'stale' ? 'stale' : '' };
+      if(old && JSON.stringify(old.data.teams) === JSON.stringify(d.teams)) S.ros[week].data = old.data;   // unchanged: keep the memo
+      if(!old || S.ros[week].data !== old.data) modelMemo.src = null;
+    })
+    .catch(function(){ const x = S.ros[week] || (S.ros[week] = {}); x.err = 'ros'; x.errAt = Date.now(); })
+    .then(function(){ busy['ros' + week] = false; render(); });
+}
 function loadSb(week){
   if(!week || busy['sb' + week]) return;
   busy['sb' + week] = true;
@@ -2336,6 +2380,7 @@ function loadStandings(){
 }
 function loadWeek(force){
   if(!S.week) return;
+  if(num(S.week) >= num(S.curWeek) && (force || !S.ros[S.week])) loadRos(S.week);
   if(!isCurrentWeek()){
     if(force || !S.cbs[S.week] || !S.cbs[S.week].data) loadCbs(S.week);
     if(force || !S.sb[S.week] || !S.sb[S.week].parsed) loadSb(S.week);
@@ -2367,6 +2412,7 @@ function tick(){
   const ahead = num(S.curWeek) > num(S.cbsPeriod) && num(S.cbsPeriod) > 0;     // app already on next week: lineups every 20 s
   if(ahead && now - (last.next || 0) >= 20000){ last.next = now; loadCbs(S.curWeek); }
   if(now - last.cbs >= (live || soon ? 60000 : 300000)){ last.cbs = now; loadCbs(); }
+  if(S.curWeek && now - (last.ros || 0) >= 60000){ last.ros = now; loadRos(S.curWeek); if(num(S.week) > num(S.curWeek)) loadRos(S.week); }   // lineup changes within ~1 min
   const settle = !live && isCurrentWeek() && boxSettling();
   if(S.curWeek && isCurrentWeek() && now - last.sb >= (live ? 10000 : (soon || settle ? 30000 : 300000))){ last.sb = now; loadSb(S.curWeek); }
   if(now - last.st >= 600000){ last.st = now; loadStandings(); }

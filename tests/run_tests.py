@@ -32,6 +32,12 @@ def route(r):
                     {"id": t[0], "pts": t[1], "opp_team_id": t[2], "players": [{"id": "b" + t[0], "status": "Reserve", "fpts": t[3]}]} for t in LEAGUE_WEEKS[str(wk)]]}}})
             return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_future(wk)})
         return r.fulfill(json={"ok": True, "source": "cbs", "feed": "league/scoring/live", "at": int(time.time() * 1000) - 20000, "data": F.build_live()})
+    if 'workers.dev/rosters' in u:   # v1.5.2: rosters feed mirrors the live feed's lineup (lineup-change cases: scratchpad test_ros.py)
+        wk = int(u.split('week=')[1].split('&')[0]) if 'week=' in u else 9
+        src = F.build_live() if wk == 9 else F.build_future(wk)
+        rs = {'Active': 'A', 'Reserve': 'RS', 'Injured': 'I'}
+        teams = [{'id': t['id'], 'players': [{**p, 'roster_status': rs.get(p.get('status'), 'RS')} for p in t.get('players', [])]} for t in src['live_scoring']['teams']]
+        return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": {"rosters": {"period": str(wk), "teams": teams}}})
     if 'workers.dev/standings' in u:
         return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_standings()})
     if '/scoreboard' in u:

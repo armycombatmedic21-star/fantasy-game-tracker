@@ -356,6 +356,12 @@ def build(week, fp_file=None, ov_file=None):
     team, rush_frac, gl, rz, ppg = team_context(ps, pbp)
     dratio = defense_ratios(ps)
     lg_ppg = float(np.mean(list(ppg.values()))) if ppg else 22.0
+    # Nov 10 2026 (Wes): betting lines often aren't posted yet early in the week. A team that has a game but no line
+    # gets its own scoring average as its implied total (same as the neutral projection) instead of a 0 projection.
+    no_line = sorted(t for t in playing if t not in implied)
+    for t in no_line:
+        implied[t] = ppg.get(t, lg_ppg)
+    no_line_al = set(no_line) | {ALIAS.get(t, t) for t in no_line}
     qbs = ps.filter(pl.col("attempts") > 0)
     g = qbs.group_by(["team", "opponent_team", "week"]).agg(pl.col("sacks_suffered").sum().alias("sk"), pl.col("passing_interceptions").sum().alias("int"))
     def_rates = {r["opponent_team"]: (r["sk"], r["int"]) for r in g.group_by("opponent_team").agg(pl.col("sk").mean(), pl.col("int").mean()).iter_rows(named=True)}
@@ -570,6 +576,9 @@ def build(week, fp_file=None, ov_file=None):
         rec.update(summ(sim, comps, 1.0, f"{opp} implied {comps[0]['oi']:.1f}; sacks {comps[0]['sk']:.1f}, INT {comps[0]['in']:.1f}/gm", []))
         dst.append(rec)
 
+    for r in out + dst:
+        if r.get("t") in no_line_al and not r.get("bye"):
+            r.setdefault("f", []).append("NO LINE YET: team scoring average used")
     reg = sched.filter(pl.col("game_type") == "REG")
     teams_all = set(ALIAS.get(t, t) for t in reg["home_team"].to_list())
     byes = {}
