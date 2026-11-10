@@ -171,7 +171,11 @@ with sync_playwright() as pw:
         check(f'[{tag}] 8 starter rows', rows == 8, rows)
         txt = page.inner_text('#mrows')
         check(f'[{tag}] FLEX row is Woody Marks', 'W. Marks' in page.inner_text('.prow[data-row="4"]'))
-        check(f'[{tag}] Tate shows once on the bench (IR)', txt.count('C. Tate') == 1 and 'IR' in page.inner_text('.plist:nth-of-type(2)'), txt)
+        # v1.6.0: IR has its own section under the bench (CBS IR slot); bench rows are always BN; empty IR slot says Empty
+        check(f'[{tag}] Tate shows once, in the IR section', txt.count('C. Tate') == 1 and 'C. Tate' in page.inner_text('.irlist') and page.inner_text('.irlist .chip').strip() == 'IR', txt)
+        check(f'[{tag}] bench rows are all BN, IR section has the empty NE slot', all(c.strip() == 'BN' for c in page.locator('.benchlist:not(.irlist) .chip').all_inner_texts()) and 'Empty' in page.inner_text('.irlist'))
+        check(f'[{tag}] every player has a position pill', page.locator('#mrows .ppos').count() == page.locator('#mrows .pside .nfl').count() > 0)
+        check(f'[{tag}] matchup header has week selector + settings', page.locator('.mhead #weekBtn').count() == 1 and page.locator('.mhead #gearBtn').count() == 1)
         hero = page.inner_text('#hero')
         check(f'[{tag}] header: Win Probability, projections, record + division rank, VS', 'Win Probability' in hero and '3-5 · 4th AFC' in hero and page.locator('#hero .pj span').count() == 2 and page.locator('#hero .vsw svg').count() == 1, hero)
         check(f'[{tag}] header Divisional Week badge', page.locator('#hero .divwk').count() == 1)

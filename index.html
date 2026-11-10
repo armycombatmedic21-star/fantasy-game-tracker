@@ -502,10 +502,6 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .mini span.mrow{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .mini span.mrow .tgw{flex:1 1 auto;display:flex;justify-content:center}
 .mini span.mrow .tg{width:12px;height:10px}
-.ppt{flex-direction:row;align-items:baseline;gap:6px}
-.ppt small{position:static;margin:0}
-.pside:not(.r) .ppt small{order:-1}
-.pside .ppt,.pside.r .ppt{align-items:baseline}
 .pgm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .note.fpnote{margin-top:6px;font-weight:500;opacity:.85}
 
@@ -660,6 +656,32 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 
 .stcard .strow{transition:opacity .35s ease}
 .stcard.shuf .strow:not(.lifted){opacity:.4}
+/* ---- v1.6.0: position pills, projection under the score (in the flow, never on the name), IR section, matchup header ---- */
+/* center square moved up: logo, center square and score share one center line; projection sits right under the score.
+   Rows end up 2px shorter than v1.5.6 (checked with Manrope on iPhone, S23 Ultra, 360 and 375 widths). */
+.prow{padding:6px 10px 8px}
+.ctr{padding-top:0}
+.ptop{align-items:flex-start;gap:4px;min-height:37.2px;margin-bottom:0}   /* same height on both sides, projection or not, so names line up */
+.ppt{flex-direction:column;align-items:flex-end;padding-top:2.5px}
+.pside.r .ppt{align-items:flex-start}
+.ppt b{line-height:1}
+.ppt small{position:static;margin-top:0;line-height:1;white-space:nowrap}
+.ptop .ppos{flex:none;align-self:flex-start;margin:16px auto 0 5px;display:inline-grid;place-items:center;height:16px;min-width:24px;padding:0 5px;border-radius:999px;box-sizing:border-box;
+  font-size:9.5px;font-weight:800;letter-spacing:.2px;line-height:1;background:#0b1321;border:1px solid rgba(var(--c),.85);color:rgb(var(--c));box-shadow:0 0 5px rgba(var(--c),.18);text-shadow:0 0 3px rgba(var(--c),.3)}
+.pside.r .ptop .ppos{margin:16px 5px 0 auto}
+.ppos{--c:176,190,208}.ppos.QB{--c:157,108,255}.ppos.RB{--c:34,211,238}.ppos.WR{--c:46,230,128}.ppos.TE{--c:255,72,110}.ppos.K{--c:255,145,40}.ppos.DST{--c:176,190,208}
+.benchlist .prow.bench .chip.irchip{border:1.5px solid rgba(255,84,104,.85);color:#ff8a98;background:#1f1a2e;box-shadow:0 0 6px rgba(255,84,104,.18)}
+.irlist{margin-top:12px}
+.pside.irempty{justify-content:flex-start}
+.prow.none .chev{display:none}
+.pside.irempty span{font-size:14px;font-weight:700;color:var(--faint);font-style:italic;line-height:32px}   /* on the IR square's line */
+.mhead{gap:6px}
+.mhead .back{height:38px;padding:0 9px;font-size:12.5px;flex:none}
+.mhead .mtitle{flex:1;text-align:center;min-width:0;font-size:13px;letter-spacing:1.5px;white-space:nowrap}
+.mhead .hbtns{flex:none;gap:6px}
+.mhead .pill{height:38px;padding:0 12px}
+.mhead .gear{width:38px;height:38px}
+@media (max-width:370px){.mhead .mtitle{letter-spacing:1px}.mhead .back{padding:0 8px}}
 </style>
 </head>
 <body>
@@ -712,10 +734,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.6';
+const APP_VERSION = '1.6.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.6.0', 'Every player now has a small color position pill next to his NFL logo. Projections are back under the score. Injured Reserve has its own section under the bench (your IR slot vs his), with a red IR square. The Matchup screen now has the week selector and settings.'],
   ['1.5.6', 'Faster lineups: changes made on CBS show up in about 15–25 seconds.'],
   ['1.5.5', 'Playoff odds also wait for next week’s schedule from CBS before showing, so the first number you see is the real one.'],
   ['1.5.4', 'No more stale numbers when you open the app: lineups, projections and playoff odds wait the second or two it takes to get this week’s lineups from CBS, instead of briefly showing old ones.'],
@@ -1431,7 +1454,7 @@ function side(p, L, r){
   const zero = !(L.pts > 0) ? ' zero' : '';
   const ep = (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null;
   return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + '">' +
-    '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
+    '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
     '<span class="pnm">' + esc(p.pos === 'DST' ? p.name : shortName(p.name)) + '<small>' + esc(p.nfl) + '</small></span>' +
     (L.evt ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
     '<span class="pgm ' + cls + '">' + esc(L.state === 'in' ? L.line.replace(/\s+(@|vs\.?)\s+[A-Z]{2,3}$/, '') : L.line) + '</span>' + hot(p, L) + '</div>';
@@ -1467,15 +1490,20 @@ function dcol(p, L){
 }
 function prow(a, La, b, Lb, i, slot, bench, mkey){
   const o = S.open && S.open.k === mkey && S.open.i === i;
-  const lab = bench ? ((a && a.ir) || (b && b.ir) ? 'IR' : 'BN') : slot;
-  return '<button class="prow' + (bench ? ' bench' : '') + '" data-row="' + i + '" data-key="r' + i + '" aria-expanded="' + o + '">' + side(a, La, false) +
-    '<span class="ctr"><span class="chip ' + (bench ? '' : slot) + '">' + lab + '</span><span class="chev">' + ICON.rowchev + '</span></span>' + side(b, Lb, true) + '</button>' +
+  const ir = bench === 'ir', lab = ir ? 'IR' : bench ? 'BN' : slot;
+  const emp = function(r){ return '<div class="pside irempty' + (r ? ' r' : '') + '"><span>Empty</span></div>'; };
+  if(ir && !a && !b) return '<div class="prow bench irrow none" data-key="r' + i + '">' + emp(false) + '<span class="ctr"><span class="chip irchip">IR</span><span class="chev">' + ICON.rowchev + '</span></span>' + emp(true) + '</div>';
+  return '<button class="prow' + (bench ? ' bench' : '') + (ir ? ' irrow' : '') + '" data-row="' + i + '" data-key="r' + i + '" aria-expanded="' + o + '">' + (ir && !a ? emp(false) : side(a, La, false)) +
+    '<span class="ctr"><span class="chip' + (ir ? ' irchip' : bench ? '' : ' ' + slot) + '">' + lab + '</span><span class="chev">' + ICON.rowchev + '</span></span>' + (ir && !b ? emp(true) : side(b, Lb, true)) + '</button>' +
     (o ? '<div class="detail" data-key="d' + i + '">' + dcol(a, La) + dcol(b, Lb) + '</div>' : '');
 }
 function matchList(){ const LM = liveModel(); if(!LM) return null; return { LM: LM, list: orderedMatchups(LM.model).all }; }
 function matchView(){
   const X = matchList();
-  let h = '<div class="mhead"><button class="back" id="back">‹ Scoreboard</button><span class="mtitle">Matchup</span><span style="width:96px"></span></div>' + onStrip();
+  const cw = isCurrentWeek();
+  let h = '<div class="mhead"><button class="back" id="back">‹ Scoreboard</button><span class="mtitle">Matchup</span><div class="hbtns">' +
+    (S.week ? '<button class="pill' + (cw ? ' now' : '') + '" id="weekBtn" aria-label="Choose week">Week ' + S.week + ' ' + ICON.chev + '</button>' : '') +
+    '<button class="gear" id="gearBtn" aria-label="Settings">' + ICON.gear + '</button></div></div>' + onStrip();
   if(!X || !X.list.length) return h + '<div class="empty">Getting this week’s lineups…</div>';
   let idx = X.list.findIndex(function(x){ return x.key === S.curKey; });
   if(idx < 0){ idx = 0; S.curKey = X.list[0].key; }
@@ -1505,12 +1533,19 @@ function matchView(){
     h += prow(pa, la && la.rows[i], pb, lb && lb.rows[i], i, SLOTS[i] || (pa || pb || {}).pos || '', false, mt.key);
   }
   h += '</div>';
-  const nb = Math.max(A.bench.length, B ? B.bench.length : 0);
+  // v1.6.0 (Wes, Nov 10): bench and IR are separate. IR = CBS's own IR slot (roster status Injured); every team has one slot.
+  const split = function(T, L, ir){ const o = []; if(!T) return o; T.bench.forEach(function(p, k){ if(!!p.ir === ir) o.push([p, L && L.bench[k]]); }); return o; };
+  const bA = split(A, la, false), bB = split(B, lb, false), iA = split(A, la, true), iB = split(B, lb, true);
+  const nb = Math.max(bA.length, bB.length);
   if(nb){
     h += '<div class="plist benchlist"><div class="plabel"><span>Bench</span><span>Doesn’t count</span></div>';
-    for(let i = 0; i < nb; i++) h += prow(A.bench[i] || null, la && la.bench[i], B ? (B.bench[i] || null) : null, lb && lb.bench[i], 100 + i, '', true, mt.key);
+    for(let i = 0; i < nb; i++){ const x = bA[i] || [], y = bB[i] || []; h += prow(x[0] || null, x[1], y[0] || null, y[1], 100 + i, '', true, mt.key); }
     h += '</div>';
   }
+  const ni = Math.max(1, iA.length, iB.length);
+  h += '<div class="plist benchlist irlist"><div class="plabel"><span>Injured Reserve</span><span>Doesn’t count</span></div>';
+  for(let i = 0; i < ni; i++){ const x = iA[i] || [], y = iB[i] || []; h += prow(x[0] || null, x[1], y[0] || null, y[1], 200 + i, '', 'ir', mt.key); }
+  h += '</div>';
   h += '</div><p class="note">Swipe the score card left or right to change games.</p>';
   if(S.proj && S.proj.raw && S.proj.raw.fp_blended) h += '<p class="note fpnote">Projections: our model blended 50/50 with data from FantasyPros.</p>';
   return h;
