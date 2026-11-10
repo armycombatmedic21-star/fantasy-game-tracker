@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.3';
+const APP_VERSION = '1.5.4';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.5.4', 'No more stale numbers when you open the app: lineups, projections and playoff odds wait the second or two it takes to get this week’s lineups from CBS, instead of briefly showing old ones.'],
   ['1.5.3', 'Playoff odds are more realistic: every team plays its best healthy lineup in the weeks left (an owner who hasn’t set his lineup yet still will), open spots get a waiver pickup, and Week 12 is included — 1st AFC vs 1st NFC, 2nd vs 2nd and so on, by the standings after Week 11. Matchups and the scoreboard still show the real CBS lineups.'],
   ['1.5.2', 'Lineup changes show up within about a minute, even before CBS moves to the new week. Projections no longer show 0 for a game that doesn’t have a betting line yet.'],
   ['1.5.1', 'New week arrives on its own: every Tuesday at 6 AM the app switches to the new week by itself (no waiting for CBS). Lineup changes show up in about a minute.'],
@@ -1072,6 +1073,10 @@ function weekModel(){
   const c = S.cbs[S.week];
   const L = c && c.data && c.data.live_scoring;
   if(!L || !Array.isArray(L.teams)) return null;
+  // v1.5.4 (Wes): never show this week's lineups, projections or playoff odds from the live feed alone (it can still
+  // hold last week's lineups) — wait for the rosters feed. If that feed fails, fall back with the "may be stale" note.
+  const rw = S.ros[S.week];
+  if(num(S.week) >= num(S.curWeek) && !(rw && (rw.data || rw.err))) return null;
   const R = rosFor(S.week);
   if(modelMemo.src === L && modelMemo.ros === R) return modelMemo.m;
   const rmap = {};
@@ -2414,7 +2419,8 @@ function tick(){
   const ahead = num(S.curWeek) > num(S.cbsPeriod) && num(S.cbsPeriod) > 0;     // app already on next week: lineups every 20 s
   if(ahead && now - (last.next || 0) >= 20000){ last.next = now; loadCbs(S.curWeek); }
   if(now - last.cbs >= (live || soon ? 60000 : 300000)){ last.cbs = now; loadCbs(); }
-  if(S.curWeek && now - (last.ros || 0) >= 60000){ last.ros = now; loadRos(S.curWeek); if(num(S.week) > num(S.curWeek)) loadRos(S.week); }   // lineup changes within ~1 min
+  if(S.curWeek && (now - (last.ros || 0) >= 60000 || !S.ros[S.curWeek])){ last.ros = now; loadRos(S.curWeek); }   // new week or first open: right away
+  if(num(S.week) > num(S.curWeek) && (now - (last.rosF || 0) >= 60000 || !S.ros[S.week])){ last.rosF = now; loadRos(S.week); }   // lineup changes within ~1 min
   const settle = !live && isCurrentWeek() && boxSettling();
   if(S.curWeek && isCurrentWeek() && now - last.sb >= (live ? 10000 : (soon || settle ? 30000 : 300000))){ last.sb = now; loadSb(S.curWeek); }
   if(now - last.st >= 600000){ last.st = now; loadStandings(); }
