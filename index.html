@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.5.4';
+const APP_VERSION = '1.5.5';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.5.5', 'Playoff odds also wait for next week’s schedule from CBS before showing, so the first number you see is the real one.'],
   ['1.5.4', 'No more stale numbers when you open the app: lineups, projections and playoff odds wait the second or two it takes to get this week’s lineups from CBS, instead of briefly showing old ones.'],
   ['1.5.3', 'Playoff odds are more realistic: every team plays its best healthy lineup in the weeks left (an owner who hasn’t set his lineup yet still will), open spots get a waiver pickup, and Week 12 is included — 1st AFC vs 1st NFC, 2nd vs 2nd and so on, by the standings after Week 11. Matchups and the scoreboard still show the real CBS lineups.'],
   ['1.5.2', 'Lineup changes show up within about a minute, even before CBS moves to the new week. Projections no longer show 0 for a game that doesn’t have a betting line yet.'],
@@ -2869,6 +2870,7 @@ function seasonInputs(m){
   const curPairs = m.matchups.filter(function(x){ return x.home && x.away; }).map(function(x){ return [x.home.id, x.away.id]; });
   const future = [];
   for(let w = m.week + 1; w <= REG_END; w++){
+    if(w !== RANK_WEEK && !ENG.futAt[w]) return null;   // v1.5.4: wait for CBS's schedule for that week (no random opponents, even briefly)
     const f = ENG.fut[w];
     let pairs = null;
     if(f){ const used = {}; pairs = []; Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); }); if(pairs.length < ids.length / 2) pairs = null; }
