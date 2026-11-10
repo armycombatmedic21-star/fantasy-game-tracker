@@ -712,10 +712,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.4.4';
+const APP_VERSION = '1.4.5';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.4.5', 'Faster end of week: after a game ends, the app checks every 30 seconds until ESPN’s final box score is in, so records update about 1–2 minutes after the final whistle.'],
   ['1.4.4', 'When CBS moves to the next week, the app moves with you right away if you were on the current week. Looking at an older week on purpose? It leaves you there.'],
   ['1.4.3', 'Updates install themselves within about 20 seconds (no more tap to update), with a quick “Updated to …” note. End of the week: the first time you open Standings, teams slide from last week’s spots to their new ones, the movers pulse, then “Records updated” shows. 6th place is white again.'],
   ['1.4.2', 'Cleaner look: an open player or team is one card with a softer blue background, no glows. Earned yards points show as green “+7”, and the next milestone “+3” is plain white. Standings drop-down shows Scored, Against and Differential side by side. Ranks are bigger and white; 6th place (outside the playoff spots) is red.'],
@@ -2249,13 +2250,28 @@ function loadWeek(force){
 // one clock: what's due, only while the app is on screen.
 // ESPN scoreboard 10 s while a game is live (30 s near kickoff, 5 min otherwise); CBS via the Worker 1 min live / 5 min idle.
 const last = { cbs: 0, sb: 0, st: 0 };
+// v1.4.5: a game just ended but ESPN's box score isn't final yet -> keep checking every 30 s (up to 30 min per game),
+// so end-of-week records land 1-2 minutes after the final whistle instead of waiting for the 5-minute check
+const POST_SEEN = {};
+function boxSettling(){
+  const sb = S.sb[S.curWeek] && S.sb[S.curWeek].parsed; if(!sb) return false;
+  const now = Date.now(); let any = false;
+  Object.keys(sb.events).forEach(function(id){
+    const g = sb.events[id]; if(g.state !== 'post') return;
+    const sm = S.sums[id]; if(sm && sm.final) return;
+    if(!POST_SEEN[id]) POST_SEEN[id] = now;
+    if(now - POST_SEEN[id] < 1800000) any = true;
+  });
+  return any;
+}
 function tick(){
   if(document.hidden) return;
   const now = Date.now();
   const live = isCurrentWeek() && anyLive();
   const nk = nextKick(), soon = !!(nk && nk - now < 10 * 60000);
   if(now - last.cbs >= (live || soon ? 60000 : 300000)){ last.cbs = now; loadCbs(); }
-  if(S.curWeek && isCurrentWeek() && now - last.sb >= (live ? 10000 : (soon ? 30000 : 300000))){ last.sb = now; loadSb(S.curWeek); }
+  const settle = !live && isCurrentWeek() && boxSettling();
+  if(S.curWeek && isCurrentWeek() && now - last.sb >= (live ? 10000 : (soon || settle ? 30000 : 300000))){ last.sb = now; loadSb(S.curWeek); }
   if(now - last.st >= 600000){ last.st = now; loadStandings(); }
 }
 let lastRender = 0;
