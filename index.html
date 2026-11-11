@@ -681,6 +681,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .mhead .hbtns{flex:none;gap:6px}
 .mhead .pill{height:38px;padding:0 12px}
 .mhead .gear{width:38px;height:38px}
+.la{margin-bottom:16px}   /* v1.6.1: the "Your team · Change" row above your matchup is gone; keep a clean gap */
 @media (max-width:370px){.mhead .mtitle{letter-spacing:1px}.mhead .back{padding:0 8px}}
 </style>
 </head>
@@ -734,10 +735,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.6.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.6.1', 'The matchup card now says “Not started” until a game actually kicks off (it could say “Live” early when a starter was on a bye). The “Your team · Change” row is gone from the Scoreboard; change your team in Settings.'],
   ['1.6.0', 'Every player now has a small color position pill next to his NFL logo. Projections are back under the score. Injured Reserve has its own section under the bench (your IR slot vs his), with a red IR square. The Matchup screen now has the week selector and settings.'],
   ['1.5.6', 'Faster lineups: changes made on CBS show up in about 15–25 seconds.'],
   ['1.5.5', 'Playoff odds also wait for next week’s schedule from CBS before showing, so the first number you see is the real one.'],
@@ -1426,7 +1428,6 @@ function homeView(){
       '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? 'top 5 in div' : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>' +
       '</div></section>';
   }
-  h +='<div class="sec"><h2>Your team</h2>' + (S.team ? '<button class="linkbtn" id="change">Change</button>' : '') + '</div>';
   if(!LM){ return h + '<div class="empty">Getting this week’s lineups…</div>'; }
   const O = orderedMatchups(LM.model);
   if(O.mine) h += card(O.mine, true, LM);
@@ -1511,8 +1512,9 @@ function matchView(){
   const A = mt.away && mt.away.id === S.team ? mt.away : mt.home, B = A === mt.home ? mt.away : mt.home;
   const la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
-  const total = (la ? la.rows.filter(Boolean).length : 0) + (lb ? lb.rows.filter(Boolean).length : 0);
-  const status = left === 0 && total ? 'Final' : (left === total ? 'Not started' : 'Live · ' + left + ' players left');
+  // v1.6.1: "Live" only once a starter's game has kicked off or finished (a starter on a bye / with no game used to make it say Live early)
+  const played = (la ? la.rows : []).concat(lb ? lb.rows : []).filter(function(L){ return L && (L.state === 'in' || L.state === 'post'); }).length;
+  const status = left === 0 && played ? 'Final' : (played ? 'Live · ' + left + ' players left' : 'Not started');
   const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home, dw = isDivWeek(LM.model);
   const fw = status === 'Final' && B ? finalWa(la, lb) : null;
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null, note = engNote();
@@ -2106,7 +2108,7 @@ $('#view').addEventListener('click', function(e){
   if(t.closest('#weekBtn')){ openWeekSheet(); return; }
   if(t.closest('#gearBtn')){ openSettings(); return; }
   if(t.closest('#laBtn')){ if(Date.now() - S.stAt > 120000) loadStandings(); setView('standings'); return; }
-  if(t.closest('#change') || t.closest('#pick')){ openTeamSheet(!S.team); return; }
+  if(t.closest('#pick')){ openTeamSheet(!S.team); return; }
   const pn = t.closest('[data-pin]'); if(pn){ togglePin(pn.dataset.pin); return; }
   const mc = t.closest('.mc'); if(mc){ S.curKey = mc.dataset.key; S.open = null; setView('match'); saveView(); return; }
   if(t.closest('#back')){ setView('home'); return; }
