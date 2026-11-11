@@ -2587,6 +2587,10 @@ document.addEventListener('visibilitychange', function(){ if(!document.hidden){ 
 window.addEventListener('pageshow', function(){ last.sb = 0; tick(); });
 window.addEventListener('online', function(){ last.sb = 0; last.cbs = 0; tick(); beat(true); render(); });
 window.addEventListener('offline', function(){ render(); });
+/* v1.7.2: logo cache helper (sw.js). It only handles logo images; the app itself, the update check and all data load normally. */
+if('serviceWorker' in navigator && (location.protocol === 'https:' || window.__fgtSW)){
+  window.addEventListener('load', function(){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} });
+}
 
 /* ---------- automatic updates (v1.4.3): never ask, refresh once, say so ----------
    Every 20 s (and on open / coming back to the app) it reads version.txt (a few bytes, fresh address each time).

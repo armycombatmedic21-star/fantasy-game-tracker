@@ -35,6 +35,9 @@ def route(r):
     if 'espncdn.com/combiner' in u:                                                                  # v1.7.2 tests: small NFL logos
         state['logo_calls'] = state.get('logo_calls', 0) + 1
         return r.fulfill(body=TINY_PNG, content_type='image/png', headers={'Access-Control-Allow-Origin': '*'})
+    if 'cbssports.com/team-logo/' in u:                                                              # v1.7.2 tests: CBS logo (no CORS, like the real one)
+        state['cbs_logo_calls'] = state.get('cbs_logo_calls', 0) + 1
+        return r.fulfill(body=TINY_PNG, content_type='image/png')
     if state.get('fb') == 'ok' and 'firebaseio.com/fgt/presence/' in u and r.request.method == 'PUT':  # v1.7.2 tests: presence works
         return r.fulfill(json={"name": json.loads(r.request.post_data or '{}').get('name'), "t": int(time.time() * 1000)}, headers={'Access-Control-Allow-Origin': '*'})
     if state.get('worker') == 'dead' and 'workers.dev' in u:                                         # v1.7.0 tests: CBS key expired
@@ -506,6 +509,34 @@ with sync_playwright() as pw:
         page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(400); page.screenshot(path=f'{SHOTS}/v172-match.png')
     check(f'[{tag}] no page errors', not errs, errs)
     state['fb'] = 'off'
+    ctx.close()
+    # logo cache helper (sw.js): a CBS logo that can't be copied is still there offline, from the phone's cache
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}, service_workers='allow')
+    ctx.route('**/*', route)
+    ctx.add_init_script("window.__fgtSW = 1;")
+    page = ctx.new_page()
+    errs = []
+    page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e)))
+    state.update({'net': 'ok', 'cbs_logo_calls': 0})
+    page.goto(f'http://127.0.0.1:{PORT}/index.html'); page.wait_for_timeout(300)
+    page.evaluate("() => { localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1'); }")
+    page.reload(); page.wait_for_timeout(1500)
+    ctl = page.evaluate("navigator.serviceWorker.ready.then(() => !!navigator.serviceWorker.controller)")
+    if not ctl: page.reload(); page.wait_for_timeout(1000); ctl = page.evaluate("!!navigator.serviceWorker.controller")
+    check(f'[{tag}] logo cache helper running', ctl)
+    add = "(u) => new Promise(res => { const i = new Image(); i.referrerPolicy = 'no-referrer'; i.onload = () => res(i.naturalWidth); i.onerror = () => res(-1); i.src = u; })"
+    lu = 'https://franleag.football.cbssports.com/team-logo/11?width=96&height=96'
+    w1 = page.evaluate(add, lu); page.wait_for_timeout(500)
+    inc = page.evaluate("(u) => caches.open('fgt-logos-v1').then(c => c.match(u, {ignoreVary: true})).then(r => !!r)", lu)
+    check(f'[{tag}] CBS logo kept in the cache', w1 > 0 and inc, (w1, inc))
+    state['net'] = 'off'
+    page.reload(); page.wait_for_timeout(800)
+    w2 = page.evaluate(add, lu)
+    check(f'[{tag}] offline: CBS logo still shows', w2 > 0, w2)
+    v = page.evaluate("fetch('version.txt?t=' + Date.now()).then(r => r.status).catch(() => 'blocked')")
+    check(f'[{tag}] cache helper never touches the app or update check (offline = really offline)', v == 'blocked', v)
+    check(f'[{tag}] cache helper: no page errors', not errs, errs)
+    state['net'] = 'ok'
     ctx.close()
     br.close()
 srv.shutdown()
