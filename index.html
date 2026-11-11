@@ -55,6 +55,7 @@ h1{margin:3px 0 0;font-size:22px;font-weight:800;letter-spacing:-.5px;color:#fff
 @keyframes beacon{0%{box-shadow:0 0 0 0 rgba(var(--acc-rgb),.55)}70%{box-shadow:0 0 0 9px rgba(var(--acc-rgb),0)}100%{box-shadow:0 0 0 0 rgba(var(--acc-rgb),0)}}
 .status b{color:var(--text);font-weight:800}
 .status b.warn{color:var(--amber)}
+.status.keyst{padding:9px 12px;margin:0 0 14px;font-size:12.5px}
 .sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:22px 2px 10px}
 .sec h2{margin:0;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
 .sec span{font-size:12px;color:var(--faint);font-weight:600;text-align:right}
@@ -735,10 +736,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.7.1', 'The “CBS key expired” warning now shows on every tab (Matchup, Standings and Chat too), right under the Online row.'],
   ['1.7.0', 'Opens instantly: the last lineups, projections, win % and playoff odds show right away and update within seconds. Playoff odds keep working when CBS can’t be reached (the rest of the schedule is saved). The Matchup tab goes back to your game, at the top, after 10 minutes away.'],
   ['1.6.1', 'The matchup card now says “Not started” until a game actually kicks off (it could say “Live” early when a starter was on a bye). The “Your team · Change” row is gone from the Scoreboard; change your team in Settings.'],
   ['1.6.0', 'Every player now has a small color position pill next to his NFL logo. Projections are back under the score. Injured Reserve has its own section under the bench (your IR slot vs his), with a red IR square. The Matchup screen now has the week selector and settings.'],
@@ -1398,6 +1400,17 @@ function nextKick(){
   Object.keys(sb.events).forEach(function(k){ const g = sb.events[k]; if(g.state !== 'pre') return; const d = new Date(g.date); if(!isNaN(d) && (!best || d < best)) best = d; });
   return best;
 }
+// v1.7.1 (Wes, Nov 11): the expired-key warning shows on every tab (under the Online row), not just the Scoreboard,
+// so a whole game day spent on Matchup still tells you lineups have stopped refreshing. Scoreboard keeps its full status strip.
+function keyExpired(){
+  const c = S.cbs[S.curWeek] || S.cbs[S.week];
+  return !!((c && c.err === 'cbs_key') || (!(c && c.data) && S.bootErr === 'the CBS key has expired'));
+}
+function keyStrip(){
+  if(!keyExpired()) return '';
+  const c = S.cbs[S.curWeek] || S.cbs[S.week];
+  return '<div class="status keyst" data-key="keyst"><span class="dot bad"></span><span><b class="warn">CBS key expired</b> · lineups can’t refresh' + (c && c.at ? ' · lineups from ' + esc(ago(c.at)) : '') + '</span></div>';
+}
 function statusStrip(){
   const c = S.cbs[S.week], sb = S.sb[S.week];
   const live = anyLive(), cur = isCurrentWeek();
@@ -1540,7 +1553,7 @@ function matchView(){
   const cw = isCurrentWeek();
   let h = '<div class="mhead"><button class="back" id="back">‹ Scoreboard</button><span class="mtitle">Matchup</span><div class="hbtns">' +
     (S.week ? '<button class="pill' + (cw ? ' now' : '') + '" id="weekBtn" aria-label="Choose week">Week ' + S.week + ' ' + ICON.chev + '</button>' : '') +
-    '<button class="gear" id="gearBtn" aria-label="Settings">' + ICON.gear + '</button></div></div>' + onStrip();
+    '<button class="gear" id="gearBtn" aria-label="Settings">' + ICON.gear + '</button></div></div>' + onStrip() + keyStrip();
   if(!X || !X.list.length) return h + '<div class="empty">Getting this week’s lineups…</div>';
   let idx = X.list.findIndex(function(x){ return x.key === S.curKey; });
   if(idx < 0){ idx = 0; S.curKey = X.list[0].key; }
@@ -1842,7 +1855,7 @@ function runShuffle(){
   }, 8500);
 }
 function standingsView(){
-  let h = header('Standings') + onStrip();
+  let h = header('Standings') + onStrip() + keyStrip();
   if(isCurrentWeek()) liveModel();                       // keeps this week's live points fresh on this tab too
   const st = S.standings, A = stAdjust(true), d = A && A.divs;
   if(!Array.isArray(d) || !d.length){
@@ -1880,7 +1893,7 @@ function standingsView(){
   return h;
 }
 function chatView(){
-  return header('Chat') + onStrip();
+  return header('Chat') + onStrip() + keyStrip();
 }
 
 /* ---------- tabs + light rail (Pick'em) ---------- */

@@ -367,6 +367,16 @@ with sync_playwright() as pw:
     ok = wait_fresh(page); page.wait_for_timeout(500)
     po_dead = page.evaluate("window.__fgt.ENG.res && !window.__fgt.ENG.res.snap && window.__fgt.ENG.res.po ? window.__fgt.ENG.res.po['11'] : null")
     check(f'[{tag}] expired key: banner says so', 'CBS key expired' in page.inner_text('#view'), page.inner_text('#view')[:300])
+    # v1.7.1: the warning is on every tab, right under the Online row
+    seen = {}
+    for tb in ['match', 'standings', 'chat', 'home']:
+        page.click(f'.tabbtn[data-tab="{tb}"]'); page.wait_for_timeout(400)
+        seen[tb] = page.locator('#view .status').count() >= 1 and 'CBS key expired' in page.inner_text('#view .status')
+        if tb != 'home': seen[tb] = seen[tb] and page.evaluate("(() => { const s = document.querySelector('#view .keyst'), o = document.querySelector('#view .onstrip'); return !!s && (!o || (o.compareDocumentPosition(s) & 4) > 0); })()")
+        if shots: page.screenshot(path=f'{SHOTS}/v17-key-{tb}.png')
+    check(f'[{tag}] expired key: warning on all four tabs, under the Online row', all(seen.values()), seen)
+    ov = page.evaluate('document.documentElement.scrollWidth - window.innerWidth')
+    check(f'[{tag}] expired key: no sideways scroll', ov <= 0, ov)
     check(f'[{tag}] expired key + saved schedule: playoff odds unchanged', ok and po_dead is not None and abs(po_dead - po_ok) < 0.002, (po_ok, po_dead))
     # 3) expired key on a phone that never saved the schedule: built-in schedule
     page.evaluate("() => ['fgt-fut-w10', 'fgt-fut-w11', 'fgt-fut-w12'].forEach(k => localStorage.removeItem(k))")
@@ -385,6 +395,9 @@ with sync_playwright() as pw:
     check(f'[{tag}] last week\'s saved lineups are not shown', page.locator('.mc.mine').count() == 0 and page.locator('#cards .mc').count() == 0)
     state['net'] = 'ok'
     page.reload(); page.wait_for_timeout(800); wait_fresh(page); page.wait_for_timeout(2500)
+    page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(400)
+    check(f'[{tag}] working key: no warning row on Matchup', page.locator('#view .keyst').count() == 0)
+    page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(300)
     check(f'[{tag}] fresh lineups saved again', page.evaluate("JSON.parse(localStorage.getItem('fgt-ros-w9')).at") >= page.evaluate("window.__fgt.weekStartET(Date.now())"))
     # 5) a TD that happened while the app was closed is not replayed as a new TD badge
     page.click('.mc.mine'); page.wait_for_timeout(600)
