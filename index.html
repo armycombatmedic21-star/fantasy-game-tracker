@@ -56,6 +56,11 @@ h1{margin:3px 0 0;font-size:22px;font-weight:800;letter-spacing:-.5px;color:#fff
 .status b{color:var(--text);font-weight:800}
 .status b.warn{color:var(--amber)}
 .status.keyst{padding:9px 12px;margin:0 0 14px;font-size:12.5px}
+/* v1.7.2: Online bar always drawn; gray dot = this phone is offline */
+.onstrip .odot.off{background:#56607a;box-shadow:none;animation:none}
+.onstrip .odot.off::after{display:none}
+.onstrip span{min-height:22px}
+.onstrip{min-height:43px}
 .sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:22px 2px 10px}
 .sec h2{margin:0;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
 .sec span{font-size:12px;color:var(--faint);font-weight:600;text-align:right}
@@ -736,10 +741,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.7.1';
+const APP_VERSION = '1.7.2';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.7.2', 'Smoother open: team and NFL logos are kept on your phone, so they show instantly instead of blinking in. The Online bar is always there (nothing jumps down), and your own team shows in it right away.'],
   ['1.7.1', 'The “CBS key expired” warning now shows on every tab (Matchup, Standings and Chat too), right under the Online row.'],
   ['1.7.0', 'Opens instantly: the last lineups, projections, win % and playoff odds show right away and update within seconds. Playoff odds keep working when CBS can’t be reached (the rest of the schedule is saved). The Matchup tab goes back to your game, at the top, after 10 minutes away.'],
   ['1.6.1', 'The matchup card now says “Not started” until a game actually kicks off (it could say “Live” early when a starter was on a bye). The “Your team · Change” row is gone from the Scoreboard; change your team in Settings.'],
@@ -1054,9 +1060,9 @@ function parseScoreboard(data){
   return out;
 }
 function nflLogo(ab){
-  const sb = curSb();
-  if(sb && sb.logos[ab]) return sb.logos[ab];
-  return 'https://a.espncdn.com/i/teamlogos/nfl/500-dark/' + String(ab || '').toLowerCase() + '.png';
+  // v1.7.2: one fixed link per team. The scoreboard's own logo link (…/500/scoreboard/…) differed from the first-paint link,
+  // so every NFL logo reloaded (blinked) when the scoreboard arrived. This is a 96 px copy: about 3 KB instead of 18–80 KB.
+  return 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500-dark/' + String(ab || '').toLowerCase() + '.png&w=96&h=96';
 }
 function liveClock(g){
   const n = (g.statusName || '').toUpperCase();
@@ -1304,8 +1310,62 @@ function orderedMatchups(m){
 
 /* ---------- rendering (morph keeps nodes so logos never blink and badges keep pulsing) ---------- */
 const failedImg = {};
-window.fgtImgFail = function(el){ try{ failedImg[el.getAttribute('src')] = 1; const s = document.createElement('span'); s.textContent = el.getAttribute('data-alt') || ''; el.replaceWith(s); }catch(e){} };
-function img(src, alt){ if(!src || failedImg[src]) return esc(alt || ''); return '<img src="' + esc(src) + '" alt="" data-alt="' + esc(alt || '') + '" referrerpolicy="no-referrer" loading="lazy" decoding="async" onerror="fgtImgFail(this)">'; }
+window.fgtImgFail = function(el){ try{ failedImg[el.getAttribute('data-src') || el.getAttribute('src')] = 1; const s = document.createElement('span'); s.textContent = el.getAttribute('data-alt') || ''; el.replaceWith(s); }catch(e){} };
+/* v1.7.2: logos are kept on the phone (small copies, about 3 KB each), so on open they paint from memory, not the network.
+   A logo saved on an earlier visit is used from the very first paint; a new logo loads normally and is saved for next time
+   (its link never changes mid-visit, so nothing on screen reloads). */
+const LOGO = { store: {}, blob: {}, want: {}, timer: 0, dirty: 0 };
+(function(){
+  const m = getLocal('logos'); if(!m || typeof m !== 'object') return;
+  Object.keys(m).forEach(function(u){
+    const v = m[u]; if(!v || !v.d) return;
+    try{
+      const bin = atob(v.d), a = new Uint8Array(bin.length);
+      for(let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+      LOGO.store[u] = v; LOGO.blob[u] = URL.createObjectURL(new Blob([a], { type: v.t || 'image/png' }));
+      const im = new Image(); im.src = LOGO.blob[u]; if(im.decode) im.decode().catch(function(){});
+    }catch(e){}
+  });
+})();
+function logoWant(u){
+  if(LOGO.store[u] || LOGO.want[u] || !/^https:\/\//.test(u) || typeof fetch !== 'function') return;
+  LOGO.want[u] = 1;
+  if(!LOGO.timer) LOGO.timer = setTimeout(logoFetch, 1500);
+}
+function logoFetch(){
+  LOGO.timer = 0;
+  const list = Object.keys(LOGO.want).filter(function(u){ return LOGO.want[u] === 1; }).slice(0, 6);
+  if(!list.length) return;
+  let left = list.length;
+  const done = function(){ if(--left) return; logoSave(); if(Object.keys(LOGO.want).some(function(u){ return LOGO.want[u] === 1; })) LOGO.timer = setTimeout(logoFetch, 300); };
+  list.forEach(function(u){
+    LOGO.want[u] = 2;
+    fetch(u, { mode: 'cors', referrerPolicy: 'no-referrer' })
+      .then(function(r){ if(!r.ok) throw new Error('logo ' + r.status); return r.blob(); })
+      .then(function(b){
+        if(!b || !b.size || b.size > 60000 || !/^image\//.test(b.type)) return;
+        return new Promise(function(res){
+          const fr = new FileReader();
+          fr.onload = function(){ const s = String(fr.result || ''), i = s.indexOf(','); if(i > 0){ LOGO.store[u] = { d: s.slice(i + 1), t: b.type, at: Date.now() }; LOGO.dirty = 1; } res(); };
+          fr.onerror = function(){ res(); };
+          fr.readAsDataURL(b);
+        });
+      })
+      .catch(function(){})
+      .then(done);
+  });
+}
+function logoSave(){
+  if(!LOGO.dirty) return; LOGO.dirty = 0;
+  const keys = Object.keys(LOGO.store).sort(function(a, b){ return (LOGO.store[b].at || 0) - (LOGO.store[a].at || 0); });
+  const keep = {}; keys.slice(0, 80).forEach(function(k){ keep[k] = LOGO.store[k]; });   // 44 logos in use (12 league + 32 NFL); room to spare
+  LOGO.store = keep; put('logos', keep);
+}
+function img(src, alt){
+  if(!src || failedImg[src]) return esc(alt || '');
+  const b = LOGO.blob[src]; if(!b) logoWant(src);
+  return '<img src="' + esc(b || src) + '"' + (b ? ' data-src="' + esc(src) + '"' : '') + ' alt="" data-alt="' + esc(alt || '') + '" referrerpolicy="no-referrer" decoding="sync" onerror="fgtImgFail(this)">';
+}
 function badge(t){ return '<span class="badge">' + (t ? img(t.logo, t.code) : '') + '</span>'; }
 function syncNode(a, b){
   if(a.nodeType !== 1){ if(a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
@@ -2525,7 +2585,8 @@ let lastRender = 0;
 setInterval(function(){ tick(); if(!document.hidden && Date.now() - lastRender > 5000){ lastRender = Date.now(); render(); } }, 1000);
 document.addEventListener('visibilitychange', function(){ if(!document.hidden){ last.sb = 0; last.cbs = 0; tick(); checkUpdate('wake'); } });
 window.addEventListener('pageshow', function(){ last.sb = 0; tick(); });
-window.addEventListener('online', function(){ last.sb = 0; last.cbs = 0; tick(); });
+window.addEventListener('online', function(){ last.sb = 0; last.cbs = 0; tick(); beat(true); render(); });
+window.addEventListener('offline', function(){ render(); });
 
 /* ---------- automatic updates (v1.4.3): never ask, refresh once, say so ----------
    Every 20 s (and on open / coming back to the app) it reads version.txt (a few bytes, fresh address each time).
@@ -3073,20 +3134,26 @@ if(!CH.pid){ CH.pid = 'd' + Date.now().toString(36) + Math.random().toString(36)
 function srvNow(){ return Date.now() + CH.skew; }
 function teamName(id){ const t = stTeams().find(function(x){ return String(x.id) === String(id); }); return t ? trim(t.name) : ({ '1': 'Oakland', '2': 'Green Bay', '3': 'Buffalo', '4': 'Detroit', '5': 'New England', '6': 'Miami', '7': 'Jacksonville', '8': 'Indianapolis', '9': 'Baltimore', '10': 'New York', '11': 'Dallas', '12': 'Pittsburgh' })[String(id)] || ''; }
 function chatLabel(m){ const tn = m.team ? teamName(m.team) : ''; return tn ? tn + (FIRST[m.team] ? ' (' + FIRST[m.team] + ')' : '') : (m.name || ''); }
+function selfOn(){   // v1.7.2: this phone counts as online the moment the app is open (no waiting for the server to echo it back)
+  return !!(S.team && !document.hidden && navigator.onLine !== false && !CH.selfDown);
+}
 function onlineTeams(){
   const now = srvNow(), on = {};
-  Object.keys(CH.pres).forEach(function(k){ const p = CH.pres[k]; if(p && p.name && typeof p.t === 'number' && now - p.t < 45000) on[String(p.name)] = true; });
+  Object.keys(CH.pres).forEach(function(k){ const p = CH.pres[k]; if(k !== CH.pid && p && p.name && typeof p.t === 'number' && now - p.t < 45000) on[String(p.name)] = true; });   // this phone's own entry: selfOn() below
+  if(selfOn()) on[String(S.team)] = true;
   return on;
 }
 function stripName(id){ const n = teamName(id); return n === 'Indianapolis' ? 'Indy' : n; }
 function isOnline(id){ return !!onlineTeams()[String(id)]; }
 function odot(id){ return isOnline(id) ? '<i class="odot" aria-label="online"></i>' : ''; }
 function onStrip(){
-  const on = onlineTeams(), ids = Object.keys(on);
-  if(!ids.length) return '';
+  // v1.7.2: the bar is always drawn at full height (nothing jumps down on open). Your own team is in it right away;
+  // its dot is gray when this phone is offline. Others fill in as they're seen.
+  const on = onlineTeams(), ids = Object.keys(on), me = S.team ? String(S.team) : '';
+  if(me && ids.indexOf(me) < 0) ids.push(me);
   const order = ['3', '12', '6', '11', '5', '4', '8', '9', '7', '10', '1', '2'];
   ids.sort(function(a, b){ return order.indexOf(a) - order.indexOf(b); });
-  return '<div class="onstrip" data-key="onstrip"><small>ONLINE</small>' + ids.map(function(id){ return '<span data-key="on-' + id + '"><i class="odot"></i>' + esc(stripName(id)) + '</span>'; }).join('') + '</div>';
+  return '<div class="onstrip" data-key="onstrip"><small>ONLINE</small>' + ids.map(function(id){ return '<span data-key="on-' + id + '"><i class="odot' + (on[id] ? '' : ' off') + '"></i>' + esc(stripName(id)) + '</span>'; }).join('') + '</div>';
 }
 function unread(){
   let n = 0; Object.keys(CH.msgs).forEach(function(k){ const m = CH.msgs[k]; if(m && m.t > CH.read && m.pid !== CH.pid) n++; }); return n;
@@ -3158,8 +3225,8 @@ function beat(force){
   const sent = Date.now();
   fetch(DB + '/fgt/presence/' + CH.pid + '.json', { method: 'PUT', body: JSON.stringify({ name: String(S.team), t: { '.sv': 'timestamp' } }) })
     .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(j){ if(j && typeof j.t === 'number'){ CH.skew = j.t - Math.round((sent + Date.now()) / 2); CH.pres = Object.assign({}, CH.pres); CH.pres[CH.pid] = j; changed('pres'); } })
-    .catch(function(){});
+    .then(function(j){ if(j && typeof j.t === 'number'){ CH.selfDown = 0; CH.skew = j.t - Math.round((sent + Date.now()) / 2); CH.pres = Object.assign({}, CH.pres); CH.pres[CH.pid] = j; changed('pres'); } else CH.selfDown = 1; })
+    .catch(function(){ CH.selfDown = 1; });
 }
 function leave(){
   try{ fetch(DB + '/fgt/presence/' + CH.pid + '.json', { method: 'DELETE', keepalive: true }).catch(function(){}); }catch(e){}   // v1.7.0: offline = quiet
@@ -3277,7 +3344,7 @@ var chatHook = function(){ placePane(); paintBadge(); };
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
+window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){

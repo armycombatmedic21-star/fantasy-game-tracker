@@ -21,11 +21,22 @@ def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + ((' :: ' + str(extra)) if extra and not cond else ''))
     if not cond: fails.append(name)
 
+import zlib as _zl, struct as _st
+def _png(w=8, h=8):
+    raw = b''.join(b'\x00' + b'\x20\x60\xf0\xff' * w for _ in range(h))
+    ch = lambda t, d: _st.pack('>I', len(d)) + t + d + _st.pack('>I', _zl.crc32(t + d) & 0xffffffff)
+    return b'\x89PNG\r\n\x1a\n' + ch(b'IHDR', _st.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0)) + ch(b'IDAT', _zl.compress(raw)) + ch(b'IEND', b'')
+TINY_PNG = _png()
 LEAGUE_WEEKS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'league-weeks-2026.json')))
 def route(r):
     u = r.request.url
     if state.get('net') == 'off' and not u.startswith(f'http://127.0.0.1:{PORT}/index.html'):   # v1.7.0 tests: phone offline
         return r.abort()
+    if 'espncdn.com/combiner' in u:                                                                  # v1.7.2 tests: small NFL logos
+        state['logo_calls'] = state.get('logo_calls', 0) + 1
+        return r.fulfill(body=TINY_PNG, content_type='image/png', headers={'Access-Control-Allow-Origin': '*'})
+    if state.get('fb') == 'ok' and 'firebaseio.com/fgt/presence/' in u and r.request.method == 'PUT':  # v1.7.2 tests: presence works
+        return r.fulfill(json={"name": json.loads(r.request.post_data or '{}').get('name'), "t": int(time.time() * 1000)}, headers={'Access-Control-Allow-Origin': '*'})
     if state.get('worker') == 'dead' and 'workers.dev' in u:                                         # v1.7.0 tests: CBS key expired
         return r.fulfill(status=502, json={"ok": False, "error": "cbs_key", "status": 401})
     if 'workers.dev/live' in u:
@@ -431,6 +442,70 @@ with sync_playwright() as pw:
     page.reload(); page.wait_for_timeout(1200)
     check(f'[{tag}] reopen after 11 min: Matchup tab, your game', page.locator('.tabbtn.on[data-tab="match"]').count() == 1 and 'Dallas' in page.inner_text('.fp2'), page.inner_text('.fp2'))
     check(f'[{tag}] no page errors', not errs, errs)
+    ctx.close()
+    # ---------- v1.7.2: logos kept on the phone (no blink), Online bar always there (no jump) ----------
+    tag = 'v1.7.2'
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True,
+                         user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')
+    ctx.route('**/*', route)
+    page = ctx.new_page()
+    errs = []
+    page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e) + ' ' + str(getattr(e, 'stack', '') or '')[:400]))
+    page.on('console', lambda m: errs.append(m.text + ' @ ' + str(m.location.get('url', ''))[:120] + ':' + str(m.location.get('lineNumber', ''))) if m.type == 'error' and 'Failed to load resource' not in m.text else None)
+    state.update({'net': 'ok', 'worker': 'ok', 'fb': 'ok', 'logo_calls': 0, 'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10)})
+    page.goto(f'http://127.0.0.1:{PORT}/index.html'); page.wait_for_timeout(300)
+    page.evaluate("() => { localStorage.clear(); localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1'); }")
+    page.reload(); page.wait_for_timeout(800); wait_fresh(page)
+    page.click('.mc.mine'); page.wait_for_timeout(500)
+    nfl_srcs = lambda: page.evaluate("[...document.querySelectorAll('.prow .nfl img')].map(i => i.getAttribute('src'))")
+    first = nfl_srcs()
+    page.wait_for_timeout(3500)   # scoreboard + box scores in, logos saved in the background
+    later = nfl_srcs()
+    check(f'[{tag}] NFL logo links never change mid-visit (no reload when the scoreboard arrives)', first and first == later[:len(first)], (first[:3], later[:3]))
+    saved = page.evaluate("Object.keys(JSON.parse(localStorage.getItem('fgt-logos') || '{}'))")
+    want = page.evaluate("[...new Set([...document.querySelectorAll('.prow .nfl img')].map(i => i.getAttribute('data-src') || i.getAttribute('src')))]")
+    check(f'[{tag}] logos saved on the phone', want and all(u in saved for u in want), (len(want), len(saved)))
+    # reopen with no network: logos come from the phone, already loaded on the first paint
+    state['net'] = 'off'; calls0 = state['logo_calls']
+    page.add_init_script("window.__fgtT0 = performance.now();")
+    page.reload(); page.wait_for_timeout(400)
+    info = page.evaluate("(() => { const im = [...document.querySelectorAll('.prow .nfl img')]; return { n: im.length, blob: im.filter(i => i.src.startsWith('blob:')).length, done: im.filter(i => i.complete && i.naturalWidth > 0).length }; })()")
+    check(f'[{tag}] offline reopen: every NFL logo shows from the phone', info['n'] >= 8 and info['blob'] == info['n'] and info['done'] == info['n'], info)
+    check(f'[{tag}] offline reopen: no logo downloads', state['logo_calls'] == calls0, state['logo_calls'] - calls0)
+    # Online bar: on every tab from the first paint, with your team; others joining never move anything
+    state['net'] = 'ok'
+    page.reload(); page.wait_for_timeout(150)
+    first_bar = page.evaluate("(() => { const o = document.querySelector('#view .onstrip'); return o ? o.innerText : null; })()")
+    check(f'[{tag}] Online bar there on open, with Dallas', first_bar is not None and 'Dallas' in first_bar, first_bar)
+    page.wait_for_timeout(1500)
+    geo = "(() => { const o = document.querySelector('#view .onstrip'), n = o && o.nextElementSibling; return o ? [Math.round(o.getBoundingClientRect().height * 10), n ? Math.round(n.getBoundingClientRect().top * 10) : -1] : null; })()"
+    join = "(id) => { window.__fgt.CH.pres = Object.assign({}, window.__fgt.CH.pres, { ['t' + id]: { name: id, t: window.__fgt.srvNow() } }); window.__fgt.changed('pres'); }"
+    res = {}
+    for tb in ['home', 'match', 'standings', 'chat']:
+        page.evaluate("() => { const p = {}; Object.keys(window.__fgt.CH.pres).forEach(k => { if(!/^t/.test(k)) p[k] = window.__fgt.CH.pres[k]; }); window.__fgt.CH.pres = p; window.__fgt.changed('pres'); }")
+        page.click(f'.tabbtn[data-tab="{tb}"]'); page.wait_for_timeout(400)
+        g0 = page.evaluate(geo); dot0 = page.locator('#view .onstrip span').count()
+        page.evaluate(join, '4'); page.wait_for_timeout(200)
+        g1 = page.evaluate(geo); dot1 = page.locator('#view .onstrip span').count()
+        res[tb] = (g0, g1, dot0, dot1)
+    check(f'[{tag}] someone coming online never moves anything (all four tabs)', all(v[0] and v[0] == v[1] and v[3] == v[2] + 1 for v in res.values()), res)
+    blue = page.evaluate("(() => { const s = [...document.querySelectorAll('#view .onstrip span')].find(x => x.innerText.includes('Dallas')); return s ? !s.querySelector('.odot.off') && !!s.querySelector('.odot') : null; })()")
+    check(f'[{tag}] your dot is blue when online', blue is True, blue)
+    page.evaluate("() => { Object.defineProperty(navigator, 'onLine', {configurable: true, get: () => false}); window.dispatchEvent(new Event('offline')); }")
+    page.wait_for_timeout(300)
+    g_off = page.evaluate(geo)
+    gray = page.evaluate("(() => { const s = [...document.querySelectorAll('#view .onstrip span')].find(x => x.innerText.includes('Dallas')); return s ? !!s.querySelector('.odot.off') : null; })()")
+    check(f'[{tag}] offline: your team stays in the bar with a gray dot, nothing moves', gray is True and g_off == res['chat'][1], (gray, g_off, res['chat'][1]))
+    page.evaluate("() => { delete navigator.onLine; window.dispatchEvent(new Event('online')); }"); page.wait_for_timeout(300)
+    # empty bar (team not picked yet) is the same height as a bar with names
+    h_empty = page.evaluate("(() => { const d = document.createElement('div'); d.className = 'onstrip'; d.innerHTML = '<small>ONLINE</small>'; document.querySelector('#view').prepend(d); const h = d.getBoundingClientRect().height; d.remove(); return Math.round(h * 10); })()")
+    check(f'[{tag}] empty bar is the same height', h_empty == res['home'][1][0], (h_empty, res['home'][1][0]))
+    ov = page.evaluate('document.documentElement.scrollWidth - window.innerWidth')
+    check(f'[{tag}] no sideways scroll', ov <= 0, ov)
+    if shots:
+        page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(400); page.screenshot(path=f'{SHOTS}/v172-match.png')
+    check(f'[{tag}] no page errors', not errs, errs)
+    state['fb'] = 'off'
     ctx.close()
     br.close()
 srv.shutdown()
