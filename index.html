@@ -735,10 +735,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.6.1';
+const APP_VERSION = '1.7.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.7.0', 'Opens instantly: the last lineups, projections, win % and playoff odds show right away and update within seconds. Playoff odds keep working when CBS can’t be reached (the rest of the schedule is saved). The Matchup tab goes back to your game, at the top, after 10 minutes away.'],
   ['1.6.1', 'The matchup card now says “Not started” until a game actually kicks off (it could say “Live” early when a starter was on a bye). The “Your team · Change” row is gone from the Scoreboard; change your team in Settings.'],
   ['1.6.0', 'Every player now has a small color position pill next to his NFL logo. Projections are back under the score. Injured Reserve has its own section under the bench (your IR slot vs his), with a red IR square. The Matchup screen now has the week selector and settings.'],
   ['1.5.6', 'Faster lineups: changes made on CBS show up in about 15–25 seconds.'],
@@ -1083,7 +1084,30 @@ const S = {
   prev: {}, evts: {}, glow: {}
 };
 S.week = S.curWeek;
-if(S.curWeek){ const c = getLocal('cbs-w' + S.curWeek); if(c && c.data) S.cbs[S.curWeek] = { data: c.data, at: c.at, cached: true }; }
+/* v1.7.0 (Wes, Nov 11): open instantly. The last lineups (live feed + rosters feed) saved on this phone show right away,
+   then refresh within seconds. Only a copy saved during this league week (since Tuesday 6 AM ET) is used, so the app
+   never opens on last week's lineups; copies are display-only (never feed standings math or TD/score alerts). */
+function weekStartET(t){                          // most recent Tuesday 6:00 AM Eastern at or before t (league weeks run Tue-Mon)
+  const et = new Date(new Date(t).toLocaleString('en-US', { timeZone: 'America/New_York' })), off = t - et.getTime();
+  const d = new Date(et.getTime()); d.setHours(6, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 5) % 7));
+  if(d.getTime() > et.getTime()) d.setDate(d.getDate() - 7);
+  return d.getTime() + off;
+}
+function snapOk(v){ const now = Date.now(); return !!(v && v.at && v.at >= weekStartET(now) && v.at <= now + 60000); }
+if(S.curWeek){
+  const c = getLocal('cbs-w' + S.curWeek); if(c && c.data && snapOk(c)) S.cbs[S.curWeek] = { data: c.data, at: c.at, cached: true };
+  const r = getLocal('ros-w' + S.curWeek); if(r && r.data && Array.isArray(r.data.teams) && num(r.data.period) === num(S.curWeek) && snapOk(r)) S.ros[S.curWeek] = { data: r.data, at: r.at, cached: true };
+}
+// the rosters feed, cut to what the app reads (keeps the phone copy small)
+function rosCompact(d){
+  return { period: d.period, teams: d.teams.map(function(t){ return { id: t.id, players: (t.players || []).map(function(p){
+    return { id: p.id, fullname: p.fullname, position: p.position, roster_pos: p.roster_pos, roster_status: p.roster_status, pro_team: p.pro_team }; }) }; }) };
+}
+const rosSaved = {};
+function saveRos(w){
+  const r = S.ros[w]; if(!r || !r.data || num(w) < num(S.curWeek)) return;
+  try{ const v = rosCompact(r.data), sig = JSON.stringify(v.teams); if(rosSaved[w] === sig) return; rosSaved[w] = sig; put('ros-w' + w, { data: v, at: r.at }); }catch(e){}
+}
 
 const ROS_ST = { A: 'Active', RS: 'Reserve', I: 'Injured' };
 function rosFor(w){                               // rosters feed for week w, only for the current week and later (past weeks: the live feed is final)
@@ -1209,8 +1233,19 @@ function playerLive(pl, teamId){
   const key = S.week + ':' + teamId + ':' + pl.id, prev = S.prev[key], now = Date.now();
   // past weeks: CBS's final number is official (stat corrections)
   if(!isCurrentWeek() && L.state === 'post' && !pl.ir && pl.cbsPts != null){ if(pl.cbsPts !== L.pts) L.cbsFinal = true; L.pts = pl.cbsPts; L.mismatch = false; }
-  const cur = { r: (s.rtd || []).length, c: (s.ctd || []).length, p: (s.ptd || []).length, k: s.ktd || 0, fl: s.fl || 0, pts: L.pts, dt: (s.dst && s.dst.td) || 0 };
-  if(prev && prev.live){
+  const cur = { r: (s.rtd || []).length, c: (s.ctd || []).length, p: (s.ptd || []).length, k: s.ktd || 0, fl: s.fl || 0, pts: L.pts, dt: (s.dst && s.dst.td) || 0, src: L.src };
+  // v1.7.0: stats from the copy saved on the phone (shown for a second at open) never start or trigger a TD / fumble /
+  // score alert — only numbers fetched in this visit do, so reopening the app can't replay old plays as new ones
+  const fresh = L.src === 'espn' ? !!(sum && sum.P) : !(S.cbs[S.week] && S.cbs[S.week].cached);
+  if(!fresh){
+    const ev0 = S.evts[key];
+    if(ev0 && now - ev0.t < 180000) L.evt = { kind: ev0.kind, lab: ev0.lab, pulse: now - ev0.t < 10000 };
+    if(S.glow[key] && now - S.glow[key] < 60000) L.glow = true;
+    return L;
+  }
+  // v1.7.0: only compare like with like. CBS's stat line runs behind ESPN's box score, so the switch from CBS to ESPN
+  // (it happens at every open, before the box scores load) is a new starting point, not a new TD
+  if(prev && prev.live && prev.src === L.src){
     let lab = '';
     if(cur.r > prev.r){ const l = s.rtd[s.rtd.length - 1]; lab = 'TD' + (l != null ? ' · ' + l + ' yd run' : ''); }
     else if(cur.c > prev.c){ const l = s.ctd[s.ctd.length - 1]; lab = 'TD' + (l != null ? ' · ' + l + ' yd catch' : ''); }
@@ -1385,6 +1420,7 @@ function statusStrip(){
   if(sb && sb.err) warn = (warn ? warn + ' · ' : '') + '<b class="warn">Can’t reach ESPN</b>';
   const rs = S.ros[S.week];
   if(num(S.week) >= num(S.curWeek) && rs && rs.err && !rosFor(S.week)) warn = (warn ? warn + ' · ' : '') + '<b class="warn">Lineups may be stale</b> · can’t read this week’s lineup changes yet';
+  else if(num(S.week) >= num(S.curWeek) && rs && rs.err && rs.cached && c.err !== 'cbs_key') warn = (warn ? warn + ' · ' : '') + '<b class="warn">Lineups may be stale</b> · last lineup check ' + ago(rs.at);   // v1.7.0: showing the lineups saved on this phone
   if(!warn) return '';
   cls = 'bad';
   return '<div class="status"><span class="dot ' + cls + '"></span><span>' + lead + (parts.length ? ' · ' + parts.join(' · ') : '') + (warn ? '<br>' + warn : '') + '</span></div>';
@@ -1934,11 +1970,17 @@ function snapToCurrentWeek(){
 }
 // v1.4.4: CBS moved to a new week while you were on the current one -> go with it (waits out a tap or open sheet)
 function followNewWeek(){ setTimeout(function(){ if(overlayStack.length || press){ followNewWeek(); return; } snapToCurrentWeek(); }, overlayStack.length || press ? 1500 : 0); }
+// v1.7.0 (Wes, Nov 11): back after 10+ minutes on the Matchup tab -> your own game, scrolled to the top
+// (a quick switch away, like checking a text, keeps your place)
+function backToMyMatchup(){
+  if(S.view !== 'match' || overlayStack.length || press || swipe.active) return;
+  S.curKey = null; S.open = null; render(); window.scrollTo(0, 0); saveView();
+}
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', function(){
-  if(document.hidden){ hiddenAt = Date.now(); saveView(); return; }
+  if(document.hidden){ hiddenAt = Date.now(); saveView(); saveEngSnap(true); return; }
   const gone = hiddenAt ? Date.now() - hiddenAt : 0; hiddenAt = 0;
-  if(gone >= OFFWEEK_MAX) snapToCurrentWeek();
+  if(gone >= OFFWEEK_MAX){ snapToCurrentWeek(); backToMyMatchup(); }
 });
 function setView(v){
   if(v === S.view) return;
@@ -2356,6 +2398,7 @@ function loadRos(week){
       S.ros[week] = { data: d, at: j.at || Date.now(), err: j.source === 'stale' ? 'stale' : '' };
       if(old && JSON.stringify(old.data.teams) === JSON.stringify(d.teams)) S.ros[week].data = old.data;   // unchanged: keep the memo
       if(!old || S.ros[week].data !== old.data) modelMemo.src = null;
+      saveRos(week);                                                                        // v1.7.0: last lineups kept on the phone
     })
     .catch(function(){ const x = S.ros[week] || (S.ros[week] = {}); x.err = 'ros'; x.errAt = Date.now(); })
     .then(function(){ busy['ros' + week] = false; render(); });
@@ -2553,6 +2596,9 @@ setInterval(function(){ checkUpdate('timer'); }, 20000);
 (function cleanup(){
   if(!hasLocal || !S.curWeek) return;
   try{ const kill = []; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(/^fgt-sum-/.test(k)){ const v = JSON.parse(localStorage.getItem(k) || 'null'); if(!v || !v.w || v.w < S.curWeek - 1) kill.push(k); } } kill.forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
+  // v1.7.0: saved lineups for weeks already gone, schedule copies for weeks already played
+  try{ const kill = []; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i), m = /^fgt-(ros|cbs|fut)-w(\d+)$/.exec(k || '');
+    if(m && (m[1] === 'fut' ? num(m[2]) <= num(S.curWeek) : num(m[2]) < num(S.curWeek))) kill.push(k); } kill.forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
 })();
 
 /* =====================================================================
@@ -2822,11 +2868,18 @@ function engineStart(){
   catch(e){ ENG.err = 'worker'; return; }
   ENG.worker.onmessage = function(e){
     const d = e.data; ENG.busy = false;
-    if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); render(); }
+    if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); saveEngSnap(false); render(); }
     else if(d.type === 'error') ENG.err = d.err;
     engineTick();
   };
   if(S.proj) ENG.worker.postMessage({ type: 'proj', proj: S.proj.raw });
+}
+function setProj(j){
+  const byKey = {}, byName = {};
+  j.players.forEach(function(r){ byKey[r.k] = r; const nm = r.k.split('|')[0]; (byName[nm] || (byName[nm] = [])).push(r); });
+  S.proj = { raw: j, week: j.week, at: Date.parse(j.generated) || 0, byKey: byKey, byName: byName };
+  ENG.sig = ''; ENG.res = null;
+  if(ENG.worker) ENG.worker.postMessage({ type: 'proj', proj: j });
 }
 function loadProj(){
   if(busy.proj) return; busy.proj = true;
@@ -2834,15 +2887,33 @@ function loadProj(){
     .then(function(j){
       if(!j || !Array.isArray(j.players)) return;
       if(S.proj && S.proj.raw.generated === j.generated) return;
-      const byKey = {}, byName = {};
-      j.players.forEach(function(r){ byKey[r.k] = r; const nm = r.k.split('|')[0]; (byName[nm] || (byName[nm] = [])).push(r); });
-      S.proj = { raw: j, week: j.week, at: Date.parse(j.generated) || 0, byKey: byKey, byName: byName };
-      ENG.sig = ''; ENG.res = null;
-      if(ENG.worker) ENG.worker.postMessage({ type: 'proj', proj: j });
+      setProj(j);
+      put('proj', j);                                                     // v1.7.0: kept on the phone for an instant open
+      useEngSnap();
     })
     .catch(function(){})
     .then(function(){ busy.proj = false; ENG.projAt = Date.now(); engineTick(); render(); });
 }
+/* v1.7.0: the last win % / projections / playoff odds are saved on the phone and shown at open until the engine's
+   first fresh run (a second or two). Only for the same week and the same projections file; display-only. */
+let engSnapAt = 0, engSnapPending = null;
+function saveEngSnap(now){
+  const R = ENG.res;
+  if(!R || R.snap || !S.proj || !S.curWeek || !engineReady()) return;
+  engSnapPending = { week: S.curWeek, gen: S.proj.raw.generated, m: R.m, p: R.p, po: R.po, po0: R.po0 };
+  if(!now && Date.now() - engSnapAt < 20000) return;                 // at most every 20 s while games run (and on close)
+  engSnapAt = Date.now(); const v = engSnapPending; engSnapPending = null; v.at = Date.now();
+  try{ put('eng', v); }catch(e){}
+}
+function useEngSnap(){
+  if(ENG.res || !S.proj || !S.curWeek) return;
+  const v = getLocal('eng');
+  if(!v || v.week !== S.curWeek || v.gen !== S.proj.raw.generated || !snapOk(v) || !v.m) return;
+  ENG.res = { type: 'done', snap: true, m: v.m, p: v.p || {}, po: v.po || null, po0: v.po0 || null };
+}
+// open: projections saved on the phone (same file the network would give; replaced as soon as a newer one loads)
+(function(){ const j = getLocal('proj'); if(j && Array.isArray(j.players) && j.season === SEASON && j.generated){ setProj(j); useEngSnap(); } })();
+window.addEventListener('pagehide', function(){ saveEngSnap(true); });
 function projFor(pl){
   const P = S.proj; if(!P || !pl) return null;
   const t = nvTeam(pl.nfl);
@@ -2897,6 +2968,19 @@ function engState(pl, L){
 // last regular-season week. v1.5.3 (Wes + Dale, Nov 10): Week 12 counts — AFC vs NFC by standing after Week 11
 // (1st vs 1st ... 6th vs 6th), not on CBS's schedule yet. Top 5 per division after Week 12 make the playoffs.
 const REG_END = 12, RANK_WEEK = 12;
+/* v1.7.0 (Wes, Nov 11): the rest of the 2026 regular season (CBS /schedule/full, read Nov 11; team ids as in OWNERS).
+   Playoff odds use, in order: CBS's live answer -> the copy saved on this phone -> this built-in schedule
+   (-> Week 12 by standings). So an expired CBS key or CBS outage never blanks the playoff odds. */
+const SCHED = { 10: [['10', '11'], ['9', '3'], ['1', '4'], ['8', '12'], ['6', '7'], ['2', '5']],
+                11: [['6', '11'], ['3', '4'], ['2', '7'], ['12', '5'], ['1', '10'], ['8', '9']] };
+(function(){ const C = num(S.curWeek); if(!C) return;
+  for(let w = C + 1; w <= REG_END; w++){ const v = getLocal('fut-w' + w); if(v && v.at && 'map' in v && !ENG.futAt[w]){ ENG.fut[w] = v.map; ENG.futAt[w] = v.at; } } })();
+function pairsOf(f, teams, n){                     // opponent map {id: oppId} -> [[a, b], ...] (null unless every team is paired)
+  if(!f) return null;
+  const used = {}, pairs = [];
+  Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); });
+  return pairs.length < n / 2 ? null : pairs;
+}
 function seasonInputs(m){
   const SA = stAdjust(false), st = SA && SA.divs;
   if(!Array.isArray(st)) return null;
@@ -2909,11 +2993,10 @@ function seasonInputs(m){
   const curPairs = m.matchups.filter(function(x){ return x.home && x.away; }).map(function(x){ return [x.home.id, x.away.id]; });
   const future = [];
   for(let w = m.week + 1; w <= REG_END; w++){
-    if(w !== RANK_WEEK && !ENG.futAt[w]) return null;   // v1.5.4: wait for CBS's schedule for that week (no random opponents, even briefly)
-    const f = ENG.fut[w];
-    let pairs = null;
-    if(f){ const used = {}; pairs = []; Object.keys(f).forEach(function(id){ const o = f[id]; if(!o || used[id] || used[o] || !teams[id] || !teams[o]) return; used[id] = used[o] = 1; pairs.push([id, o]); }); if(pairs.length < ids.length / 2) pairs = null; }
+    let pairs = pairsOf(ENG.fut[w], teams, ids.length);                       // CBS (this visit, or saved on the phone)
+    if(!pairs && SCHED[w]){ const f = {}; SCHED[w].forEach(function(p){ f[p[0]] = p[1]; f[p[1]] = p[0]; }); pairs = pairsOf(f, teams, ids.length); }   // v1.7.0: built-in schedule
     if(!pairs && w === RANK_WEEK) pairs = 'rank';   // CBS has no Week 12 opponents: pair by standings in each simulated season
+    if(!pairs && !ENG.futAt[w]) return null;        // v1.5.4: no schedule at all for that week yet -> wait (never random opponents)
     future.push({ w: w, pairs: pairs });
   }
   return { teams: teams, countCur: countCur, curPairs: curPairs, future: future };
@@ -2928,6 +3011,7 @@ function loadFuture(){
         const T = j && j.data && j.data.live_scoring && j.data.live_scoring.teams; if(!Array.isArray(T)) return;
         const map = {}; T.forEach(function(t){ if(t.opp_team_id) map[String(t.id)] = String(t.opp_team_id); });
         ENG.fut[w] = Object.keys(map).length ? map : null; ENG.futAt[w] = Date.now(); ENG.sig = '';
+        put('fut-w' + w, { map: ENG.fut[w], at: ENG.futAt[w] });                 // v1.7.0: schedule kept on the phone
       }).catch(function(){}).then(function(){ busy['fut' + w] = false; engineTick(); });
     })(w);
   }
@@ -3065,7 +3149,7 @@ function beat(force){
     .catch(function(){});
 }
 function leave(){
-  try{ fetch(DB + '/fgt/presence/' + CH.pid + '.json', { method: 'DELETE', keepalive: true }); }catch(e){}
+  try{ fetch(DB + '/fgt/presence/' + CH.pid + '.json', { method: 'DELETE', keepalive: true }).catch(function(){}); }catch(e){}   // v1.7.0: offline = quiet
   if(CH.pres[CH.pid]){ CH.pres = Object.assign({}, CH.pres); delete CH.pres[CH.pid]; }
 }
 document.addEventListener('visibilitychange', function(){
@@ -3180,7 +3264,7 @@ var chatHook = function(){ placePane(); paintBadge(); };
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION };
+window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){
@@ -3190,7 +3274,8 @@ try{ history.replaceState({}, ''); }catch(e){}
     if(away < OFFWEEK_MAX){ S.week = lv.w; setTimeout(function(){ loadWeek(true); }, 0); }
     else setTimeout(function(){ toast('Back to Current Week \u00B7 Week ' + S.curWeek); }, 600);
   }
-  if(['match', 'standings', 'chat'].indexOf(lv.v) >= 0){ S.view = lv.v; S.curKey = lv.k || null; try{ history.pushState({ v: lv.v }, ''); }catch(e){} if(lv.v === 'standings') loadStandings(); }
+  if(['match', 'standings', 'chat'].indexOf(lv.v) >= 0){ S.view = lv.v; S.curKey = away >= OFFWEEK_MAX ? null : (lv.k || null); try{ history.pushState({ v: lv.v }, ''); }catch(e){} if(lv.v === 'standings') loadStandings(); }   // v1.7.0: 10+ min away -> your own game
+  if(S.view === 'match' && away >= OFFWEEK_MAX) setTimeout(function(){ window.scrollTo(0, 0); }, 0);
 })();
 render();
 tick();

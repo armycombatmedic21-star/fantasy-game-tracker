@@ -24,6 +24,10 @@ def check(name, cond, extra=''):
 LEAGUE_WEEKS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'league-weeks-2026.json')))
 def route(r):
     u = r.request.url
+    if state.get('net') == 'off' and not u.startswith(f'http://127.0.0.1:{PORT}/index.html'):   # v1.7.0 tests: phone offline
+        return r.abort()
+    if state.get('worker') == 'dead' and 'workers.dev' in u:                                         # v1.7.0 tests: CBS key expired
+        return r.fulfill(status=502, json={"ok": False, "error": "cbs_key", "status": 401})
     if 'workers.dev/live' in u:
         if 'week=' in u:
             wk = int(u.split('week=')[1].split('&')[0])
@@ -58,6 +62,13 @@ def wait_engine(page, ms=15000):
     t0 = time.time()
     while time.time() - t0 < ms / 1000:
         if page.evaluate("!!(window.__fgt.ENG.res && window.__fgt.ENG.res.po)"): return True
+        page.wait_for_timeout(250)
+    return False
+
+def wait_fresh(page, ms=15000):   # v1.7.0: a fresh engine run (not the copy saved on the phone)
+    t0 = time.time()
+    while time.time() - t0 < ms / 1000:
+        if page.evaluate("!!(window.__fgt.ENG.res && window.__fgt.ENG.res.po && !window.__fgt.ENG.res.snap)"): return True
         page.wait_for_timeout(250)
     return False
 
@@ -316,6 +327,98 @@ with sync_playwright() as pw:
         check(f'[{tag}] no page errors at the end', not errs, errs)
         print(f'[{tag}] scoreboard fetches: {state["sb_calls"]}, box-score fetches: {state["summary_calls"]}')
         ctx.close()
+    # ---------- v1.7.0: instant open from saved data, expired CBS key, Matchup back to your game ----------
+    tag = 'v1.7'
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True,
+                         user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')
+    ctx.route('**/*', route)
+    page = ctx.new_page()
+    errs = []
+    page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e) + ' ' + str(getattr(e, 'stack', '') or '')[:400]))
+    page.on('console', lambda m: errs.append(m.text + ' @ ' + str(m.location.get('url', ''))[:120] + ':' + str(m.location.get('lineNumber', ''))) if m.type == 'error' and 'Failed to load resource' not in m.text else None)
+    state.update({'net': 'ok', 'worker': 'ok', 'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10)})
+    page.goto(f'http://127.0.0.1:{PORT}/index.html'); page.wait_for_timeout(300)
+    page.evaluate("() => { localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1'); }")
+    page.reload(); page.wait_for_timeout(800)
+    wait_fresh(page); page.wait_for_timeout(2500)
+    keys = page.evaluate("() => ['ros-w9', 'cbs-w9', 'proj', 'eng', 'fut-w10', 'fut-w11', 'fut-w12'].filter(k => localStorage.getItem('fgt-' + k) == null)")
+    check(f'[{tag}] lineups, projections, win %, schedule saved on the phone', not keys, keys)
+    po_ok = page.evaluate("window.__fgt.ENG.res.po['11']")
+    import datetime as _dt
+    _ms = lambda *a: int(_dt.datetime(*a, tzinfo=_dt.timezone.utc).timestamp() * 1000)
+    cases = [(_ms(2026, 11, 11, 17), _ms(2026, 11, 10, 11)),   # Wed noon ET -> Tue 6 AM ET
+             (_ms(2026, 11, 10, 5), _ms(2026, 11, 3, 11)),     # Tue midnight ET (before 6 AM) -> last Tuesday
+             (_ms(2026, 11, 17, 2), _ms(2026, 11, 10, 11)),    # Mon 9 PM ET -> same week
+             (_ms(2026, 11, 10, 12), _ms(2026, 11, 10, 11))]   # Tue 7 AM ET -> today 6 AM
+    got = page.evaluate("(c) => c.map(x => window.__fgt.weekStartET(x[0]))", cases)
+    check(f'[{tag}] league week starts Tuesday 6 AM ET', got == [c[1] for c in cases], (got, [c[1] for c in cases]))
+    # 1) open with no network at all: everything shows from the phone copy
+    state['net'] = 'off'
+    page.reload(); page.wait_for_timeout(700)
+    mine = page.inner_text('.mc.mine') if page.locator('.mc.mine').count() else ''
+    la = page.inner_text('.la') if page.locator('.la').count() else ''
+    check(f'[{tag}] offline open: your matchup, win %, playoff odds right away', 'Dallas' in mine and 'Win Probability' in mine and '%' in la.split('Playoff Odds')[-1] and page.locator('#cards .mc').count() == 5, (mine, la))
+    page.click('.mc.mine'); page.wait_for_timeout(500)
+    check(f'[{tag}] offline open: matchup rows + projections', page.locator('.plist').first.locator('.prow').count() == 8 and page.locator('.prow[data-row="4"] .ppt small.pj').count() >= 1)
+    page.click('#back'); page.wait_for_timeout(300)
+    # 2) CBS key expired, schedule saved on the phone: same playoff odds as with a working key
+    state.update({'net': 'ok', 'worker': 'dead'})
+    page.reload(); page.wait_for_timeout(800)
+    ok = wait_fresh(page); page.wait_for_timeout(500)
+    po_dead = page.evaluate("window.__fgt.ENG.res && !window.__fgt.ENG.res.snap && window.__fgt.ENG.res.po ? window.__fgt.ENG.res.po['11'] : null")
+    check(f'[{tag}] expired key: banner says so', 'CBS key expired' in page.inner_text('#view'), page.inner_text('#view')[:300])
+    check(f'[{tag}] expired key + saved schedule: playoff odds unchanged', ok and po_dead is not None and abs(po_dead - po_ok) < 0.002, (po_ok, po_dead))
+    # 3) expired key on a phone that never saved the schedule: built-in schedule
+    page.evaluate("() => ['fgt-fut-w10', 'fgt-fut-w11', 'fgt-fut-w12'].forEach(k => localStorage.removeItem(k))")
+    page.reload(); page.wait_for_timeout(800)
+    ok = wait_fresh(page); page.wait_for_timeout(500)
+    fut = page.evaluate("(() => { const s = window.__fgt.season(); return s ? s.future.map(f => [f.w, f.pairs === 'rank' ? 'rank' : (f.pairs || []).map(p => p.slice().sort((a, b) => a - b).join('-')).sort()]) : null; })()")
+    want_f = [[10, sorted(['10-11', '3-9', '1-4', '8-12', '6-7', '2-5'])], [11, sorted(['6-11', '3-4', '2-7', '5-12', '1-10', '8-9'])], [12, 'rank']]
+    check(f'[{tag}] expired key, nothing saved: built-in Weeks 10-11 + Week 12 by standings', fut == want_f, fut)
+    po_b = page.evaluate("window.__fgt.ENG.res && window.__fgt.ENG.res.po ? window.__fgt.ENG.res.po['11'] : null")
+    check(f'[{tag}] expired key, nothing saved: playoff odds still show', ok and po_b is not None and 0 <= po_b <= 1 and '%' in page.inner_text('.la').split('Playoff Odds')[-1], po_b)
+    # 4) a copy from last league week (before Tuesday 6 AM ET) is never shown
+    state.update({'net': 'off', 'worker': 'ok'})
+    page.evaluate("""() => { const t = window.__fgt.weekStartET(Date.now()) - 3600000;
+      ['fgt-cbs-w9', 'fgt-ros-w9', 'fgt-eng'].forEach(k => { const v = JSON.parse(localStorage.getItem(k)); v.at = t; localStorage.setItem(k, JSON.stringify(v)); }); }""")
+    page.reload(); page.wait_for_timeout(700)
+    check(f'[{tag}] last week\'s saved lineups are not shown', page.locator('.mc.mine').count() == 0 and page.locator('#cards .mc').count() == 0)
+    state['net'] = 'ok'
+    page.reload(); page.wait_for_timeout(800); wait_fresh(page); page.wait_for_timeout(2500)
+    check(f'[{tag}] fresh lineups saved again', page.evaluate("JSON.parse(localStorage.getItem('fgt-ros-w9')).at") >= page.evaluate("window.__fgt.weekStartET(Date.now())"))
+    # 5) a TD that happened while the app was closed is not replayed as a new TD badge
+    page.click('.mc.mine'); page.wait_for_timeout(600)
+    state.update({'gordon_td': True, 'gordon_rush': 90, 'det_mia': (13, 17), 'lp': 'p2'})
+    page.reload(); page.wait_for_timeout(4000)
+    r1 = page.inner_text('.prow[data-row="1"]')
+    check(f'[{tag}] reopen: Gordon updated to 14, no replayed TD badge or glow', '14' in r1 and page.locator('.prow[data-row="1"] .evt').count() == 0 and page.locator('.prow[data-row="1"] b.glow').count() == 0, r1)
+    state.update({'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10)})
+    # 6) Matchup tab: back after 10+ min -> your game at the top; a quick switch keeps your place
+    page.click('#back'); page.wait_for_timeout(400)
+    page.locator('#cards .mc').first.click(); page.wait_for_timeout(600)
+    other = page.inner_text('.fp2')
+    check(f'[{tag}] opened another game', 'Dallas' not in other, other)
+    page.evaluate("window.scrollTo(0, 400)")
+    away = """(ms) => { Object.defineProperty(document, 'hidden', {configurable: true, get: () => true}); document.dispatchEvent(new Event('visibilitychange'));
+      const real = Date.now; Date.now = () => real() + ms;
+      Object.defineProperty(document, 'hidden', {configurable: true, get: () => false}); document.dispatchEvent(new Event('visibilitychange'));
+      Date.now = real; delete document.hidden; }"""
+    page.evaluate(away, 2 * 60000); page.wait_for_timeout(500)
+    check(f'[{tag}] back after 2 min: same game', page.inner_text('.fp2') == other)
+    page.evaluate(away, 11 * 60000); page.wait_for_timeout(500)
+    check(f'[{tag}] back after 11 min: your game, at the top', 'Dallas' in page.inner_text('.fp2') and page.evaluate('window.scrollY') == 0, (page.inner_text('.fp2'), page.evaluate('window.scrollY')))
+    page.locator('.tabbtn[data-tab="home"]').click(); page.wait_for_timeout(300)
+    page.locator('#cards .mc').first.click(); page.wait_for_timeout(600)
+    k_other = page.evaluate("window.__fgt.S.curKey")
+    # (closing the page saves the view, so the test view is set before the app starts)
+    page.add_init_script("localStorage.setItem('fgt-view', JSON.stringify({v: 'match', w: 9, k: '%s', t: Date.now() - 2 * 60000}))" % k_other)
+    page.reload(); page.wait_for_timeout(1200)
+    check(f'[{tag}] reopen after 2 min: same game', 'Dallas' not in page.inner_text('.fp2'), page.inner_text('.fp2'))
+    page.add_init_script("localStorage.setItem('fgt-view', JSON.stringify({v: 'match', w: 9, k: '%s', t: Date.now() - 11 * 60000}))" % k_other)
+    page.reload(); page.wait_for_timeout(1200)
+    check(f'[{tag}] reopen after 11 min: Matchup tab, your game', page.locator('.tabbtn.on[data-tab="match"]').count() == 1 and 'Dallas' in page.inner_text('.fp2'), page.inner_text('.fp2'))
+    check(f'[{tag}] no page errors', not errs, errs)
+    ctx.close()
     br.close()
 srv.shutdown()
 # version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
