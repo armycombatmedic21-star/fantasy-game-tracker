@@ -1,0 +1,31 @@
+# Test run of the consensus engine on a branch (Nov 11 2026): fetch every source + build projections,
+# upload the results as an artifact. Never commits or pushes anything.
+name: Sources check
+on:
+  push:
+    branches: [consensus-engine]
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: model/requirements.txt
+      - run: pip install -r model/requirements.txt
+      - name: Fetch sources + build
+        env:
+          FP_API_KEY: ${{ secrets.FP_API_KEY }}
+        run: |
+          mkdir -p out
+          python model/fetch_sources.py --week 10 --out out/sources.json || true
+          python model/run_projections.py || true
+          cp projections.json projections-status.json out/ || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sources-check
+          path: out

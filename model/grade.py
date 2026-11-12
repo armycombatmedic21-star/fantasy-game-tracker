@@ -54,6 +54,18 @@ def stats(pairs):
     return {"n": len(err), "mae": round(sum(abs(e) for e in err) / len(err), 2), "bias": round(sum(err) / len(err), 2)}
 
 
+def src_table(rows):
+    """rows = [(projection entry, actual)]. Per source: its MAE/bias and ours on exactly the same players."""
+    out, names = {}, sorted({k for e, a in rows for k in (e.get("sp") or {})})
+    for s_ in names:
+        same = [(e, a) for e, a in rows if s_ in (e.get("sp") or {})]
+        out[s_] = {"source": stats([(e["sp"][s_], a) for e, a in same]), "ours": stats([(e["m"], a) for e, a in same])}
+        own = [(e, a) for e, a in same if e.get("own") is not None]
+        if own:
+            out[s_]["own_model"] = stats([(e["own"], a) for e, a in own])
+    return out
+
+
 def grade_week(week):
     path = os.path.join(HIST, f"proj-w{week}.json")
     if not os.path.exists(path):
@@ -71,6 +83,9 @@ def grade_week(week):
     std = [(e, a) for e, a in full if e.get("fps") is not None]
     if std:
         res["fp_app"] = {"ours": stats([(e["m"], a) for e, a in std]), "fp_std": stats([(e["fps"], a) for e, a in std])}
+    # Nov 11 2026 consensus engine: each outside source alone (in this league's scoring) next to ours, same players
+    res["by_source"] = src_table([(e, a) for k, e, a in rows])
+    res["_src"] = [[e["m"], e.get("own"), e.get("sp") or {}, a] for k, e, a in rows if e.get("sp")]
     res["_pairs"] = [[e["m"], e.get("own"), e.get("fp"), e.get("fps"), a] for e, a in full]
     res["_all"] = [[e["m"], a] for k, e, a in rows]
     return res
@@ -102,6 +117,9 @@ def main():
                                     "fp": stats([(p[2], p[4]) for p in pairs])},
                    "fp_app": {"ours": stats([(p[0], p[4]) for p in pairs if p[3] is not None]),
                               "fp_std": stats([(p[3], p[4]) for p in pairs if p[3] is not None])}}
+    srows = [({"m": r[0], "own": r[1], "sp": r[2]}, r[3]) for w in G["weeks"].values() for r in w.get("_src", [])]
+    if srows:
+        G["season"]["by_source"] = src_table(srows)
     os.makedirs(HIST, exist_ok=True)
     json.dump(G, open(out_path, "w"), separators=(",", ":"))
     print(json.dumps(G["season"], indent=1))

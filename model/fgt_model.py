@@ -107,18 +107,20 @@ def sim_comp(rng, pos, c, prob, n):
         m = c["km"] * prob
         return np.clip(rng.normal(m, 0.45 * m, n), 0, None) if m > 0 else np.zeros(n)
     if pos == "DST":
+        # fr / td / sf come from the consensus sources when present (Nov 11 2026); old fixed rates otherwise
         pa = np.clip(np.round(rng.normal(c["oi"], 9.5, n)), 0, None)
         pa_pts = np.select([pa == 0, pa <= 7, pa <= 17, pa <= 24, pa <= 29], [15, 9, 6, 3, 0], -3)
-        return (pa_pts + rng.poisson(c["sk"], n) + rng.poisson(c["in"], n) + rng.poisson(0.6, n)
-                + 6 * rng.poisson(0.13, n) + 2 * rng.poisson(0.03, n))
+        return (pa_pts + rng.poisson(c["sk"], n) + rng.poisson(c["in"], n) + rng.poisson(c.get("fr", 0.6), n)
+                + 6 * rng.poisson(c.get("td", 0.13), n) + 2 * rng.poisson(c.get("sf", 0.03), n))
     played = rng.random(n) < prob
+    fl = rng.poisson(c["fl"], n) if c.get("fl") else 0      # fumbles lost, -1 each (consensus players only)
     if pos == "QB":
         py = np.clip(rng.normal(c["py"], c["ps"], n), 0, None)
         s = (tier(py, PASS_TIERS) + sim_td_pts(rng, c["pt"], "pass", n) - rng.poisson(c["it"], n)
-             + tier(sim_yds(rng, c["ry"], 0.9, n), SKILL_TIERS) + sim_td_pts(rng, c["rt"], "rush", n))
+             + tier(sim_yds(rng, c["ry"], 0.9, n), SKILL_TIERS) + sim_td_pts(rng, c["rt"], "rush", n)) - fl
         return s * played
     s = (tier(sim_yds(rng, c["ry"], c["rv"], n), SKILL_TIERS) + tier(sim_yds(rng, c["cy"], c["cv"], n), SKILL_TIERS)
-         + sim_td_pts(rng, c["rt"], "rush", n) + sim_td_pts(rng, c["ct"], "rec", n))
+         + sim_td_pts(rng, c["rt"], "rush", n) + sim_td_pts(rng, c["ct"], "rec", n)) - fl
     return s * played
 
 
@@ -363,7 +365,7 @@ def no_games_yet(week, first_day, have_keys, have_pids, implied, opp_of, playing
 
 
 # ---------- the model ----------
-def build(week, fp_file=None, ov_file=None):
+def build(week, fp_file=None, ov_file=None, src_file=None):
     sched = nfl.load_schedules([SEASON])
     ps, pbp = load(SEASON, week)
     implied, opp_of, wx, home_of, playing = week_lines(sched, week)
@@ -600,6 +602,8 @@ def build(week, fp_file=None, ov_file=None):
         rec.update(summ(sim, comps, 1.0, f"{opp} implied {comps[0]['oi']:.1f}; sacks {comps[0]['sk']:.1f}, INT {comps[0]['in']:.1f}/gm", []))
         dst.append(rec)
 
+    consensus = apply_consensus(out, dst, src_file) if src_file else None
+
     for r in out + dst:
         if r.get("t") in no_line_al and not r.get("bye"):
             r.setdefault("f", []).append("NO LINE YET: team scoring average used")
@@ -611,13 +615,139 @@ def build(week, fp_file=None, ov_file=None):
         on = set(ALIAS.get(t, t) for t in s["home_team"].to_list() + s["away_team"].to_list())
         byes[str(wk)] = sorted(teams_all - on)
     return {
-        "season": SEASON, "week": week, "model": "Drop 1 Appendix A (Nov 6 2026) port",
+        "season": SEASON, "week": week, "model": "Consensus of outside projections (Nov 11 2026); Drop 1 model as fallback" if src_file else "Drop 1 Appendix A (Nov 6 2026) port",
         "generated": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "fp_blended": bool(fp), "fp_source": (json.load(open(fp_file)).get("source", "") if fp_file else ""),
         "fp_matched": FP_STATS["matched"], "spread_k": SPREAD_K, "spread_pos": SPREAD_POS, "spread_rho": SPREAD_RHO,
-        "lg_ppg": round(lg_ppg, 2), "byes": byes,
+        "lg_ppg": round(lg_ppg, 2), "byes": byes, "consensus": consensus,
         "players": out + dst,
     }
+
+
+# ---------- consensus prediction engine (Nov 11 2026, Wes) ----------
+# Averages of several projection sources beat any single source (Fantasy Football Analytics accuracy studies), and a
+# plain average beats tuned weights ("forecast combination puzzle"), so: simple average of each raw stat across every
+# source that has the player, then OUR converter (tiers, TD lengths, simulations) turns it into this league's points.
+# Our own model is only the fallback for a player with fewer than CONSENSUS_MIN sources.
+CONSENSUS_MIN = 2
+K_SHARE = (0.55, 0.25, 0.20)        # FG made <40 / 40-49 / 50+ when a source has no distance buckets
+SRC_LABEL = {"cbs": "CBS", "sleeper": "Sleeper", "espn": "ESPN", "fp": "FantasyPros"}
+SKILL_KEYS = ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd", "fl")
+DST_KEYS = ("pa", "sk", "dint", "fr", "dtd", "sf")
+
+
+def load_sources(path):
+    j = json.load(open(path))
+    idx, by_name = {}, {}
+    for r in j.get("records", []):
+        tm, pos = ALIAS.get(r.get("team", ""), r.get("team", "")), r.get("pos")
+        key = ("DST", tm) if pos == "DST" else (norm_name(r.get("name", "")), tm, pos)
+        idx.setdefault(key, {}).setdefault(r["src"], r.get("stats") or {})
+        if pos != "DST":
+            by_name.setdefault((key[0], pos), set()).add(key)
+    return idx, by_name, j.get("status", {})
+
+
+def k_points(st, share=None):
+    """Kicker points in this league (FG <40 = 3, 40-49 = 4, 50+ = 5, XP = 1) from one source's projected stats."""
+    b = [st.get("fg_u40"), st.get("fg_40"), st.get("fg_50")]
+    fg = st.get("fg")
+    if all(v is not None for v in b) and sum(b) > 0:
+        f = (fg / sum(b)) if fg else 1.0          # buckets that don't add up to the FG total are scaled to it
+        u, m4, m5 = (v * f for v in b)
+    else:
+        sh = share or K_SHARE
+        u, m4, m5 = ((fg or 0) * x for x in sh)
+    return 3 * u + 4 * m4 + 5 * m5 + (st.get("xp") or 0)
+
+
+def avg_keys(srcs, keys):
+    out = {}
+    for k in keys:
+        vals = [s[k] for s in srcs.values() if s.get(k) is not None]
+        if vals:
+            out[k] = sum(vals) / len(vals)
+    return out
+
+
+def src_points(pos, st):
+    """One source's projection in this league's points (scorecard)."""
+    if pos == "K":
+        return k_points(st)
+    if pos == "DST":
+        if st.get("pa") is None:
+            return None
+        c = {"oi": st["pa"], "sk": st.get("sk", 0), "in": st.get("dint", 0), "fr": st.get("fr", 0.6), "td": st.get("dtd", 0.13),
+             "sf": st.get("sf", 0.03)}
+        return float(sim_comp(np.random.default_rng(13), "DST", c, 1.0, 20000).mean())
+    return fp_to_league(pos, *(st.get(k, 0) or 0 for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd"))) - (st.get("fl") or 0)
+
+
+def apply_consensus(out, dst, src_file):
+    idx, by_name, status = load_sources(src_file)
+    used, fallback, counts = 0, 0, {}
+
+    def lookup(rec):
+        if rec["p"] == "DST":
+            return idx.get(("DST", rec["t"]), {})
+        key = (norm_name(rec["n"]), rec["t"], rec["p"])
+        if key in idx:
+            return idx[key]
+        same = by_name.get((key[0], rec["p"]), set())   # traded player: a source may still list his old team
+        return idx[next(iter(same))] if len(same) == 1 else {}
+
+    for rec in out + dst:
+        pos = rec.get("p")
+        if rec.get("bye") or not rec.get("c") or pos not in ("QB", "RB", "WR", "TE", "K", "DST"):
+            continue
+        srcs = {k: v for k, v in lookup(rec).items() if v}
+        rec["sp"] = {k: round(v, 2) for k, v in ((k, src_points(pos, st)) for k, st in srcs.items()) if v is not None}
+        rec["cs"] = sorted(srcs)
+        counts[len(srcs)] = counts.get(len(srcs), 0) + 1
+        if len(srcs) < CONSENSUS_MIN:
+            fallback += 1
+            rec["b"] = (rec.get("b") or "") + f"; only {len(srcs)} outside source(s): our model used"
+            continue
+        own = rec["m"] / rec["sc"] if rec.get("sc") else rec["m"]
+        rec["own"] = round(float(own), 2)
+        # The sources already build injuries and roles into their numbers: no second injury cut (no double counting),
+        # except a player ruled Out.
+        prob = 0.0 if rec.get("inj") == "Out" else 1.0
+        names = "+".join(SRC_LABEL.get(k, k) for k in sorted(srcs))
+        flags = [f for f in rec.get("f", []) if not f.startswith(("OUTLIER", "partial game"))]
+        if pos == "K":
+            km = sum(k_points(st) for st in srcs.values()) / len(srcs)
+            comps = [{"w": 1, "km": round(km, 3)}]
+            sim = np.round(sim_player(RNG, "K", comps, prob))
+            basis = f"Consensus of {len(srcs)} ({names}): {km:.1f} pts from FGs by distance + XPs"
+        elif pos == "DST":
+            a = avg_keys(srcs, DST_KEYS)
+            c = {"w": 1, "oi": round(a.get("pa", 21), 2), "sk": round(a.get("sk", 2.4), 3), "in": round(a.get("dint", 0.8), 3),
+                 "fr": round(a.get("fr", 0.6), 3), "td": round(a.get("dtd", 0.13), 3), "sf": round(a.get("sf", 0.03), 3)}
+            comps = [c]
+            sim = sim_player(RNG, "DST", comps, 1.0)
+            basis = (f"Consensus of {len(srcs)} ({names}): {rec.get('o', '')} scores {c['oi']:.1f}; sacks {c['sk']:.1f}, "
+                     f"INT {c['in']:.1f}, FR {c['fr']:.1f}")
+        else:
+            a = {k: 0.0 for k in SKILL_KEYS}
+            a.update(avg_keys(srcs, SKILL_KEYS))
+            if pos == "QB":
+                c = {"w": 1, "py": round(a["pyd"], 2), "ps": round(0.28 * a["pyd"] + 20, 2), "pt": round(a["ptd"], 4),
+                     "it": round(a["ints"], 4), "ry": round(a["ryd"], 2), "rt": round(a["rtd"], 4), "fl": round(a["fl"], 4)}
+                basis = f"Consensus of {len(srcs)} ({names}): {c['py']:.0f} pass yds, {c['pt']:.1f} pass TD"
+            else:
+                cv_r, cv_c = CV.get(pos, CV["WR"])
+                c = {"w": 1, "ry": round(a["ryd"], 2), "rv": cv_r, "cy": round(a["cyd"], 2), "cv": cv_c,
+                     "rt": round(a["rtd"], 4), "ct": round(a["ctd"], 4), "fl": round(a["fl"], 4)}
+                basis = (f"Consensus of {len(srcs)} ({names}): {c['ry']:.0f} rush yds, {c['cy']:.0f} rec yds; "
+                         f"TD {c['rt'] + c['ct']:.2f}; vs {rec.get('o', '')}")
+            comps = [c]
+            sim = np.round(sim_player(RNG, pos, comps, prob))
+        rec["pp"] = prob
+        rec.update(summ(sim, comps, 1.0, basis, flags))
+        used += 1
+    return {"used": used, "fallback": fallback, "sources_per_player": {str(k): v for k, v in sorted(counts.items())},
+            "min_sources": CONSENSUS_MIN, "status": {k: {kk: vv for kk, vv in v.items() if kk != "info"} for k, v in status.items()}}
 
 
 def summ(sim, comps, scale, basis, flags):
@@ -631,10 +761,11 @@ if __name__ == "__main__":
     ap.add_argument("--week", type=int)
     ap.add_argument("--fp")
     ap.add_argument("--overrides")
+    ap.add_argument("--sources")
     ap.add_argument("--out", default="projections.json")
     a = ap.parse_args()
     wk = a.week or target_week(nfl.load_schedules([SEASON]))
-    res = build(wk, a.fp, a.overrides)
+    res = build(wk, a.fp, a.overrides, a.sources)
     with open(a.out, "w") as f:
         json.dump(res, f, separators=(",", ":"))
     pl_ = [p for p in res["players"] if p.get("c")]

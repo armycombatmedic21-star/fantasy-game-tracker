@@ -4,7 +4,9 @@
 2. Pull FantasyPros consensus raw stats for that week (model/fetch_fp.py). If FantasyPros hasn't posted the week yet
    or can't be reached, reuse this week's last good pull (fp-cache/, kept in the Actions cache, not in the repo);
    if there is none, run our model alone and label it unblended.
-3. Run model/fgt_model.py (Drop 1 model, 50/50 FantasyPros blend when available).
+3. Pull the outside projection sources (model/fetch_sources.py: CBS via our Worker, Sleeper, ESPN, FantasyPros) and
+   run model/fgt_model.py: consensus of the sources for every player with 2+ sources (Nov 11 2026); our Drop 1 model
+   (50/50 FantasyPros blend) only as the fallback. If every source fails, the fallback runs for everyone.
 4. Sanity checks (same as the old Claude task): 400+ players, week 1-18, no player mean above 45 or below -3.
    A failed check keeps the previous projections.json.
 5. Write projections-status.json (what happened, in plain fields) so anyone can see the last run from the repo.
@@ -15,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import nflreadpy as nfl
 import fgt_model as M
 import fetch_fp
+import fetch_sources
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, "fp-cache")
@@ -50,7 +53,26 @@ def main():
             fp_file = None
             st["fp"] = "not posted yet" if code == 2 else "unavailable"
 
-        res = M.build(week, fp_file, None)
+        src_file, src_cached = os.path.join(CACHE, f"sources-week{week}.json"), None
+        try:
+            recs, sst = fetch_sources.fetch_all(week, only=["sleeper", "espn", "cbs"])
+            if players and code == 0:     # FantasyPros was already pulled above: reuse it as the 4th source
+                recs += fetch_sources.fetch_fp_src_from(players)
+                sst["fp"] = {"ok": True, "records": len(players)}
+        except Exception as e:
+            recs, sst = [], {"error": f"{type(e).__name__}: {e}"[:200]}
+        st["sources"] = sst
+        ok_srcs = [k for k, v in sst.items() if isinstance(v, dict) and v.get("ok")]
+        if len(ok_srcs) >= 2:
+            json.dump({"week": week, "at": now(), "status": sst, "records": recs}, open(src_file, "w"), separators=(",", ":"))
+        elif os.path.exists(src_file):
+            src_cached = json.load(open(src_file)).get("at", "?")
+            st["sources_note"] = f"fewer than 2 sources answered; reused the pull from {src_cached}"
+        else:
+            src_file = None
+            st["sources_note"] = "fewer than 2 sources answered; our model used for everyone"
+
+        res = M.build(week, fp_file, None, src_file)
         pl_ = res["players"]
         bad = [f"{p['n']} {p['m']}" for p in pl_ if p.get("m", 0) > 45 or p.get("m", 0) < -3]
         checks = {"players": len(pl_), "week_ok": 1 <= week <= 18, "outliers": bad[:10]}
@@ -71,6 +93,7 @@ def main():
             st["scorecard"] = snapshot(week, res)
         except Exception as e:
             st["scorecard"] = f"snapshot failed: {type(e).__name__}: {e}"[:200]
+        st["consensus"] = {k: v for k, v in (res.get("consensus") or {}).items() if k != "status"}
         st.update({"ok": True, "fp_blended": res["fp_blended"], "fp_matched": res.get("fp_matched", 0),
                    "players": len(pl_), "spread_k": res.get("spread_k"), "spread_rho": res.get("spread_rho"),
                    "no_games_yet": sum(1 for p in pl_ if any("NO 2026 GAMES" in f for f in p.get("f", [])))})
@@ -106,7 +129,7 @@ def snapshot(week, res):
         if p.get("bye") or k is None or t_now >= k:
             continue                      # no game, or his game already started: keep the pre-kickoff snapshot
         e = {"m": p.get("m"), "pos": p.get("p")}
-        for f in ("fp", "own", "fps"):
+        for f in ("fp", "own", "fps", "sp", "cs"):
             if p.get(f) is not None:
                 e[f] = p[f]
         old["players"][p["k"]] = e

@@ -741,10 +741,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.8.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.8.0', 'New Prediction Engine: every player\u2019s projection is now the average of the projected stats from CBS, Sleeper, ESPN and FantasyPros (when they have him), scored in our league\u2019s exact rules, for every spot including kickers (FGs by distance) and defenses (points allowed, sacks, INTs, fumble recoveries, TDs). Fumbles lost now count in projections. Our old model is only used when fewer than 2 sites project a player.'],
   ['1.7.2', 'Smoother open: team and NFL logos are kept on your phone, so they show instantly instead of blinking in. The Online bar is always there (nothing jumps down), and your own team shows in it right away.'],
   ['1.7.1', 'The “CBS key expired” warning now shows on every tab (Matchup, Standings and Chat too), right under the Online row.'],
   ['1.7.0', 'Opens instantly: the last lineups, projections, win % and playoff odds show right away and update within seconds. Playoff odds keep working when CBS can’t be reached (the rest of the schedule is saved). The Matchup tab goes back to your game, at the top, after 10 minutes away.'],
@@ -1658,7 +1659,8 @@ function matchView(){
   for(let i = 0; i < ni; i++){ const x = iA[i] || [], y = iB[i] || []; h += prow(x[0] || null, x[1], y[0] || null, y[1], 200 + i, '', 'ir', mt.key); }
   h += '</div>';
   h += '</div><p class="note">Swipe the score card left or right to change games.</p>';
-  if(S.proj && S.proj.raw && S.proj.raw.fp_blended) h += '<p class="note fpnote">Projections: our model blended 50/50 with data from FantasyPros.</p>';
+  if(S.proj && S.proj.raw && S.proj.raw.consensus && S.proj.raw.consensus.used) h += '<p class="note fpnote">Projections: consensus of CBS, Sleeper, ESPN and FantasyPros projected stats, scored in our league\u2019s rules.</p>';
+  else if(S.proj && S.proj.raw && S.proj.raw.fp_blended) h += '<p class="note fpnote">Projections: our model blended 50/50 with data from FantasyPros.</p>';
   return h;
 }
 
@@ -2739,22 +2741,25 @@ function engineWorker(){
       const m = c.km * sc * live.f; return live.cur.pts + (m > 0 && live.on ? Math.max(0, m + 0.45 * c.km * Math.sqrt(live.f) * R.n()) : 0);
     }
     if(pos === 'DST'){
-      if(!live){ const pa = Math.max(0, Math.round(c.oi + 9.5 * R.n())); return paPts(pa) + R.p(c.sk) + R.p(c['in']) + R.p(0.6) + 6 * R.p(0.13) + 2 * R.p(0.03); }
+      // v1.8.0: fumble recoveries / D-ST TDs / safeties come from the consensus sources (old fixed rates if missing)
+      const fr = c.fr == null ? 0.6 : c.fr, dtd = c.td == null ? 0.13 : c.td, sf = c.sf == null ? 0.03 : c.sf;
+      if(!live){ const pa = Math.max(0, Math.round(c.oi + 9.5 * R.n())); return paPts(pa) + R.p(c.sk) + R.p(c['in']) + R.p(fr) + 6 * R.p(dtd) + 2 * R.p(sf); }
       const f = live.f, k = live.cur;
       const pa = Math.round(k.pa + Math.max(0, c.oi * f + 9.5 * Math.sqrt(f) * R.n()));
-      return paPts(pa) + k.sk + k.int + k.fr + 6 * k.td + 2 * k.sf + R.p(c.sk * f) + R.p(c['in'] * f) + R.p(0.6 * f) + 6 * R.p(0.13 * f) + 2 * R.p(0.03 * f);
+      return paPts(pa) + k.sk + k.int + k.fr + 6 * k.td + 2 * k.sf + R.p(c.sk * f) + R.p(c['in'] * f) + R.p(fr * f) + 6 * R.p(dtd * f) + 2 * R.p(sf * f);
     }
     if(!live){
       if(R.u() >= pp) return 0;
-      if(pos === 'QB'){ const py = Math.max(0, c.py + c.ps * R.n()); return tier(py, PA) + tds(R, c.pt, 'pass') - R.p(c.it) + tier(yds(R, c.ry, 0.9), SK) + tds(R, c.rt, 'rush'); }
-      return tier(yds(R, c.ry, c.rv), SK) + tier(yds(R, c.cy, c.cv), SK) + tds(R, c.rt, 'rush') + tds(R, c.ct, 'rec');
+      const fl = c.fl ? R.p(c.fl) : 0;   // v1.8.0: fumbles lost, -1 each (consensus projections)
+      if(pos === 'QB'){ const py = Math.max(0, c.py + c.ps * R.n()); return tier(py, PA) + tds(R, c.pt, 'pass') - R.p(c.it) + tier(yds(R, c.ry, 0.9), SK) + tds(R, c.rt, 'rush') - fl; }
+      return tier(yds(R, c.ry, c.rv), SK) + tier(yds(R, c.cy, c.cv), SK) + tds(R, c.rt, 'rush') + tds(R, c.ct, 'rec') - fl;
     }
-    const f = live.on ? live.f : 0, k = live.cur;
+    const f = live.on ? live.f : 0, k = live.cur, flr = c.fl && f > 0 ? R.p(c.fl * f) : 0;   // remaining fumbles (already-lost ones are in k)
     if(pos === 'QB'){
       const py = k.py + (f > 0 ? Math.max(0, c.py * sc * f + c.ps * Math.sqrt(f) * R.n()) : 0);
-      return tier(py, PA) + tier(k.ry + yds(R, c.ry * sc * f, 0.9), SK) + tier(k.cy, SK) + k.tdp + k.oth + tds(R, c.pt * sc * f, 'pass') + tds(R, c.rt * sc * f, 'rush') - R.p(c.it * f);
+      return tier(py, PA) + tier(k.ry + yds(R, c.ry * sc * f, 0.9), SK) + tier(k.cy, SK) + k.tdp + k.oth + tds(R, c.pt * sc * f, 'pass') + tds(R, c.rt * sc * f, 'rush') - R.p(c.it * f) - flr;
     }
-    return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec');
+    return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec') - flr;
   }
   let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {};
   // v1.5.3 (Wes, Nov 10): playoff odds assume every owner fills a position nobody healthy can play with a waiver pickup.
