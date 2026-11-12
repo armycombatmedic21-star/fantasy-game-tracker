@@ -46,7 +46,12 @@ FP_BLEND = 0.5
 # SPREAD_POS: each still-to-play player's own range, by position (1,287 rostered player-games vs CBS official points).
 # SPREAD_RHO: small same-week correlation; only matters while several players are left (full team ~1.3x, 1 player = his own).
 # SPREAD_K: future weeks (playoff odds) only. Checked with model/calibrate.py (pregame) and model/calibrate_live.py (live).
-SPREAD_POS = {"QB": 1.10, "RB": 1.15, "WR": 1.13, "TE": 1.12, "K": 1.18, "DST": 1.08}
+# Nov 11 2026 (v1.8.0 consensus engine): re-fit with model/calib_spread.py on Sleeper's projections for Weeks 4-9 run
+# through our converter vs real league points (1,318 player-games): QB 1.01, RB 1.15, WR 1.04, TE 0.94, K 1.16, DST 1.04
+# (+-0.05). Outside projections miss less than the old model, so less widening is needed. TE floored at 1.00.
+# Old values (fit to the old model): QB 1.10, RB 1.15, WR 1.13, TE 1.12, K 1.18, DST 1.08. SPREAD_K unchanged: future
+# weeks still use our own model's neutral projections.
+SPREAD_POS = {"QB": 1.01, "RB": 1.15, "WR": 1.04, "TE": 1.00, "K": 1.16, "DST": 1.04}
 SPREAD_RHO = 0.06
 SPREAD_K = 1.35
 RNG = np.random.default_rng(7)
