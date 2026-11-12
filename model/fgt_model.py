@@ -37,6 +37,10 @@ PARTIAL_FRAC = 0.6
 STALE_GAP = 2
 OUTLIER_PCT, OUTLIER_ABS = 0.40, 3.0
 WINDOW = {"WR": 5}
+# Nov 11 2026 (Wes approved): QB pass yards from the season average of his full games with this team, not the
+# weighted last 3. Backtest: pass-yds MAE 56.3 vs 62.7 (2025, n=369) and 60.3 vs 65.6 (2026, n=143).
+# A hand-picked override window ("weeks"/"mix") still wins.
+QB_PY_SEASON = True
 FP_BLEND = 0.5
 # How much wider than the raw simulation the app makes each range (v1.3.6, Nov 9 2026 league backtest, Wks 2-9):
 # SPREAD_POS: each still-to-play player's own range, by position (1,287 rostered player-games vs CBS official points).
@@ -482,7 +486,12 @@ def build(week, fp_file=None, ov_file=None):
             imp_tds = (imp_ or 21) * TD_PER_POINT
             rf = rush_frac.get(tm, 0.4)
             if pos == "QB":
-                pass_mean = wavg("passing_yards") * env * m
+                if QB_PY_SEASON and not weeks_override:
+                    gw = [w for w in me["week"].to_list() if w not in part]
+                    base = me.filter(pl.col("week").is_in(gw))["passing_yards"].mean() if gw else me["passing_yards"].mean()
+                else:
+                    base = wavg("passing_yards")
+                pass_mean = (base or 0) * env * m
                 return {"py": round(pass_mean, 2), "ps": round(0.28 * pass_mean + 20, 2), "pt": round(imp_tds * (1 - rf) * 0.92, 4),
                         "it": round(me["passing_interceptions"].sum() / max(me.height, 1), 4),
                         "ry": round(QB_RY[0] + QB_RY[1] * me["rushing_yards"].mean(), 2),

@@ -61,7 +61,7 @@ def main():
         # who got no FantasyPros number (for spotting name mismatches)
         if fp_file:
             miss = [p["n"] + " " + p["t"] for p in pl_ if p.get("p") in ("QB", "RB", "WR", "TE") and p.get("c")
-                    and p.get("m", 0) >= 5 and "FP " not in (p.get("b") or "")]
+                    and p.get("m", 0) >= 5 and p.get("fp") is None and "FantasyPros" not in (p.get("b") or "")]
             st["fp_unmatched_5plus"] = miss[:25]
             st["fp_unmatched_5plus_count"] = len(miss)
         tmp = OUT + ".tmp"
