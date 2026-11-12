@@ -636,16 +636,30 @@ SKILL_KEYS = ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd", "fl")
 DST_KEYS = ("pa", "sk", "dint", "fr", "dtd", "sf")
 
 
+OUT_STATUS = ("out", "ir", "injury_reserve", "injured_reserve", "sus", "suspension", "suspended", "pup", "nfi", "dnr", "na")
+
+
+def fold(n):
+    """Name key for matching across sites: accents folded (Estimé = Estime), then the same rules as norm_name."""
+    import unicodedata
+    return norm_name(unicodedata.normalize("NFKD", str(n or "")).encode("ascii", "ignore").decode())
+
+
 def load_sources(path):
     j = json.load(open(path))
-    idx, by_name = {}, {}
+    idx, by_name, by_last, inj = {}, {}, {}, {}
     for r in j.get("records", []):
         tm, pos = ALIAS.get(r.get("team", ""), r.get("team", "")), r.get("pos")
-        key = ("DST", tm) if pos == "DST" else (norm_name(r.get("name", "")), tm, pos)
+        key = ("DST", tm) if pos == "DST" else (fold(r.get("name", "")), tm, pos)
+        if r["src"].endswith("_inj"):
+            inj.setdefault(key, {})[r["src"][:-4]] = str(r.get("inj") or "")
+            continue
         idx.setdefault(key, {}).setdefault(r["src"], r.get("stats") or {})
         if pos != "DST":
             by_name.setdefault((key[0], pos), set()).add(key)
-    return idx, by_name, j.get("status", {})
+            last = key[0].split(" ")[-1] if key[0] else ""
+            by_last.setdefault((last, tm, pos), set()).add(key)
+    return idx, by_name, by_last, inj, j.get("status", {})
 
 
 def k_points(st, share=None):
@@ -684,29 +698,68 @@ def src_points(pos, st):
 
 
 def apply_consensus(out, dst, src_file):
-    idx, by_name, status = load_sources(src_file)
-    used, fallback, counts = 0, 0, {}
+    idx, by_name, by_last, inj, status = load_sources(src_file)
+    healthy = sum(1 for v in status.values() if isinstance(v, dict) and v.get("ok"))
+    used, fallback, counts, outs, zero, single = 0, 0, {}, 0, 0, 0
+    matched_keys = set()
 
-    def lookup(rec):
-        if rec["p"] == "DST":
-            return idx.get(("DST", rec["t"]), {})
-        key = (norm_name(rec["n"]), rec["t"], rec["p"])
-        if key in idx:
-            return idx[key]
-        same = by_name.get((key[0], rec["p"]), set())   # traded player: a source may still list his old team
-        return idx[next(iter(same))] if len(same) == 1 else {}
+    def find(key, table):
+        if key in table:
+            return key
+        same = by_name.get((key[0], key[2]), set())           # traded player: a site may still list his old team
+        if len(same) == 1:
+            return next(iter(same))
+        last = key[0].split(" ")[-1] if key[0] else ""
+        same = by_last.get((last, key[1], key[2]), set())     # nickname (Bill / Jacory, Chig / Chigoziem): last name + team
+        return next(iter(same)) if len(same) == 1 else None
 
     for rec in out + dst:
         pos = rec.get("p")
         if rec.get("bye") or not rec.get("c") or pos not in ("QB", "RB", "WR", "TE", "K", "DST"):
             continue
-        srcs = {k: v for k, v in lookup(rec).items() if v}
+        if pos == "DST":
+            k_ = ("DST", rec["t"])
+            srcs, istat = idx.get(k_, {}), {}
+        else:
+            key = (fold(rec["n"]), rec["t"], pos)
+            k_ = find(key, idx)
+            srcs = idx.get(k_, {}) if k_ else {}
+            ik = key if key in inj else (k_ if k_ in inj else None)
+            istat = inj.get(ik, {}) if ik else {}
+        if k_:
+            matched_keys.add(k_)
+        srcs = {k: v for k, v in srcs.items() if v}
         rec["sp"] = {k: round(v, 2) for k, v in ((k, src_points(pos, st)) for k, st in srcs.items()) if v is not None}
         rec["cs"] = sorted(srcs)
         counts[len(srcs)] = counts.get(len(srcs), 0) + 1
+        own = rec["m"] / rec["sc"] if rec.get("sc") else rec["m"]
+        out_by = [f"{SRC_LABEL.get(s_, s_)} {v}" for s_, v in istat.items() if v.lower().replace(" ", "_") in OUT_STATUS]
+        if out_by:
+            # Sleeper / ESPN list him Out, on IR or suspended: 0, even before the NFL's own Week injury report is out
+            outs += 1
+            rec["own"] = round(float(own), 2)
+            rec.update({"pp": 0.0, "m": 0, "lo": 0, "hi": 0, "inj": rec.get("inj") or "Out"})
+            rec["b"] = f"OUT ({', '.join(out_by)})"
+            continue
+        if not srcs and healthy >= CONSENSUS_MIN and pos != "DST":
+            # every site that answered leaves him out of its projections: backup or not expected to play
+            zero += 1
+            rec["own"] = round(float(own), 2)
+            rec.update({"pp": 0.0, "m": 0, "lo": 0, "hi": 0})
+            rec["b"] = "No site projects him this week (backup or not expected to play)"
+            rec.setdefault("f", []).append("NO OUTSIDE PROJECTION")
+            continue
         if len(srcs) < CONSENSUS_MIN:
+            # one site only: our model counts as the second vote (50/50), same scaling as the old FantasyPros blend
             fallback += 1
-            rec["b"] = (rec.get("b") or "") + f"; only {len(srcs)} outside source(s): our model used"
+            if len(srcs) == 1 and rec["sp"] and own > 0:
+                (s1, v1), = rec["sp"].items()
+                single += 1
+                target = 0.5 * own + 0.5 * v1 * (rec.get("pp", 1.0) or 0)
+                sc_ = target / own
+                rec["own"] = round(float(own), 2)
+                rec["m"], rec["lo"], rec["hi"], rec["sc"] = round(target, 2), round(rec["lo"] * sc_ / (rec.get("sc") or 1), 1), round(rec["hi"] * sc_ / (rec.get("sc") or 1), 1), round(sc_, 4)
+                rec["b"] = (rec.get("b") or "").split("; FantasyPros")[0] + f"; blended 50/50 with {SRC_LABEL.get(s1, s1)} (only site)"
             continue
         own = rec["m"] / rec["sc"] if rec.get("sc") else rec["m"]
         rec["own"] = round(float(own), 2)
@@ -746,7 +799,17 @@ def apply_consensus(out, dst, src_file):
         rec["pp"] = prob
         rec.update(summ(sim, comps, 1.0, basis, flags))
         used += 1
-    return {"used": used, "fallback": fallback, "sources_per_player": {str(k): v for k, v in sorted(counts.items())},
+    unmatched = []
+    for k_, srcs in idx.items():
+        if k_ in matched_keys or k_[0] == "DST":
+            continue
+        pts = [src_points(k_[2], st) for st in srcs.values() if st]
+        pts = [p for p in pts if p is not None]
+        if pts and max(pts) >= 4:
+            unmatched.append(f"{k_[0]} {k_[1]} {k_[2]} {max(pts):.1f}")
+    return {"used": used, "fallback": fallback, "single_source_blend": single, "out_by_injury": outs, "no_source_zero": zero,
+            "unmatched_source_players_4plus": sorted(unmatched)[:40], "unmatched_count": len(unmatched),
+            "sources_per_player": {str(k): v for k, v in sorted(counts.items())},
             "min_sources": CONSENSUS_MIN, "status": {k: {kk: vv for kk, vv in v.items() if kk != "info"} for k, v in status.items()}}
 
 

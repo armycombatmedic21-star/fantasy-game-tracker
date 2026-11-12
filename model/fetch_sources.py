@@ -25,6 +25,7 @@ UA = "fgt-projections/2.0 (personal fantasy league app)"
 ALIAS = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "LVR": "LV", "OAK": "LV", "SD": "LAC", "STL": "LA", "ARZ": "ARI", "GNB": "GB",
          "KAN": "KC", "NWE": "NE", "NOR": "NO", "SFO": "SF", "TAM": "TB"}
 SKILL = ("QB", "RB", "WR", "TE")
+INJURIES = []   # injury status from Sleeper / ESPN for every player they list (filled by the fetchers)
 # ESPN proTeamId -> abbreviation
 ESPN_TEAM = {1: "ATL", 2: "BUF", 3: "CHI", 4: "CIN", 5: "CLE", 6: "DAL", 7: "DEN", 8: "DET", 9: "GB", 10: "TEN", 11: "IND",
              12: "KC", 13: "LV", 14: "LA", 15: "MIA", 16: "MIN", 17: "NE", 18: "NO", 19: "NYG", 20: "NYJ", 21: "PHI", 22: "ARI",
@@ -81,6 +82,7 @@ SLEEPER_SKILL = {"pyd": "pass_yd", "ptd": "pass_td", "ints": "pass_int", "ryd": 
 
 def fetch_sleeper(week):
     out, info = [], {}
+    injuries = INJURIES
     for sp, pos in SLEEPER_POS.items():
         url = f"https://api.sleeper.app/projections/nfl/{SEASON}/{week}?season_type=regular&position[]={sp}"
         rows = get_json(url)
@@ -89,6 +91,10 @@ def fetch_sleeper(week):
             p, st = e.get("player") or {}, e.get("stats") or {}
             if int(e.get("week") or week) != week:
                 continue
+            inj = (p.get("injury_status") or "").strip()
+            if inj and pos != "DST":
+                injuries.append({"src": "sleeper", "name": f"{p.get('first_name', '')} {p.get('last_name', '')}".strip(),
+                                 "team": team(e.get("team") or p.get("team")), "pos": pos, "inj": inj})
             s = {}
             if pos in SKILL:
                 if not any(k in st for k in ("pass_yd", "rush_yd", "rec_yd", "rush_att", "rec", "pass_att")):
@@ -116,6 +122,7 @@ def fetch_sleeper(week):
                 continue
             out.append({"src": "sleeper", "name": name, "team": tm, "pos": pos, "id": str(e.get("player_id") or ""), "stats": s})
         time.sleep(0.5)
+    info["injury_flags"] = sum(1 for x in injuries if x["src"] == "sleeper")
     return out, info
 
 
@@ -140,6 +147,8 @@ def fetch_espn(week):
             drop["pos"] += 1; continue
         if not tm:
             drop["team"] += 1; continue        # free agent (proTeamId 0)
+        if pos != "DST" and p.get("injuryStatus") and p.get("injuryStatus") != "ACTIVE":
+            INJURIES.append({"src": "espn", "name": p.get("fullName") or "", "team": tm, "pos": pos, "inj": p["injuryStatus"]})
         cand = [x for x in (p.get("stats") or []) if x.get("statSourceId") == 1 and x.get("scoringPeriodId") == week and x.get("stats")]
         st = next((x for x in cand if x.get("statSplitTypeId") == 1), cand[0] if cand else None)
         if not st:
@@ -257,6 +266,8 @@ FETCHERS = {"sleeper": fetch_sleeper, "espn": fetch_espn, "cbs": fetch_cbs, "fp"
 
 
 def fetch_all(week, only=None):
+    """Returns (records, status). Injury flags (Sleeper/ESPN) are added as records with "inj" and no stats."""
+    INJURIES.clear()
     recs, status = [], {}
     for name, fn in FETCHERS.items():
         if only and name not in only:
@@ -268,6 +279,7 @@ def fetch_all(week, only=None):
             status[name] = {"ok": True, "records": len(r), "secs": round(time.time() - t0, 1), "info": info}
         except Exception as e:
             status[name] = {"ok": False, "error": f"{type(e).__name__}: {e}"[:200], "secs": round(time.time() - t0, 1)}
+    recs += [{**x, "src": x["src"] + "_inj", "stats": {}} for x in INJURIES]
     return recs, status
 
 
