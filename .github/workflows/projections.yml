@@ -9,7 +9,7 @@ on:
     - cron: "30 23 * * 1,4"   # Monday + Thursday 6:30 PM ET (before the night games)
   push:
     branches: [main]
-    paths: [model/fgt_model.py, model/fetch_fp.py, model/run_projections.py, model/grade.py, .github/workflows/projections.yml, run-now.txt]
+    paths: [model/fgt_model.py, model/fetch_fp.py, model/fetch_sources.py, model/run_projections.py, model/grade.py, .github/workflows/projections.yml, run-now.txt]
   workflow_dispatch:
 permissions:
   contents: write
