@@ -689,6 +689,21 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .mhead .gear{width:38px;height:38px}
 .la{margin-bottom:16px}   /* v1.6.1: the "Your team · Change" row above your matchup is gone; keep a clean gap */
 @media (max-width:370px){.mhead .mtitle{letter-spacing:1px}.mhead .back{padding:0 8px}}
+
+/* ---- v1.8.1: card border like the Online strip (thin blue line + faint blue fill, no glow); "My matchup" diamond on your game; star dot ---- */
+.plist{border:1px solid rgba(var(--acc-rgb),.28)}
+.hero,.hero.dw,.plist:not(.benchlist){border:1px solid rgba(var(--acc-rgb),.28);background:linear-gradient(180deg,rgba(var(--acc-rgb),.075),rgba(var(--acc-rgb),.035)),linear-gradient(180deg,#0e1829,#0b1321);box-shadow:none}
+.hero{overflow:visible}
+.ymx{position:absolute;top:-11px;left:50%;transform:translateX(-50%);z-index:4;height:22px;padding:0 22px;background:rgba(var(--acc-rgb),.42);clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,16px 100%,0 50%);pointer-events:none}
+.ymx::before{content:"";position:absolute;inset:1px;background:#0a1222;clip-path:polygon(15.4px 0,calc(100% - 15.4px) 0,100% 50%,calc(100% - 15.4px) 100%,15.4px 100%,0 50%)}
+.ymx b{position:relative;display:flex;align-items:center;height:22px;white-space:nowrap;font-size:9px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:#8db6ff}
+.hero .divwk{left:12px;top:-9px;height:18px;padding:0 8px 0 6px;gap:5px;font-size:8px;letter-spacing:.8px}
+.hero .divwk i{width:5px;height:5px}
+.dots{align-items:center}
+.dots i.star{width:auto;height:auto;background:none;display:grid;place-items:center;color:rgba(255,255,255,.30)}
+.dots i.star.on{background:none;color:var(--acc)}
+.dots i.star svg{display:block}
+@media (max-width:370px){ .ymx{padding:0 19px} .ymx b{letter-spacing:1px} .hero .divwk{left:10px;padding:0 7px 0 5px;letter-spacing:.5px} }
 </style>
 </head>
 <body>
@@ -741,10 +756,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.8.1', 'Your game is easy to find: it says “My matchup” in a diamond on the top edge of the matchup card, and its dot is a star, so you can swipe back to it fast. It follows whichever team you picked. The matchup and player cards have a cleaner blue border (no glow), and the badge now says “Division Week”.'],
   ['1.8.0', 'New Prediction Engine: every player\u2019s projection is now the average of the projected stats from CBS, Sleeper, ESPN and FantasyPros (when they have him), scored in our league\u2019s exact rules, for every spot including kickers (FGs by distance) and defenses (points allowed, sacks, INTs, fumble recoveries, TDs). Fumbles lost now count in projections. Our old model is only used when fewer than 2 sites project a player.'],
   ['1.7.2', 'Smoother open: team and NFL logos are kept on your phone, so they show instantly instead of blinking in. The Online bar is always there (nothing jumps down), and your own team shows in it right away.'],
   ['1.7.1', 'The “CBS key expired” warning now shows on every tab (Matchup, Standings and Chat too), right under the Online row.'],
@@ -1417,13 +1433,14 @@ setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press &
 
 const TGA = '<svg class="tg" viewBox="0 0 14 12" width="13" height="11" aria-hidden="true"><path d="M2 6h8.2M7 2.2 10.8 6 7 9.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ICON = {
+  star: '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2l-5.8 3.2 1.2-6.5L2.6 9.4l6.5-.8z" fill="currentColor"/></svg>',
   chev: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>',
   gear: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   plus: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   rowchev: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
 };
 function pinSvg(){ return '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.4 1.2h3.2l-.5 3.1 1.9 1.7v.8H6.5L6 10.8 5.5 6.8H3V6l1.9-1.7z"/></svg>'; }
-const DWB = '<span class="divwk"><i></i>Divisional Week</span>';
+const DWB = '<span class="divwk"><i></i>Division Week</span>';
 const VS_SVG = '<svg viewBox="0 0 64 30" aria-hidden="true"><path d="M3 27.5 10.5 2.5H44M61 2.5 53.5 27.5H20" fill="none" stroke="#4f8dff" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter"/><text x="32.5" y="21.3" text-anchor="middle" font-family="Manrope,sans-serif" font-size="15" font-weight="800" font-style="italic" fill="#4f8dff" letter-spacing="0.5">VS</text></svg>';
 function ordSup(n){ const v = n % 100, s = (v >= 11 && v <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th'); return n + '<sup>' + s + '</sup>'; }
 function ordTxt(n){ return ordSup(n).replace(/<\/?sup>/g, ''); }
@@ -1519,7 +1536,7 @@ function card(mt, mine, LM){
   const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
-    '<div class="mchead">' + (mine ? '<span class="tag">Your matchup</span><span class="tag">' + left + ' players left</span>' :
+    '<div class="mchead">' + (mine ? '<span class="tag">My matchup</span><span class="tag">' + left + ' players left</span>' :
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
     (mine ? '' : '<span class="tag left">' + left + ' left</span>') +
     '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
@@ -1629,13 +1646,16 @@ function matchView(){
   const fw = status === 'Final' && B ? finalWa(la, lb) : null;
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null, note = engNote();
   const fl = function(t, r){ return '<span class="fplogo' + (r ? ' r' : '') + '">' + (t ? img(t.logo, t.code) : '') + '</span>'; };
-  h += '<section class="hero' + (dw ? ' dw' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') +
+  // v1.8.1: "My matchup" diamond on the picked team's game; its dot (always first, see orderedMatchups) is a star
+  const isMy = function(x){ return !!(S.team && x && ((x.home && x.home.id === S.team) || (x.away && x.away.id === S.team))); };
+  const ISM = isMy(mt), HASM = isMy(X.list[0]);
+  h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (a > b ? 'lead' : '') + '">' + a + '</b><b class="' + (b > a ? 'lead' : '') + '">' + b + '</b></div>' +
     (E && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
     '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
-    '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x){ return '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
+    '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x, j){ return HASM && j === 0 ? '<i class="star' + (x === mt ? ' on' : '') + '">' + ICON.star + '</i>' : '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
   h += '<div id="mrows" data-key="rows-' + mt.key + '">';
   h += '<div class="plist"><div class="plabel"><span>Starters · points</span><span>Tap for stats</span></div>';
   const n = Math.max(A.lineup.length, B ? B.lineup.length : 0);

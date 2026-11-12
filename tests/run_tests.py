@@ -189,6 +189,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] pinned card glows', page.locator('#cards .mc.pinned').count() == 1)
         check(f'[{tag}] pins saved by team', len(page.evaluate("JSON.parse(localStorage.getItem('fgt-pins'))")) == 2)
 
+        check(f'[{tag}] scoreboard tag says My matchup', page.evaluate("document.querySelector('.mc.mine .tag').textContent") == 'My matchup')
         page.click('.mc.mine')
         page.wait_for_timeout(700)
         check(f'[{tag}] matchup screen opens', page.is_visible('#hero'))
@@ -204,6 +205,13 @@ with sync_playwright() as pw:
         hero = page.inner_text('#hero')
         check(f'[{tag}] header: Win Probability, projections, record + division rank, VS', 'Win Probability' in hero and '3-5 · 4th AFC' in hero and page.locator('#hero .pj span').count() == 2 and page.locator('#hero .vsw svg').count() == 1, hero)
         check(f'[{tag}] header Divisional Week badge', page.locator('#hero .divwk').count() == 1)
+        # v1.8.1: "My matchup" diamond on your game only, star = first dot, Online-strip border (no glow), badge and diamond don't touch
+        check(f'[{tag}] My matchup diamond on your game', page.locator('#hero .ymx').count() == 1 and page.evaluate("document.querySelector('#hero .ymx').textContent") == 'My matchup')
+        check(f'[{tag}] first dot is a lit star', page.evaluate("(() => { const d = document.querySelectorAll('.dots i'); return d[0].classList.contains('star') && d[0].classList.contains('on') && !!d[0].querySelector('svg') && document.querySelectorAll('.dots i.star').length === 1; })()"))
+        bd = page.evaluate("(() => { const a = getComputedStyle(document.getElementById('hero')), b = getComputedStyle(document.querySelector('.plist')); return [a.borderTopColor, a.boxShadow, b.borderTopColor]; })()")
+        check(f'[{tag}] matchup + player cards have the blue border, no glow', bd[0] == bd[2] == 'rgba(79, 141, 255, 0.28)' and bd[1] == 'none', bd)
+        gap = page.evaluate("(() => { const a = document.querySelector('#hero .divwk').getBoundingClientRect(), b = document.querySelector('#hero .ymx').getBoundingClientRect(), h = document.getElementById('hero').getBoundingClientRect(); return [b.left - a.right, b.left - h.left, h.right - b.right]; })()")
+        check(f'[{tag}] diamond centered, clear of the Division Week badge', gap[0] >= 4 and abs(gap[1] - gap[2]) <= 1.5, gap)
         cen = page.evaluate("""() => [...document.querySelectorAll('.plist .prow')].slice(0, 8).map(r => { const c = r.querySelector('.chip').getBoundingClientRect(), cc = c.top + c.height / 2;
           return [...r.querySelectorAll('.ppt b')].map(b => { const q = b.getBoundingClientRect(); return Math.abs(q.top + q.height / 2 - cc); }); }).flat()""")
         check(f'[{tag}] every score centered on its position square (within 3 px)', max(cen) <= 3, cen)
@@ -249,6 +257,7 @@ with sync_playwright() as pw:
         after = page.inner_text('.fp2 .nm.r b')
         check(f'[{tag}] swipe moves to the next game', before != after, (before, after))
         check(f'[{tag}] dots follow', page.locator('.dots i.on').count() == 1)
+        check(f'[{tag}] no diamond on someone else\'s game, star dims', page.locator('#hero .ymx').count() == 0 and page.locator('.dots i.star').count() == 1 and page.locator('.dots i.star.on').count() == 0)
 
         page.click('.tabbtn[data-tab="standings"]')
         page.wait_for_timeout(600)
