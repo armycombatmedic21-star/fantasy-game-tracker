@@ -602,7 +602,8 @@ def build(week, fp_file=None, ov_file=None, src_file=None):
         rec.update(summ(sim, comps, 1.0, f"{opp} implied {comps[0]['oi']:.1f}; sacks {comps[0]['sk']:.1f}, INT {comps[0]['in']:.1f}/gm", []))
         dst.append(rec)
 
-    consensus = apply_consensus(out, dst, src_file) if src_file else None
+    consensus = apply_consensus(out, dst, src_file, {ALIAS.get(k, k): ALIAS.get(v, v) for k, v in opp_of.items()},
+                                {ALIAS.get(t, t) for t in playing}) if src_file else None
 
     for r in out + dst:
         if r.get("t") in no_line_al and not r.get("bye"):
@@ -636,6 +637,7 @@ SKILL_KEYS = ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd", "fl")
 DST_KEYS = ("pa", "sk", "dint", "fr", "dtd", "sf")
 
 
+NAMES = {}   # source key -> the player's name as the site writes it
 OUT_STATUS = ("out", "ir", "injury_reserve", "injured_reserve", "sus", "suspension", "suspended", "pup", "nfi", "dnr", "na")
 
 
@@ -648,9 +650,11 @@ def fold(n):
 def load_sources(path):
     j = json.load(open(path))
     idx, by_name, by_last, inj = {}, {}, {}, {}
+    NAMES.clear()
     for r in j.get("records", []):
         tm, pos = ALIAS.get(r.get("team", ""), r.get("team", "")), r.get("pos")
         key = ("DST", tm) if pos == "DST" else (fold(r.get("name", "")), tm, pos)
+        NAMES.setdefault(key, r.get("name", ""))
         if r["src"].endswith("_inj"):
             inj.setdefault(key, {})[r["src"][:-4]] = str(r.get("inj") or "")
             continue
@@ -697,7 +701,42 @@ def src_points(pos, st):
     return fp_to_league(pos, *(st.get(k, 0) or 0 for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd"))) - (st.get("fl") or 0)
 
 
-def apply_consensus(out, dst, src_file):
+def consensus_rec(pos, srcs, opp, prob, flags):
+    """Average every raw stat over the sites that have the player, then simulate it with our scoring (summ() fields)."""
+    names = "+".join(SRC_LABEL.get(k, k) for k in sorted(srcs))
+    opp = opp or ""
+    if pos == "K":
+        km = sum(k_points(st) for st in srcs.values()) / len(srcs)
+        comps = [{"w": 1, "km": round(km, 3)}]
+        sim = np.round(sim_player(RNG, "K", comps, prob))
+        basis = f"Consensus of {len(srcs)} ({names}): {km:.1f} pts from FGs by distance + XPs"
+    elif pos == "DST":
+        a = avg_keys(srcs, DST_KEYS)
+        c = {"w": 1, "oi": round(a.get("pa", 21), 2), "sk": round(a.get("sk", 2.4), 3), "in": round(a.get("dint", 0.8), 3),
+             "fr": round(a.get("fr", 0.6), 3), "td": round(a.get("dtd", 0.13), 3), "sf": round(a.get("sf", 0.03), 3)}
+        comps = [c]
+        sim = sim_player(RNG, "DST", comps, 1.0)
+        basis = (f"Consensus of {len(srcs)} ({names}): {opp} scores {c['oi']:.1f}; sacks {c['sk']:.1f}, "
+                 f"INT {c['in']:.1f}, FR {c['fr']:.1f}")
+    else:
+        a = {k: 0.0 for k in SKILL_KEYS}
+        a.update(avg_keys(srcs, SKILL_KEYS))
+        if pos == "QB":
+            c = {"w": 1, "py": round(a["pyd"], 2), "ps": round(0.28 * a["pyd"] + 20, 2), "pt": round(a["ptd"], 4),
+                 "it": round(a["ints"], 4), "ry": round(a["ryd"], 2), "rt": round(a["rtd"], 4), "fl": round(a["fl"], 4)}
+            basis = f"Consensus of {len(srcs)} ({names}): {c['py']:.0f} pass yds, {c['pt']:.1f} pass TD"
+        else:
+            cv_r, cv_c = CV.get(pos, CV["WR"])
+            c = {"w": 1, "ry": round(a["ryd"], 2), "rv": cv_r, "cy": round(a["cyd"], 2), "cv": cv_c,
+                 "rt": round(a["rtd"], 4), "ct": round(a["ctd"], 4), "fl": round(a["fl"], 4)}
+            basis = (f"Consensus of {len(srcs)} ({names}): {c['ry']:.0f} rush yds, {c['cy']:.0f} rec yds; "
+                     f"TD {c['rt'] + c['ct']:.2f}; vs {opp}")
+        comps = [c]
+        sim = np.round(sim_player(RNG, pos, comps, prob))
+    return summ(sim, comps, 1.0, basis, flags)
+
+
+def apply_consensus(out, dst, src_file, opp_of=None, playing=None):
     idx, by_name, by_last, inj, status = load_sources(src_file)
     healthy = sum(1 for v in status.values() if isinstance(v, dict) and v.get("ok"))
     used, fallback, counts, outs, zero, single = 0, 0, {}, 0, 0, 0
@@ -733,8 +772,12 @@ def apply_consensus(out, dst, src_file):
         rec["cs"] = sorted(srcs)
         counts[len(srcs)] = counts.get(len(srcs), 0) + 1
         own = rec["m"] / rec["sc"] if rec.get("sc") else rec["m"]
-        out_by = [f"{SRC_LABEL.get(s_, s_)} {v}" for s_, v in istat.items() if v.lower().replace(" ", "_") in OUT_STATUS]
-        if out_by:
+        # A site that lists him Out / IR / suspended AND has dropped him from its projections = he's out (fresher than the
+        # NFL's own report early in the week). A site that says OUT but still projects him normally is stale (ESPN kept
+        # Skattebo "OUT" from last week while projecting 8.6): that label is ignored.
+        out_by = [f"{SRC_LABEL.get(s_, s_)} {v}" for s_, v in istat.items() if v.lower().replace(" ", "_") in OUT_STATUS
+                  and (rec["sp"].get(s_) or 0) < 1]
+        if out_by and sum(1 for v in rec["sp"].values() if v >= 1) < CONSENSUS_MIN:
             # Sleeper / ESPN list him Out, on IR or suspended: 0, even before the NFL's own Week injury report is out
             outs += 1
             rec["own"] = round(float(own), 2)
@@ -761,54 +804,40 @@ def apply_consensus(out, dst, src_file):
                 rec["m"], rec["lo"], rec["hi"], rec["sc"] = round(target, 2), round(rec["lo"] * sc_ / (rec.get("sc") or 1), 1), round(rec["hi"] * sc_ / (rec.get("sc") or 1), 1), round(sc_, 4)
                 rec["b"] = (rec.get("b") or "").split("; FantasyPros")[0] + f"; blended 50/50 with {SRC_LABEL.get(s1, s1)} (only site)"
             continue
-        own = rec["m"] / rec["sc"] if rec.get("sc") else rec["m"]
         rec["own"] = round(float(own), 2)
         # The sources already build injuries and roles into their numbers: no second injury cut (no double counting),
         # except a player ruled Out.
         prob = 0.0 if rec.get("inj") == "Out" else 1.0
-        names = "+".join(SRC_LABEL.get(k, k) for k in sorted(srcs))
         flags = [f for f in rec.get("f", []) if not f.startswith(("OUTLIER", "partial game"))]
-        if pos == "K":
-            km = sum(k_points(st) for st in srcs.values()) / len(srcs)
-            comps = [{"w": 1, "km": round(km, 3)}]
-            sim = np.round(sim_player(RNG, "K", comps, prob))
-            basis = f"Consensus of {len(srcs)} ({names}): {km:.1f} pts from FGs by distance + XPs"
-        elif pos == "DST":
-            a = avg_keys(srcs, DST_KEYS)
-            c = {"w": 1, "oi": round(a.get("pa", 21), 2), "sk": round(a.get("sk", 2.4), 3), "in": round(a.get("dint", 0.8), 3),
-                 "fr": round(a.get("fr", 0.6), 3), "td": round(a.get("dtd", 0.13), 3), "sf": round(a.get("sf", 0.03), 3)}
-            comps = [c]
-            sim = sim_player(RNG, "DST", comps, 1.0)
-            basis = (f"Consensus of {len(srcs)} ({names}): {rec.get('o', '')} scores {c['oi']:.1f}; sacks {c['sk']:.1f}, "
-                     f"INT {c['in']:.1f}, FR {c['fr']:.1f}")
-        else:
-            a = {k: 0.0 for k in SKILL_KEYS}
-            a.update(avg_keys(srcs, SKILL_KEYS))
-            if pos == "QB":
-                c = {"w": 1, "py": round(a["pyd"], 2), "ps": round(0.28 * a["pyd"] + 20, 2), "pt": round(a["ptd"], 4),
-                     "it": round(a["ints"], 4), "ry": round(a["ryd"], 2), "rt": round(a["rtd"], 4), "fl": round(a["fl"], 4)}
-                basis = f"Consensus of {len(srcs)} ({names}): {c['py']:.0f} pass yds, {c['pt']:.1f} pass TD"
-            else:
-                cv_r, cv_c = CV.get(pos, CV["WR"])
-                c = {"w": 1, "ry": round(a["ryd"], 2), "rv": cv_r, "cy": round(a["cyd"], 2), "cv": cv_c,
-                     "rt": round(a["rtd"], 4), "ct": round(a["ctd"], 4), "fl": round(a["fl"], 4)}
-                basis = (f"Consensus of {len(srcs)} ({names}): {c['ry']:.0f} rush yds, {c['cy']:.0f} rec yds; "
-                         f"TD {c['rt'] + c['ct']:.2f}; vs {rec.get('o', '')}")
-            comps = [c]
-            sim = np.round(sim_player(RNG, pos, comps, prob))
         rec["pp"] = prob
-        rec.update(summ(sim, comps, 1.0, basis, flags))
+        rec.update(consensus_rec(pos, srcs, rec.get("o", ""), prob, flags))
         used += 1
-    unmatched = []
+    # Players the sites project that our model has no line for (no NFL game yet this season, new signing, rookie QB
+    # starting): add them from the consensus so a rostered one never counts as 0.
+    unmatched, added = [], 0
+    have = {r["k"] for r in out}
     for k_, srcs in idx.items():
         if k_ in matched_keys or k_[0] == "DST":
             continue
-        pts = [src_points(k_[2], st) for st in srcs.values() if st]
-        pts = [p for p in pts if p is not None]
-        if pts and max(pts) >= 4:
-            unmatched.append(f"{k_[0]} {k_[1]} {k_[2]} {max(pts):.1f}")
+        srcs = {k: v for k, v in srcs.items() if v}
+        pts = {k: src_points(k_[2], st) for k, st in srcs.items()}
+        pts = {k: v for k, v in pts.items() if v is not None}
+        if not pts or max(pts.values()) < 1:
+            continue
+        name, tm, pos = NAMES.get(k_, k_[0]), k_[1], k_[2]
+        rk = norm_name(name) + "|" + tm
+        if rk in have or (playing and tm not in playing):
+            continue
+        if max(pts.values()) >= 4:
+            unmatched.append(f"{name} {tm} {pos} {max(pts.values()):.1f}")
+        rec = {"k": rk, "n": name, "t": tm, "p": pos, "o": (opp_of or {}).get(tm), "pp": 1.0, "f": ["ADDED FROM SITES (no NFL game yet)"]}
+        rec.update(consensus_rec(pos, srcs, rec.get("o"), 1.0, []))
+        rec["sp"] = {k: round(v, 2) for k, v in pts.items()}
+        rec["cs"] = sorted(srcs)
+        rec["nm"], rec["ns"] = rec["m"], round((rec["hi"] - rec["lo"]) / 1.68, 2)
+        out.append(rec); have.add(rk); added += 1
     return {"used": used, "fallback": fallback, "single_source_blend": single, "out_by_injury": outs, "no_source_zero": zero,
-            "unmatched_source_players_4plus": sorted(unmatched)[:40], "unmatched_count": len(unmatched),
+            "added_from_sites": added, "added_4plus": sorted(unmatched)[:40],
             "sources_per_player": {str(k): v for k, v in sorted(counts.items())},
             "min_sources": CONSENSUS_MIN, "status": {k: {kk: vv for kk, vv in v.items() if kk != "info"} for k, v in status.items()}}
 
