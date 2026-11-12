@@ -1,5 +1,5 @@
 {
- "at": "2026-11-12T04:16:48+00:00",
+ "at": "2026-11-12T20:33:04+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -10,7 +10,7 @@
    "requests": 4,
    "total_available": {
     "QB": "77",
-    "RB": "138",
+    "RB": "137",
     "WR": "227",
     "TE": "138"
    },
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 421,
-   "secs": 3.3,
+   "secs": 3.5,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -59,26 +59,26 @@
   },
   "espn": {
    "ok": true,
-   "records": 358,
+   "records": 359,
    "secs": 0.5,
    "info": {
     "players": 1061,
-    "kept": 358,
+    "kept": 359,
     "dropped": {
      "pos": 0,
-     "team": 334,
+     "team": 333,
      "no_week_proj": 369
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 151,
-   "secs": 19.6,
+   "records": 153,
+   "secs": 33.9,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 40
+    "no_projection": 38
    }
   },
   "fp": {
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Kirk Cousins LV",
-  "Mack Hollins NE",
-  "Malik Nabers NYG",
-  "Deshaun Watson CLE",
+  "Shedeur Sanders CLE",
+  "Quinshon Judkins CLE",
   "Jordan Love GB",
-  "J.J. McCarthy NYG",
-  "Cam Ward TEN",
-  "Tyler Allgeier ARI",
-  "Tetairoa McMillan CAR",
-  "Daniel Jones IND",
-  "Carnell Tate TEN",
+  "Rico Dowdle PIT",
+  "Kyler Murray MIN",
+  "Mack Hollins NE",
   "Breece Hall NYJ",
-  "DeMario Douglas NE",
-  "Drake London ATL",
-  "Ladd McConkey LAC",
-  "DJ Moore BUF",
-  "Woody Marks HOU",
-  "DK Metcalf PIT",
-  "Mike Evans SF",
-  "Aaron Jones MIN",
+  "Nico Collins HOU",
+  "Ollie Gordon II MIA",
+  "Jordan Mason MIN",
   "Denzel Boston CLE",
-  "T.J. Hockenson MIN",
-  "Adonai Mitchell NYJ",
-  "Chase Brown CIN",
-  "Pat Freiermuth PIT"
+  "Zach Charbonnet SEA",
+  "Blake Corum LA",
+  "Daniel Jones IND",
+  "Jameis Winston NYG",
+  "Corey Kiner NE",
+  "Tony Pollard TEN",
+  "Aaron Rodgers PIT",
+  "Michael Penix Jr. ATL",
+  "Deebo Samuel Sr. SF",
+  "Cam Ward TEN",
+  "J.J. McCarthy NYG",
+  "George Pickens DAL",
+  "Ladd McConkey LAC",
+  "Jakobi Meyers JAX"
  ],
- "fp_unmatched_5plus_count": 74,
+ "fp_unmatched_5plus_count": 73,
  "scorecard": "week 10: 560 pre-kickoff projections saved",
  "consensus": {
   "used": 349,
@@ -128,16 +128,16 @@
   "no_source_zero": 80,
   "added_from_sites": 8,
   "added_4plus": [
-   "Andres Borregales NE K 6.7",
+   "Andres Borregales NE K 6.8",
    "Carson Beck ARI QB 10.1",
-   "Kyle McCord MIA QB 11.3",
+   "Kyle McCord MIA QB 11.1",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 134,
-   "1": 66,
-   "2": 209,
-   "3": 102,
+   "0": 133,
+   "1": 67,
+   "2": 207,
+   "3": 104,
    "4": 41
   },
   "min_sources": 2
