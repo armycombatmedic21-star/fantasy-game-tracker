@@ -704,6 +704,40 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .dots i.star.on{background:none;color:var(--acc)}
 .dots i.star svg{display:block}
 @media (max-width:370px){ .ymx{padding:0 19px} .ymx b{letter-spacing:1px} .hero .divwk{left:10px;padding:0 7px 0 5px;letter-spacing:.5px} }
+
+/* ---- v1.9.0 (Wes, Nov 12) ---- */
+/* shading picked on the slider mock-up: top cards 5.6 with 85% of the blue shading; starters solid 6.6; bench + IR solid 10.7; pill inside fill 51% (glow unchanged) */
+.hero,.hero.dw,.mc.mine{background:linear-gradient(180deg,rgba(var(--acc-rgb),.0638),rgba(var(--acc-rgb),.0298)),linear-gradient(180deg,hsl(218,49%,7.8%),hsl(218,50%,5.6%))}
+.mc.mine{overflow:visible;border:1px solid rgba(var(--acc-rgb),.28);box-shadow:0 10px 24px rgba(0,0,0,.42)}
+.plist:not(.benchlist){background:hsl(218,50%,6.6%)}
+.plist:not(.benchlist) .chip,.plist:not(.benchlist) .chev{background-color:hsl(218,50%,6.6%)}
+.benchlist{background:hsl(220,45%,10.7%)}
+.benchlist .prow.bench .chip{background:hsl(220,45%,10.7%)}
+.chip{background-image:linear-gradient(160deg,rgba(var(--c),.153),rgba(var(--c),.041) 60%,rgba(6,11,22,.459))}
+/* card banners: centered title; bench shows each side's bench total (the tiebreaker) */
+.bnr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;min-height:40px;padding:10px 12px;background:rgba(255,255,255,.035);border-bottom:1px solid rgba(147,174,200,.12)}
+.bnr .mid{display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.bnr h3{margin:0;font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#eef3fb;white-space:nowrap}
+.bnr small{font-size:10.5px;font-weight:700;margin-top:3px;white-space:nowrap}
+.bnr.bn small{color:#ffcf6b}.bnr.ir small{color:#ff8a98}
+.bnr .sd{display:flex;align-items:center}.bnr .sd.r{justify-content:flex-end}
+.bnr .sd em{font-style:normal;font-size:16px;font-weight:800;color:#fff}
+.plist .bnr + .prow{border-top:0}
+/* clock pill + RED ZONE / TOUCHDOWN pill */
+.pills{display:flex;align-items:center;gap:2px;margin-top:4px;width:100%;min-width:0}
+.pside.r .pills{flex-direction:row-reverse}
+.ck{display:inline-flex;align-items:center;gap:3px;height:20px;padding:0 5px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:0;white-space:nowrap;color:#eef3fb;background:rgba(255,255,255,.05);border:1px solid rgba(147,174,200,.18);flex:none}
+.ck.pre{display:block;line-height:18px;color:#8b9bb4;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.ck.fin{color:#6a84a0;font-weight:700;background:transparent}
+.ck .dot{width:5.5px;height:5.5px;border-radius:50%;background:var(--green);flex:none}
+.stp{display:inline-flex;align-items:center;height:20px;padding:0 4px;border-radius:6px;font-size:9px;font-weight:900;letter-spacing:-.15px;white-space:nowrap;flex:none}
+.stp b{font-weight:900}.stp .n{display:none}
+.stp.rz{color:#ffd7dc;background:rgba(255,59,78,.16);border:1px solid rgba(255,59,78,.55)}
+.stp.td{color:#ffe7a3;background:rgba(244,196,61,.16);border:1px solid rgba(244,196,61,.6)}
+.pills.short .stp .w{display:none}.pills.short .stp .n{display:inline}
+/* before a matchup begins the player projections are bright, then fade to gray */
+.ppt small.pj{transition:color .6s ease}
+.ppt small.pj.pjb{color:#dce8f5;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -756,10 +790,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.9.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.9.0', 'Player rows: the game clock is now a small pill with a green dot and white time (no game score). Before kickoff it shows the start time and opponent, and after the game it says “Final”. When a player’s team has the ball inside the 20, a red RED ZONE pill shows next to the clock; after a touchdown a gold TOUCHDOWN pill shows there for 3 minutes (it shortens to RZ / TD if a phone is too narrow). Team scores show “–” until a starter in that matchup kicks off, then both teams switch to their scores together; until then the player projections are bright, then they fade to gray. Card colors you picked: starters card solid dark (no shading), bench and IR cards solid, top matchup card a bit darker with less blue shading, softer color inside the position pills. Your scoreboard card has the “My matchup” diamond and the same border. Card titles are bigger and centered; the Bench title shows each team’s bench total and says “Tiebreaker only”.'],
   ['1.8.1', 'Your game is easy to find: it says “My matchup” in a diamond on the top edge of the matchup card, and its dot is a star, so you can swipe back to it fast. It follows whichever team you picked. The matchup and player cards have a cleaner blue border (no glow), and the badge now says “Division Week”.'],
   ['1.8.0', 'New Prediction Engine: every player\u2019s projection is now the average of the projected stats from CBS, Sleeper, ESPN and FantasyPros (when they have him), scored in our league\u2019s exact rules, for every spot including kickers (FGs by distance) and defenses (points allowed, sacks, INTs, fumble recoveries, TDs). Fumbles lost now count in projections. Our old model is only used when fewer than 2 sites project a player.'],
   ['1.7.2', 'Smoother open: team and NFL logos are kept on your phone, so they show instantly instead of blinking in. The Online bar is always there (nothing jumps down), and your own team shows in it right away.'],
@@ -1064,11 +1099,14 @@ function parseScoreboard(data){
     const st = (ev.status && ev.status.type) || {};
     const g = { id: String(ev.id), date: ev.date || '', state: st.state || 'pre', completed: !!st.completed, statusName: st.name || '', detail: st.shortDetail || '',
                 clock: (ev.status && ev.status.displayClock) || '', period: (ev.status && ev.status.period) || 0, neutral: !!comp.neutralSite, home: '', away: '', scores: {},
-                lp: (comp.situation && comp.situation.lastPlay && comp.situation.lastPlay.id) ? String(comp.situation.lastPlay.id) : '' };
+                lp: (comp.situation && comp.situation.lastPlay && comp.situation.lastPlay.id) ? String(comp.situation.lastPlay.id) : '', rz: '' };
+    // v1.9.0: red zone = ESPN situation.isRedZone + the team with the ball (possession is ESPN's team id)
+    const rzId = comp.situation && comp.situation.isRedZone && comp.situation.possession ? String(comp.situation.possession) : '';
     (comp.competitors || []).forEach(function(c){
       const a = c.team && c.team.abbreviation; if(!a) return;
       g.scores[a] = parseInt(c.score, 10) || 0;
       if(c.homeAway === 'home') g.home = a; else g.away = a;
+      if(rzId && c.team.id != null && String(c.team.id) === rzId) g.rz = a;
       out.byTeam[a] = g.id;
       const lg = pickLogo(c.team); if(lg) out.logos[a] = lg;
     });
@@ -1237,7 +1275,11 @@ function playerLive(pl, teamId){
   const my = g ? g.scores[pl.nfl] : num(gi.home_game ? gi.home_score : gi.away_score), their = g ? g.scores[opp] : num(gi.home_game ? gi.away_score : gi.home_score);
   if(L.state === 'bye') L.line = pl.ir ? 'IR · no game' : 'Bye';
   else if(L.state === 'pre') L.line = L.kick + ' ' + at + ' ' + opp;
-  else if(L.state === 'in') L.line = (g ? liveClock(g) : ('Q' + (gi.quarter || '') + ' ' + (gi.time_remaining || ''))) + ' · ' + my + '-' + their + ' ' + at + ' ' + opp;
+  else if(L.state === 'in'){
+    L.clock = g ? liveClock(g) : ('Q' + (gi.quarter || '') + ' ' + (gi.time_remaining || '')).trim();
+    L.line = L.clock + ' · ' + my + '-' + their + ' ' + at + ' ' + opp;
+    L.rz = !!(g && g.rz && g.rz === pl.nfl && pl.pos !== 'DST');   // v1.9.0: his team has the ball inside the 20 (not for defenses)
+  }
   else L.line = 'Final · ' + my + '-' + their + ' ' + at + ' ' + opp;
   if(L.state === 'pre' || L.state === 'bye') return L;
   // stats: ESPN first, then CBS's own line
@@ -1288,6 +1330,19 @@ function playerLive(pl, teamId){
   if(S.glow[key] && now - S.glow[key] < 60000) L.glow = true;
   return L;
 }
+// v1.9.0 (Wes, Nov 12): a matchup has begun once any starter on either team is in a game that has kicked off
+// (bye, Out, IR and Suspended starters don't count). Until then both team scores show "–". Past weeks always show numbers.
+const OUTISH = /^(out|ir|injured reserve|suspended|pup|nfi)/i;
+function begun(t, L){
+  if(!t || !L) return false;
+  if(!isCurrentWeek()) return !!L.any;
+  return (L.rows || []).some(function(R, i){
+    const p = t.lineup[i]; if(!R || !p || !(R.state === 'in' || R.state === 'post')) return false;
+    const r = projFor(p); return !(r && OUTISH.test(r.inj || ''));
+  });
+}
+function mBegun(A, la, B, lb){ return begun(A, la) || begun(B, lb); }
+let PJB = false;   // v1.9.0: matchup not begun yet → player projections bright
 function teamLive(t){
   if(!t) return null;
   let pts = 0, left = 0, any = false;
@@ -1424,6 +1479,7 @@ function render(){
   else if(S.view === 'chat') html = chatView();
   else html = homeView();
   morph(v, html);
+  if(S.view === 'match') fitPills();
   lightTabs(S.view);
   paintRecBadge();
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
@@ -1533,10 +1589,11 @@ function card(mt, mine, LM){
   const fw = done && B ? finalWa(la, lb) : null;
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
-  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (L && L.any ? p : 0) + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
+  const on = mBegun(A, la, B, lb);
+  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
-    '<div class="mchead">' + (mine ? '<span class="tag">My matchup</span><span class="tag">' + left + ' players left</span>' :
+    (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '<span></span><span class="tag">' + left + ' players left</span>' :
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
     (mine ? '' : '<span class="tag left">' + left + ' left</span>') +
     '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
@@ -1582,10 +1639,28 @@ function side(p, L, r){
   const zero = !(L.pts > 0) ? ' zero' : '';
   const ep = (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null;
   return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + '">' +
-    '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
+    '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj' + (PJB ? ' pjb' : '') + '">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
     '<span class="pnm">' + esc(p.pos === 'DST' ? p.name : shortName(p.name)) + '<small>' + esc(p.nfl) + '</small></span>' +
-    (L.evt ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
-    '<span class="pgm ' + cls + '">' + esc(L.state === 'in' ? L.line.replace(/\s+(@|vs\.?)\s+[A-Z]{2,3}$/, '') : L.line) + '</span>' + hot(p, L) + '</div>';
+    (L.evt && L.evt.kind !== 'td' ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
+    pillRow(L, cls) + hot(p, L) + '</div>';
+}
+// v1.9.0 (Wes, Nov 12): clock pill (green dot + white quarter/time, no game score; before kickoff the start time and
+// opponent; "Final" after) and, on the inside, a RED ZONE (red) or TOUCHDOWN (gold, 3 min) pill. If the words don't fit,
+// fitPills() switches that row to RZ / TD.
+function pillRow(L, cls){
+  const st = L.state;
+  if(st === 'bye') return '<span class="pgm">' + esc(L.line) + '</span>';
+  const ck = st === 'in' ? '<span class="ck live"><i class="dot"></i>' + esc(L.clock || '') + '</span>'
+    : st === 'pre' ? '<span class="ck pre">' + esc(L.line) + '</span>' : '<span class="ck fin">Final</span>';
+  const td = L.evt && L.evt.kind === 'td' && st !== 'pre', rz = !td && st === 'in' && L.rz;
+  const tag = td ? '<span class="stp td"><b class="w">TOUCHDOWN</b><b class="n">TD</b></span>' : rz ? '<span class="stp rz"><b class="w">RED ZONE</b><b class="n">RZ</b></span>' : '';
+  return '<span class="pills ' + cls + '">' + ck + tag + '</span>';
+}
+function fitPills(){
+  const ps = document.querySelectorAll('#view .pills'); if(!ps.length) return;
+  ps.forEach(function(e){ e.classList.remove('short'); });
+  const over = []; ps.forEach(function(e){ if(e.querySelector('.stp') && e.scrollWidth > e.clientWidth + 1) over.push(e); });
+  over.forEach(function(e){ e.classList.add('short'); });
 }
 function pv(v, c){ return '<b class="pv ' + (c || '') + '">' + v + '</b>'; }
 function dcol(p, L){
@@ -1649,15 +1724,16 @@ function matchView(){
   // v1.8.1: "My matchup" diamond on the picked team's game; its dot (always first, see orderedMatchups) is a star
   const isMy = function(x){ return !!(S.team && x && ((x.home && x.home.id === S.team) || (x.away && x.away.id === S.team))); };
   const ISM = isMy(mt), HASM = isMy(X.list[0]);
+  const ON = mBegun(A, la, B, lb); PJB = isCurrentWeek() && !ON;
   h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
-    '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (a > b ? 'lead' : '') + '">' + a + '</b><b class="' + (b > a ? 'lead' : '') + '">' + b + '</b></div>' +
+    '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
     (E && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
     '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x, j){ return HASM && j === 0 ? '<i class="star' + (x === mt ? ' on' : '') + '">' + ICON.star + '</i>' : '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
   h += '<div id="mrows" data-key="rows-' + mt.key + '">';
-  h += '<div class="plist"><div class="plabel"><span>Starters · points</span><span>Tap for stats</span></div>';
+  h += '<div class="plist"><div class="bnr st"><span class="sd l"></span><span class="mid"><h3>Starters</h3></span><span class="sd r"></span></div>';
   const n = Math.max(A.lineup.length, B ? B.lineup.length : 0);
   for(let i = 0; i < n; i++){
     const pa = A.lineup[i] || null, pb = B ? (B.lineup[i] || null) : null;
@@ -1670,15 +1746,17 @@ function matchView(){
   const bA = split(A, la, false), bB = split(B, lb, false), iA = split(A, la, true), iB = split(B, lb, true);
   const nb = Math.max(bA.length, bB.length);
   if(nb){
-    h += '<div class="plist benchlist"><div class="plabel"><span>Bench</span><span>Doesn’t count</span></div>';
+    const bt = function(L){ return ON && L ? String(Math.round(L.bpts * 10) / 10) : '–'; };
+    h += '<div class="plist benchlist"><div class="bnr bn"><span class="sd l"><em>' + bt(la) + '</em></span><span class="mid"><h3>Bench</h3><small>Tiebreaker only</small></span><span class="sd r"><em>' + bt(lb) + '</em></span></div>';
     for(let i = 0; i < nb; i++){ const x = bA[i] || [], y = bB[i] || []; h += prow(x[0] || null, x[1], y[0] || null, y[1], 100 + i, '', true, mt.key); }
     h += '</div>';
   }
   const ni = Math.max(1, iA.length, iB.length);
-  h += '<div class="plist benchlist irlist"><div class="plabel"><span>Injured Reserve</span><span>Doesn’t count</span></div>';
+  h += '<div class="plist benchlist irlist"><div class="bnr ir"><span class="sd l"></span><span class="mid"><h3>Injured Reserve</h3><small>Doesn’t count</small></span><span class="sd r"></span></div>';
   for(let i = 0; i < ni; i++){ const x = iA[i] || [], y = iB[i] || []; h += prow(x[0] || null, x[1], y[0] || null, y[1], 200 + i, '', 'ir', mt.key); }
   h += '</div>';
   h += '</div><p class="note">Swipe the score card left or right to change games.</p>';
+  PJB = false;
   if(S.proj && S.proj.raw && S.proj.raw.consensus && S.proj.raw.consensus.used) h += '<p class="note fpnote">Projections: consensus of CBS, Sleeper, ESPN and FantasyPros projected stats, scored in our league\u2019s rules.</p>';
   else if(S.proj && S.proj.raw && S.proj.raw.fp_blended) h += '<p class="note fpnote">Projections: our model blended 50/50 with data from FantasyPros.</p>';
   return h;
@@ -3366,14 +3444,14 @@ $('#chatDelYes').addEventListener('click', function(){
     .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); CH.msgs = Object.assign({}, CH.msgs); delete CH.msgs[id]; paintChat(true); paintBadge(); toast('Message deleted'); })
     .catch(function(){ toast('Couldn’t delete that message'); });
 });
-window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); });
+window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); if(S.view === 'match') fitPills(); });
 beat(true); openStream('pres'); openStream('chat'); setTimeout(function(){ poll('pres'); poll('chat'); }, 3000);
 var chatHook = function(){ placePane(); paintBadge(); };
 /* pinch-zoom off (iPhone Safari ignores user-scalable=no, so block the gesture itself) */
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, projFor: projFor, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
+window.__fgt = { S: S, ENG: ENG, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){

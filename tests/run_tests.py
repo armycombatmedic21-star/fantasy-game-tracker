@@ -15,7 +15,7 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 srv = http.server.ThreadingHTTPServer(('127.0.0.1', PORT), functools.partial(Quiet, directory=APP_DIR))
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 
-state = {'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10), 'summary_calls': 0, 'sb_calls': 0}
+state = {'rz': 'MIA', 'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10), 'summary_calls': 0, 'sb_calls': 0}
 fails = []
 def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + ((' :: ' + str(extra)) if extra and not cond else ''))
@@ -60,7 +60,7 @@ def route(r):
         return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_standings()})
     if '/scoreboard' in u:
         state['sb_calls'] += 1
-        return r.fulfill(json=F.build_scoreboard(state['lp'], state['det_mia']))
+        return r.fulfill(json=F.build_scoreboard(state['lp'], state['det_mia'], rz=state.get('rz')))
     if '/summary' in u:
         state['summary_calls'] += 1
         ev = u.split('event=')[1].split('&')[0]
@@ -189,7 +189,9 @@ with sync_playwright() as pw:
         check(f'[{tag}] pinned card glows', page.locator('#cards .mc.pinned').count() == 1)
         check(f'[{tag}] pins saved by team', len(page.evaluate("JSON.parse(localStorage.getItem('fgt-pins'))")) == 2)
 
-        check(f'[{tag}] scoreboard tag says My matchup', page.evaluate("document.querySelector('.mc.mine .tag').textContent") == 'My matchup')
+        # v1.9.0: the scoreboard card gets the same "My matchup" diamond (the old word tag is gone); scores show once the matchup has begun
+        check(f'[{tag}] scoreboard: My matchup diamond on your card, no old tag', page.evaluate("document.querySelector('.mc.mine .ymx') && document.querySelector('.mc.mine .ymx').textContent") == 'My matchup' and page.evaluate("[...document.querySelectorAll('.mc.mine .tag')].some(t => t.textContent === 'My matchup')") is False)
+        check(f'[{tag}] scoreboard: begun matchups show numbers, not dashes', page.evaluate("[...document.querySelectorAll('.mc.mine .sc b')].map(b => b.textContent)") == ['63', '22'], page.evaluate("[...document.querySelectorAll('.mc.mine .sc b')].map(b => b.textContent)"))
         page.click('.mc.mine')
         page.wait_for_timeout(700)
         check(f'[{tag}] matchup screen opens', page.is_visible('#hero'))
@@ -229,12 +231,34 @@ with sync_playwright() as pw:
         check(f'[{tag}] no sideways scroll on matchup', ov <= 0, ov)
         if shots: page.screenshot(path=f'{SHOTS}/{tag}-05-matchup.png', full_page=True)
         check(f'[{tag}] live tier bar on Gordon', '4 more rush yds' in page.inner_text('.prow[data-row="1"]'), page.inner_text('.prow[data-row="1"]'))
+        # v1.9.0: clock pill (no game score), RED ZONE pill on the inside, dot stays green, everything fits
+        pr = page.evaluate("""(() => { const g = document.querySelector('.prow[data-row="1"] .pside:not(.r)'), w = document.querySelector('.prow[data-row="1"] .pside.r'), b = document.querySelector('.prow[data-row="0"] .pside:not(.r)');
+          return { ck: g.querySelector('.ck.live').textContent, rz: g.querySelectorAll('.stp.rz').length, wrz: w.querySelectorAll('.stp').length, wck: w.querySelector('.ck.live').textContent,
+                   dot: getComputedStyle(g.querySelector('.ck .dot')).backgroundColor, fin: b.querySelector('.ck.fin').textContent, txt: g.innerText + b.innerText,
+                   inside: g.querySelector('.stp.rz').getBoundingClientRect().left > g.querySelector('.ck').getBoundingClientRect().left,
+                   over: [...document.querySelectorAll('#view .pills')].filter(e => e.scrollWidth > e.clientWidth + 1).length,
+                   pre: [...document.querySelectorAll('#view .ck.pre')].map(e => e.textContent).slice(0, 2) }; })()""")
+        check(f'[{tag}] clock pill Q3 8:14, no game score', pr['ck'] == 'Q3 8:14' and '10-13' not in pr['txt'] and '34-17' not in pr['txt'], pr)
+        check(f'[{tag}] RED ZONE pill on Gordon (Miami ball inside the 20), inside of the clock, not on Walker', pr['rz'] == 1 and pr['inside'] and pr['wrz'] == 0 and pr['wck'] == 'Q3 2:00', pr)
+        check(f'[{tag}] clock dot stays green in the red zone', pr['dot'] == 'rgb(61, 220, 132)', pr['dot'])
+        check(f'[{tag}] Final pill, kickoff pill with opponent, no pill runs over', pr['fin'] == 'Final' and pr['over'] == 0 and all(' @ ' in x or ' vs ' in x for x in pr['pre']) and len(pr['pre']) > 0, pr)
+        bn = page.evaluate("""(() => ({ st: document.querySelector('.bnr.st h3').textContent, bn: document.querySelector('.bnr.bn small').textContent, ir: document.querySelector('.bnr.ir small').textContent,
+          tot: [...document.querySelectorAll('.bnr.bn .sd em')].map(e => e.textContent), old: document.querySelectorAll('#mrows .plabel').length,
+          pjb: document.querySelectorAll('#mrows .pj.pjb').length, hero: [...document.querySelectorAll('#hero .scs b')].map(b => b.textContent) }))()""")
+        check(f'[{tag}] banners: Starters / Bench "Tiebreaker only" with both bench totals / IR "Doesn\u2019t count"', bn['st'] == 'Starters' and bn['bn'] == 'Tiebreaker only' and bn['ir'] == 'Doesn\u2019t count' and len(bn['tot']) == 2 and all(t.replace('.', '').isdigit() for t in bn['tot']) and bn['old'] == 0, bn)
+        check(f'[{tag}] matchup underway: hero shows scores, projections back to gray', bn['hero'] == ['63', '22'] and bn['pjb'] == 0, bn)
+        mb = page.evaluate("""(() => { const t = { lineup: [{ name: 'Test Guy', nfl: 'GB', pos: 'WR' }] };
+          const mBegun = window.__fgt.mBegun; return [mBegun(t, { rows: [{ state: 'pre' }] }, t, { rows: [{ state: 'pre' }] }), mBegun(t, { rows: [{ state: 'pre' }] }, t, { rows: [{ state: 'in' }] }),
+                  mBegun(t, { rows: [{ state: 'bye' }] }, null, null), mBegun(t, { rows: [null] }, t, { rows: [{ state: 'post' }] })]; })()""")
+        check(f'[{tag}] matchup begins when either team has a starter kick off (not before, not for a bye)', mb == [False, True, False, True], mb)
 
         wa0 = page.evaluate("window.__fgt.ENG.res.m[Object.keys(window.__fgt.ENG.res.m).find(k => k.indexOf('5-11') >= 0)].wa")
-        state.update({'lp': 'p2', 'gordon_td': True, 'gordon_rush': 90, 'det_mia': (13, 17)})
+        state.update({'lp': 'p2', 'gordon_td': True, 'gordon_rush': 90, 'det_mia': (13, 17), 'rz': None})
         page.wait_for_timeout(12500)
         r1 = page.inner_text('.prow[data-row="1"]')
-        check(f'[{tag}] TD badge with length after a live TD', 'TD' in r1 and '44 yd run' in r1, r1)
+        tdp = page.evaluate("""(() => { const g = document.querySelector('.prow[data-row="1"] .pside:not(.r)'); const t = g.querySelector('.stp.td');
+          return { n: g.querySelectorAll('.stp').length, vis: t ? t.innerText.trim() : '', old: g.querySelectorAll('.evt.td').length }; })()""")
+        check(f'[{tag}] TOUCHDOWN pill after a live TD (replaces RED ZONE, no old TD tag)', tdp['n'] == 1 and tdp['vis'] in ('TOUCHDOWN', 'TD') and tdp['old'] == 0, tdp)
         check(f'[{tag}] score glow after the jump', page.locator('.prow[data-row="1"] b.glow').count() == 1)
         check(f'[{tag}] Gordon now 6 + 8 = 14', '14' in r1, r1)
         wa1 = page.evaluate("window.__fgt.ENG.res.m[Object.keys(window.__fgt.ENG.res.m).find(k => k.indexOf('5-11') >= 0)].wa")
@@ -244,7 +268,7 @@ with sync_playwright() as pw:
         page.wait_for_timeout(11000)
         r1 = page.inner_text('.prow[data-row="1"]')
         check(f'[{tag}] FUMBLE LOST badge', 'FUMBLE LOST' in r1, r1)
-        state.update({'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10)})
+        state.update({'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10), 'rz': 'MIA'})
 
         before = page.inner_text('.fp2 .nm.r b')
         box = page.locator('#hero').bounding_box()

@@ -94,16 +94,17 @@ def build_standings():
 def iso(ts):
     return time.strftime('%Y-%m-%dT%H:%MZ', time.gmtime(ts))
 
-def comp(eid, away, aid, home, hid, state, name, period, clock, as_, hs, ts, lp=''):
+def comp(eid, away, aid, home, hid, state, name, period, clock, as_, hs, ts, lp='', rz=None):
     return {"id": eid, "date": iso(ts), "status": {"type": {"state": state, "completed": state == 'post', "name": name, "shortDetail": ""}, "period": period, "displayClock": clock},
             "competitions": [{"neutralSite": False, "competitors": [
                 {"homeAway": "home", "score": str(hs), "team": {"abbreviation": home, "id": hid, "logos": []}},
                 {"homeAway": "away", "score": str(as_), "team": {"abbreviation": away, "id": aid, "logos": []}}],
-                "situation": {"lastPlay": {"id": lp}} if lp else {}}]}
+                "situation": dict(({"lastPlay": {"id": lp}} if lp else {}), **({"isRedZone": True, "possession": rz} if rz else {}))}]}
 
-def build_scoreboard(lp='p1', det_mia=(13, 10), kc=(12, 14)):
+def build_scoreboard(lp='p1', det_mia=(13, 10), kc=(12, 14), rz=None):
+    # rz: 'MIA' = Miami has the ball in the red zone (v1.9.0 RED ZONE pill)
     ev = [comp('1', 'CIN', '4', 'ATL', '1', 'post', 'STATUS_FINAL', 4, '0:00', 34, 17, FINAL_TS),
-          comp('2', 'DET', '8', 'MIA', '15', 'in', 'STATUS_IN_PROGRESS', 3, '8:14', det_mia[0], det_mia[1], LIVE_TS, lp),
+          comp('2', 'DET', '8', 'MIA', '15', 'in', 'STATUS_IN_PROGRESS', 3, '8:14', det_mia[0], det_mia[1], LIVE_TS, lp, {'MIA': '15', 'DET': '8'}.get(rz)),
           comp('3', 'NYJ', '20', 'KC', '12', 'in', 'STATUS_IN_PROGRESS', 3, '2:00', kc[0], kc[1], LIVE_TS, lp + 'k'),
           comp('4', 'GB', '9', 'NE', '17', 'pre', 'STATUS_SCHEDULED', 0, '0:00', 0, 0, LATE_TS),
           comp('5', 'BUF', '2', 'MIN', '16', 'pre', 'STATUS_SCHEDULED', 0, '0:00', 0, 0, LATE_TS),
