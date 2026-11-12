@@ -179,12 +179,20 @@ CBS_SKILL = {"pyd": "PaYd", "ptd": "PaTD", "ints": "PaInt", "ryd": "RuYd", "rtd"
 
 
 def cbs_players():
-    """Every player on a league roster (CBS id, name, position, NFL team), from the Worker's /rosters feed."""
-    j = get_json(WORKER + "/rosters")
-    if not j.get("ok"):
-        raise RuntimeError(f"worker rosters: {j.get('error')}")
-    d = j.get("data") or {}
-    teams = (d.get("rosters") or {}).get("teams") or d.get("teams") or []
+    """Every player on a league roster (CBS id, name, position, NFL team): the Worker's /live feed (all 12 teams) plus
+    /rosters (the rosters feed only returned one team's 16 players on Nov 11, so it's only an extra)."""
+    teams = []
+    for feed in ("live", "rosters"):
+        try:
+            j = get_json(WORKER + "/" + feed)
+        except Exception:
+            continue
+        if not j.get("ok"):
+            continue
+        d = j.get("data") or {}
+        teams += ((d.get("live_scoring") or {}).get("teams") or (d.get("rosters") or {}).get("teams") or d.get("teams") or [])
+    if not teams:
+        raise RuntimeError("worker live/rosters: no teams")
     seen = {}
     for t in teams:
         for p in t.get("players") or []:
