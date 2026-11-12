@@ -25,6 +25,8 @@ jobs:
           python model/fetch_sources.py --week 10 --out out/sources.json || true
           python model/run_projections.py || true
           cp projections.json projections-status.json out/ || true
+          ls fp-cache || true
+          python tests/sources_report.py fp-cache/sources-week10.json projections.json || true
       - uses: actions/upload-artifact@v4
         with:
           name: sources-check

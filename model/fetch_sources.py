@@ -131,16 +131,19 @@ def fetch_espn(week):
     j = get_json(url, {"X-Fantasy-Filter": json.dumps(filt), "X-Fantasy-Source": "kona", "X-Fantasy-Platform": "kona-PROD",
                        "Referer": "https://fantasy.espn.com/football/players/projections"})
     out, info = [], {"players": len(j.get("players") or [])}
+    drop = {"pos": 0, "team": 0, "no_week_proj": 0}
     for row in j.get("players") or []:
         p = row.get("player") or {}
         pos = ESPN_POS.get(p.get("defaultPositionId"))
         tm = ESPN_TEAM.get(p.get("proTeamId"))
-        if not pos or not tm:
-            continue
-        st = next((x for x in (p.get("stats") or []) if x.get("statSourceId") == 1 and x.get("scoringPeriodId") == week
-                   and x.get("statSplitTypeId", 1) == 1), None)
-        if not st or not st.get("stats"):
-            continue
+        if not pos:
+            drop["pos"] += 1; continue
+        if not tm:
+            drop["team"] += 1; continue        # free agent (proTeamId 0)
+        cand = [x for x in (p.get("stats") or []) if x.get("statSourceId") == 1 and x.get("scoringPeriodId") == week and x.get("stats")]
+        st = next((x for x in cand if x.get("statSplitTypeId") == 1), cand[0] if cand else None)
+        if not st:
+            drop["no_week_proj"] += 1; continue
         v, s = st["stats"], {}
         g = lambda k: num(v.get(k)) or 0
         if pos in SKILL:
@@ -158,7 +161,7 @@ def fetch_espn(week):
                       "dtd": round(g("105") or g("94"), 4), "sf": round(g("98"), 4)})
             name = tm + " D/ST"
         out.append({"src": "espn", "name": name, "team": tm, "pos": pos, "id": str(p.get("id") or ""), "stats": s})
-    info["kept"] = len(out)
+    info["kept"], info["dropped"] = len(out), drop
     return out, info
 
 
