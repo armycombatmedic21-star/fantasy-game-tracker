@@ -1,5 +1,5 @@
 {
- "at": "2026-11-12T03:54:24+00:00",
+ "at": "2026-11-12T04:04:02+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 421,
-   "secs": 4.1,
+   "secs": 3.5,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -72,9 +72,14 @@
    }
   },
   "cbs": {
-   "ok": false,
-   "error": "RuntimeError: HTTP 404",
-   "secs": 1.8
+   "ok": true,
+   "records": 14,
+   "secs": 4.4,
+   "info": {
+    "rostered": 16,
+    "calls": 1,
+    "no_projection": 2
+   }
   },
   "fp": {
    "ok": true,
@@ -87,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Rashee Rice KC",
-  "Jameson Williams DET",
-  "Denzel Boston CLE",
-  "George Pickens DAL",
-  "Khalil Shakir BUF",
-  "Deshaun Watson CLE",
-  "Justin Herbert LAC",
-  "Nico Collins HOU",
-  "Ashton Jeanty LV",
-  "Michael Penix Jr. ATL",
-  "Garrett Wilson NYJ",
-  "Jameis Winston NYG",
+  "Corey Kiner NE",
+  "Tony Pollard TEN",
+  "Jacoby Brissett ARI",
   "Tetairoa McMillan CAR",
-  "Rachaad White WAS",
-  "A.J. Brown NE",
-  "Jakobi Meyers JAX",
-  "Omarion Hampton LAC",
+  "Ashton Jeanty LV",
+  "Drew Lock SEA",
+  "Jameson Williams DET",
   "Ladd McConkey LAC",
-  "Carnell Tate TEN",
-  "Emanuel Wilson SEA",
+  "Pat Freiermuth PIT",
+  "Mack Hollins NE",
+  "Ollie Gordon II MIA",
+  "Daniel Jones IND",
+  "Jordan Addison MIN",
+  "Aaron Rodgers PIT",
+  "Khalil Shakir BUF",
+  "Quinshon Judkins CLE",
   "Jadarian Price SEA",
-  "Jordan Love GB",
-  "Jalen Coker CAR",
-  "Woody Marks HOU",
-  "Cam Ward TEN"
+  "C.J. Stroud HOU",
+  "Audric Estim\u00e9 NO",
+  "Fernando Mendoza LV",
+  "Tyler Allgeier ARI",
+  "Zach Charbonnet SEA",
+  "Mike Gesicki CIN",
+  "Jameis Winston NYG",
+  "Chase Brown CIN"
  ],
  "fp_unmatched_5plus_count": 69,
  "scorecard": "week 10: 558 pre-kickoff projections saved",
@@ -130,8 +135,9 @@
   "sources_per_player": {
    "0": 137,
    "1": 68,
-   "2": 305,
-   "3": 42
+   "2": 296,
+   "3": 46,
+   "4": 5
   },
   "min_sources": 2
  },
