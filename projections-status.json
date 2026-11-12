@@ -1,5 +1,5 @@
 {
- "at": "2026-11-12T02:42:12+00:00",
+ "at": "2026-11-12T03:54:24+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -42,43 +42,102 @@
  },
  "fp_source": "api",
  "fp": "fresh",
+ "sources": {
+  "sleeper": {
+   "ok": true,
+   "records": 421,
+   "secs": 4.1,
+   "info": {
+    "QB": 355,
+    "RB": 752,
+    "WR": 1364,
+    "TE": 646,
+    "K": 157,
+    "DST": 28,
+    "injury_flags": 266
+   }
+  },
+  "espn": {
+   "ok": true,
+   "records": 358,
+   "secs": 0.4,
+   "info": {
+    "players": 1061,
+    "kept": 358,
+    "dropped": {
+     "pos": 0,
+     "team": 334,
+     "no_week_proj": 369
+    }
+   }
+  },
+  "cbs": {
+   "ok": false,
+   "error": "RuntimeError: HTTP 404",
+   "secs": 1.8
+  },
+  "fp": {
+   "ok": true,
+   "records": 40
+  }
+ },
  "checks": {
-  "players": 636,
+  "players": 642,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Matthew Stafford LA",
-  "Justice Hill BAL",
-  "Jalen Coker CAR",
-  "Caleb Douglas MIA",
-  "DK Metcalf PIT",
+  "Rashee Rice KC",
+  "Jameson Williams DET",
+  "Denzel Boston CLE",
+  "George Pickens DAL",
+  "Khalil Shakir BUF",
+  "Deshaun Watson CLE",
+  "Justin Herbert LAC",
+  "Nico Collins HOU",
+  "Ashton Jeanty LV",
   "Michael Penix Jr. ATL",
-  "Kendre Miller NO",
-  "Jordan Mason MIN",
-  "Anthony Richardson IND",
+  "Garrett Wilson NYJ",
+  "Jameis Winston NYG",
+  "Tetairoa McMillan CAR",
   "Rachaad White WAS",
-  "De'Von Achane MIA",
-  "Quinshon Judkins CLE",
-  "Athan Kaliakmanis WAS",
-  "Drake London ATL",
-  "Chris Rodriguez Jr. JAX",
+  "A.J. Brown NE",
+  "Jakobi Meyers JAX",
   "Omarion Hampton LAC",
-  "Patrick Mahomes KC",
-  "Romeo Doubs NE",
-  "Ollie Gordon II MIA",
-  "Davis Mills HOU",
-  "DJ Moore BUF",
-  "Cam Skattebo NYG",
-  "Stetson Bennett LA",
-  "Carson Wentz MIN",
-  "Tua Tagovailoa ATL"
+  "Ladd McConkey LAC",
+  "Carnell Tate TEN",
+  "Emanuel Wilson SEA",
+  "Jadarian Price SEA",
+  "Jordan Love GB",
+  "Jalen Coker CAR",
+  "Woody Marks HOU",
+  "Cam Ward TEN"
  ],
- "fp_unmatched_5plus_count": 113,
- "scorecard": "week 10: 552 pre-kickoff projections saved",
+ "fp_unmatched_5plus_count": 69,
+ "scorecard": "week 10: 558 pre-kickoff projections saved",
+ "consensus": {
+  "used": 345,
+  "fallback": 61,
+  "single_source_blend": 52,
+  "out_by_injury": 63,
+  "no_source_zero": 83,
+  "added_from_sites": 6,
+  "added_4plus": [
+   "Carson Beck ARI QB 10.1",
+   "Kyle McCord MIA QB 11.3",
+   "Zonovan Knight ARI RB 4.8"
+  ],
+  "sources_per_player": {
+   "0": 137,
+   "1": 68,
+   "2": 305,
+   "3": 42
+  },
+  "min_sources": 2
+ },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 636,
+ "players": 642,
  "spread_k": 1.35,
  "spread_rho": 0.06,
  "no_games_yet": 0
