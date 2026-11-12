@@ -79,6 +79,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--weeks", default="4-9")
     ap.add_argument("--min", type=float, default=3.0)
+    ap.add_argument("--dnp", action="store_true", help="count projected-but-no-stats players as 0")
     a = ap.parse_args()
     lo, hi = (int(x) for x in a.weeks.split("-"))
     ps = nfl.load_player_stats([M.SEASON]).filter(pl.col("season_type") == "REG")
@@ -86,7 +87,7 @@ def main():
     sched = nfl.load_schedules([M.SEASON])
     rng = np.random.default_rng(5)
     rows = {p: [] for p in ("QB", "RB", "WR", "TE", "K", "DST")}
-    unmatched = 0
+    unmatched, dnp = 0, {}
     for wk in range(lo, hi + 1):
         act = actuals(wk, ps, pbp, sched)
         by_name = {}
@@ -102,6 +103,13 @@ def main():
                 key = same[0] if len(same) == 1 else None
             if key is None or key not in act:
                 unmatched += 1
+                # projected but no stats at all that week (inactive / late scratch / name mismatch): real 0 if projected 3+
+                if pos != "DST" and a.dnp:
+                    summ = M.consensus_rec(pos, {"sleeper": r["stats"]}, "", 1.0, [])
+                    if summ["m"] >= a.min:
+                        sim = np.round(M.sim_player(rng, pos, summ["c"], 1.0, 4000))
+                        rows[pos].append((float(sim.mean()), float(sim.var()), 0, 0, 0.0, sim))
+                        dnp[pos] = dnp.get(pos, 0) + 1
                 continue
             summ = M.consensus_rec(pos, {"sleeper": r["stats"]}, "", 1.0, [])
             if pos != "DST" and summ["m"] < a.min:
@@ -132,7 +140,8 @@ def main():
                     "sim_sd": round(float(np.sqrt(v.mean())), 2), "real_sd": round(float(err.std()), 2),
                     "k_var": round(k_var, 3), "k_mse": round(k_mse, 3), "current": M.SPREAD_POS.get(pos),
                     "cover60_at_1": cover(1.0), "cover60_at_current": cover(M.SPREAD_POS.get(pos, 1.1)), "cover60_at_kvar": cover(k_var)}
-    print("RESULT " + json.dumps({"weeks": a.weeks, "min_proj": a.min, "unmatched": unmatched, "by_pos": rep}))
+    print("RESULT " + json.dumps({"weeks": a.weeks, "min_proj": a.min, "dnp_as_zero": a.dnp, "dnp_rows": dnp, "unmatched": unmatched,
+                                  "by_pos": {p: {k: v for k, v in r.items() if not k.startswith("cover")} for p, r in rep.items()}}))
 
 
 if __name__ == "__main__":

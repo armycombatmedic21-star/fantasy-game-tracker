@@ -16,4 +16,4 @@ jobs:
           cache: pip
           cache-dependency-path: model/requirements.txt
       - run: pip install -r model/requirements.txt
-      - run: python model/calib_spread.py --weeks 4-9
+      - run: python model/calib_spread.py --weeks 4-9 --dnp
