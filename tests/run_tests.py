@@ -222,6 +222,18 @@ with sync_playwright() as pw:
         page.wait_for_timeout(300)
         det = page.inner_text('.detail')
         check(f'[{tag}] Burrow drop-down: PASS bar, TD lengths, total 33', 'PASS' in det and '47' in det and '33' in det, det)
+        # v1.10.0: bucket breakdown (cells = points each bucket pays; lit = his bucket; every TD in its distance bucket)
+        bk = page.evaluate("""(() => { const d = document.querySelector('.detail'), c = d.querySelector('.dcol.bx');
+          const grp = h => [...c.querySelectorAll('.bg')].find(g => g.querySelector('.bh span').textContent.indexOf(h) === 0);
+          const pass = grp('PASS'), td = grp('TD');
+          const chips = [...c.querySelectorAll('.bh .pv')].map(b => parseFloat(b.textContent)), tot = parseFloat(c.querySelector('.pv.total').textContent);
+          return { passOn: pass && pass.querySelector('.bc.on b').textContent, passDone: pass && pass.querySelectorAll('.bc.done').length, passLab: pass && pass.querySelector('.bt').innerText.replace(/\\s+/g, ' '),
+                   tdHead: td && td.querySelector('.bh').innerText.replace(/\\s+/g, ' '), tdOn: td && [...td.querySelectorAll('.bc.on')].map(x => x.textContent), tdCap: td && td.querySelector('.bn').textContent,
+                   sum: chips.reduce((a, b) => a + b, 0), tot: tot, over: [...d.querySelectorAll('.bh > span, .bn > span:first-child, .dcol')].filter(e => e.scrollWidth > e.clientWidth + 1).length,
+                   mini: [...document.querySelectorAll('.prow[data-row="0"] .mini')].filter(m => m.offsetHeight > 0).length, fr: document.querySelectorAll('.prow[data-row="0"] .lvf').length }; })()""")
+        check(f'[{tag}] breakdown: PASS 271 lights the 7-pt bucket (226), two passed buckets, thresholds under the cells', bk['passOn'] == '7' and bk['passDone'] == 2 and bk['passLab'] == '75 150 226 300 350 400', bk)
+        check(f'[{tag}] breakdown: one TD group x4 = +26 (three <40, one 40s), lengths listed by type', bk['tdHead'] == 'TD ×4 +26' and bk['tdOn'] == ['6×3', '8'] and bk['tdCap'].startswith('Pass 47 · 4 · 8') and 'Rush 1' in bk['tdCap'], bk)
+        check(f'[{tag}] breakdown: every point chip adds up to TOTAL, nothing cut off', bk['sum'] == bk['tot'] == 33 and bk['over'] == 0, bk)
         page.click('.prow[data-row="0"]'); page.wait_for_timeout(200)
         page.click('.prow[data-row="4"]'); page.wait_for_timeout(300)
         det = page.inner_text('.detail')
@@ -231,6 +243,36 @@ with sync_playwright() as pw:
         check(f'[{tag}] no sideways scroll on matchup', ov <= 0, ov)
         if shots: page.screenshot(path=f'{SHOTS}/{tag}-05-matchup.png', full_page=True)
         check(f'[{tag}] live tier bar on Gordon', '4 more rush yds' in page.inner_text('.prow[data-row="1"]'), page.inner_text('.prow[data-row="1"]'))
+        # v1.10.0: live frame in the position color, under the position square + arrow; light on starters; off on an open row
+        fr = page.evaluate("""(() => { const rows = [...document.querySelectorAll('#mrows .prow')];
+          const live = rows.flatMap(r => [...r.querySelectorAll(':scope > .pside.lv')].map(s => r.dataset.row + (s.classList.contains('r') ? 'r' : 'l') + ':' + s.getAttribute('data-pos'))).sort();
+          const frames = rows.flatMap(r => [...r.querySelectorAll(':scope > .lvf')].map(f => r.dataset.row + f.getAttribute('data-sd') + ':' + f.getAttribute('data-pos'))).sort();
+          const r1 = document.querySelector('.prow[data-row="1"]'), f = r1.querySelector('.lvf-l'), g = r1.querySelector('.lvf-r'), chip = r1.querySelector('.chip').getBoundingClientRect(), chev = r1.querySelector('.chev').getBoundingClientRect();
+          const fl = f.getBoundingClientRect(), gl = g.getBoundingClientRect(), kids = [...r1.children];
+          const inside = [...r1.querySelectorAll(':scope > .pside:not(.r) .nfl, :scope > .pside:not(.r) .pills, :scope > .pside:not(.r) .mini, :scope > .pside:not(.r) .pnm')].every(e => { const b = e.getBoundingClientRect(); return b.left >= fl.left + 2 && b.top >= fl.top + 1 && b.bottom <= fl.bottom - 1; });
+          const anims = document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.lvf'));
+          return { live: live, frames: frames, firstKids: kids.slice(0, 2).every(k => k.classList.contains('lvf')), z: getComputedStyle(r1.querySelector('.ctr')).zIndex + '/' + getComputedStyle(f).zIndex,
+                   pos: getComputedStyle(f).position, under: fl.right >= chip.left && fl.right <= chip.right && fl.right >= chev.left && fl.right <= chev.right && gl.left >= chip.left && gl.left <= chip.right,
+                   inside: inside, rects: f.querySelectorAll('rect').length, stroke: f.querySelector('rect').getAttribute('stroke'), mirror: getComputedStyle(g.querySelector('svg')).transform,
+                   anims: anims.length, synced: anims.every(a => a.startTime === 0), fin: !!document.querySelector('.prow[data-row="0"] .pside.fn'), lvDim: !!document.querySelector('.prow[data-row="1"] .pside.fn') }; })()""")
+        check(f'[{tag}] live frame on every live player (and only them), in his position', fr['live'] == fr['frames'] and len(fr['frames']) >= 3, fr)
+        check(f'[{tag}] frame is the row\'s first child, absolutely placed, under the square + arrow (same layer, painted first)', fr['firstKids'] and fr['pos'] == 'absolute' and fr['z'] == '1/1' and fr['under'], fr)
+        check(f'[{tag}] frame wraps the player (logo, name, pills, yards bar inside it)', fr['inside'], fr)
+        check(f'[{tag}] RB frame cyan outline + 8-layer travelling light, right side mirrored, one shared clock', fr['stroke'] == 'rgba(34,211,238,0.3)' and fr['rects'] == 9 and fr['mirror'].startswith('matrix(-1') and fr['anims'] >= 24 and fr['synced'], fr)
+        check(f'[{tag}] finished player dimmed while the matchup has players left; live player not', fr['fin'] and not fr['lvDim'], fr)
+        page.click('.prow[data-row="1"]'); page.wait_for_timeout(400)
+        op = page.evaluate("""(() => { const r = document.querySelector('.prow[data-row="1"]'), d = r.nextElementSibling, c = d.querySelector('.dcol.bx'), rush = c.querySelector('.bg');
+          return { fr: r.querySelectorAll('.lvf').length, mini: [...r.querySelectorAll('.mini')].filter(m => m.offsetHeight > 0).length,
+                   next: rush.querySelector('.bc.next b').textContent, on: rush.querySelector('.bc.on b').textContent, cap: rush.querySelector('.bn').innerText.replace(/\\s+/g, ' ') }; })()""")
+        check(f'[{tag}] open row: no frame, yards bar hidden, breakdown shows his bucket + the next one filling', op['fr'] == 0 and op['mini'] == 0 and op['on'] == '3' and op['next'] == '6' and op['cap'] == '4 more yds +3', op)
+        page.click('.prow[data-row="1"]'); page.wait_for_timeout(400)
+        back = page.evaluate("[document.querySelectorAll('.prow[data-row=\"1\"] .lvf').length, [...document.querySelectorAll('.prow[data-row=\"1\"] .mini')].filter(m => m.offsetHeight > 0).length]")
+        check(f'[{tag}] closed again: frame + yards bar back', back == [2, 2], back)
+        page.click('.prow[data-row="7"]'); page.wait_for_timeout(400)
+        dst = page.evaluate("(() => { const c = document.querySelector('.prow[data-row=\"7\"] + .detail .dcol.bx'); return c ? [c.querySelector('.bh span').textContent, c.querySelector('.bc.on b').textContent, (c.querySelector('.bn') || {}).textContent || ''] : null; })()")
+        check(f'[{tag}] D/ST breakdown: points-allowed buckets, lit bucket, when the next drop happens', dst and dst[0] == 'ALLOWED 12 pts' and dst[1] == '6' and dst[2] == 'Drops to +3 at 18 allowed', dst)
+        page.click('.prow[data-row="7"]'); page.wait_for_timeout(300)
+        page.evaluate("document.querySelectorAll('#mrows .lvf').forEach(f => f.__keep = 1)")
         # v1.9.0: clock pill (no game score), RED ZONE pill on the inside, dot stays green, everything fits
         pr = page.evaluate("""(() => { const g = document.querySelector('.prow[data-row="1"] .pside:not(.r)'), w = document.querySelector('.prow[data-row="1"] .pside.r'), b = document.querySelector('.prow[data-row="0"] .pside:not(.r)');
           return { ck: g.querySelector('.ck.live').textContent, rz: g.querySelectorAll('.stp.rz').length, wrz: w.querySelectorAll('.stp').length, wck: w.querySelector('.ck.live').textContent,
@@ -259,6 +301,8 @@ with sync_playwright() as pw:
         tdp = page.evaluate("""(() => { const g = document.querySelector('.prow[data-row="1"] .pside:not(.r)'); const t = g.querySelector('.stp.td');
           return { n: g.querySelectorAll('.stp').length, vis: t ? t.innerText.trim() : '', old: g.querySelectorAll('.evt.td').length }; })()""")
         check(f'[{tag}] TOUCHDOWN pill after a live TD (replaces RED ZONE, no old TD tag)', tdp['n'] == 1 and tdp['vis'] in ('TOUCHDOWN', 'TD') and tdp['old'] == 0, tdp)
+        kp = page.evaluate("(() => { const f = [...document.querySelectorAll('#mrows .lvf')]; return [f.length, f.filter(x => x.__keep).length, [...document.querySelectorAll('#mrows .prow')].every(r => r.querySelectorAll(':scope > .pside').length === 2 || r.classList.contains('none'))]; })()")
+        check(f'[{tag}] frames survive live re-renders (same nodes, rows intact)', kp[0] >= 3 and kp[1] == kp[0] and kp[2], kp)
         check(f'[{tag}] score glow after the jump', page.locator('.prow[data-row="1"] b.glow').count() == 1)
         check(f'[{tag}] Gordon now 6 + 8 = 14', '14' in r1, r1)
         wa1 = page.evaluate("window.__fgt.ENG.res.m[Object.keys(window.__fgt.ENG.res.m).find(k => k.indexOf('5-11') >= 0)].wa")

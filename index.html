@@ -738,6 +738,56 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 /* before a matchup begins the player projections are bright, then fade to gray */
 .ppt small.pj{transition:color .6s ease}
 .ppt small.pj.pjb{color:#dce8f5;font-size:12.5px}
+/* v1.10.0: live-player frame (position color + travelling light); under the position square and the arrow */
+.prow > .lvf{position:absolute;z-index:1;top:3px;bottom:3px;pointer-events:none;display:block}
+.prow > .lvf-l{left:5px;right:calc(50% - .5px)}
+.prow > .lvf-r{right:5px;left:calc(50% - .5px)}
+.prow > .lvf svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.prow > .lvf-r svg{transform:scaleX(-1)}
+/* v1.10.0: finished players step back while the matchup still has players left (points stay bright) */
+.pside.fn .pnm,.pside.fn .nfl{opacity:.72}
+/* v1.10.0: open row: the breakdown below replaces the small "more yards" bar */
+.prow[aria-expanded="true"] .mini{display:none}
+/* v1.10.0: tap-open bucket breakdown */
+.dcol.bx{padding:9px 11px 11px}
+.bg{padding:7px 0;border-top:1px solid rgba(147,174,200,.10)}
+.bg:first-child{border-top:0;padding-top:0}
+.bh{display:flex;justify-content:space-between;align-items:center;gap:6px;min-height:22px}
+.bh > span{font-size:11.5px;font-weight:800;letter-spacing:.6px;color:#fff;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bh em{font-style:normal;font-weight:600;letter-spacing:0;color:var(--muted)}
+.bh em.x{color:#fff;font-weight:800}
+.bh em.x.td{color:var(--gold)}
+.bh .pv{height:22px;min-width:32px;font-size:12.5px;padding:0 6px}
+.bg.ln .bh + .bh{margin-top:4px}
+.bk{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:3px;margin-top:5px}
+.bc{position:relative;height:21px;border-radius:6px;overflow:hidden;display:grid;place-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(147,174,200,.13);color:var(--faint);font-size:10.5px;font-weight:800;line-height:1}
+.bc b{position:relative;font-weight:800}
+.bc small{font-size:8.5px;font-weight:800;margin-left:1.5px}
+.bc i{position:absolute;left:0;bottom:0;height:3px;background:#3ddc84;border-radius:0 2px 2px 0}
+.bc.part i{background:rgba(61,220,132,.5)}
+.bc.done{background:rgba(61,220,132,.09);border-color:rgba(61,220,132,.2);color:rgba(120,225,165,.7)}
+.bc.on{background:rgba(61,220,132,.24);border-color:rgba(61,220,132,.85);color:#eafff2}
+.bc.next{border-color:rgba(220,232,245,.42);color:#fff}
+.bc.part{color:var(--muted)}
+.bc.gone{opacity:.5}
+.bc.on.zero{background:rgba(255,255,255,.10);border-color:rgba(220,232,245,.5);color:#fff}
+.bc.on.neg{background:rgba(255,59,78,.16);border-color:rgba(255,59,78,.75);color:#ff8a96}
+.bk.td .bc.on{background:rgba(244,196,61,.15);border-color:rgba(244,196,61,.75);color:var(--gold)}
+.bt{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:3px;margin-top:2px;font-size:9px;font-weight:700;color:var(--faint);text-align:center;line-height:11px;white-space:nowrap}
+.bt .nx{color:#dce8f5}
+.bt .cu{color:var(--muted)}
+.bn{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--muted);line-height:13px}
+.bn > span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bn .tgw{flex:1 1 auto;display:flex;justify-content:center;min-width:12px}
+.bn em{font-style:normal;color:#fff;font-weight:800;font-size:11.5px}
+.bn em.mx{color:var(--gold)}
+.dcol.bx .dtot{margin-top:0;padding-top:8px}
+.bsrc{font-size:10px;font-weight:700;color:var(--faint);margin-top:4px;line-height:13px}
+@keyframes bcin{from{opacity:0;transform:translateY(3px)}}
+@keyframes bfill{from{width:0}}
+.dcol.bx .bc{animation:bcin .26s ease-out backwards;animation-delay:calc(var(--i) * 38ms + var(--g) * 70ms)}
+.dcol.bx .bc i{animation:bfill .55s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--g) * 70ms + 260ms)}
+@media (prefers-reduced-motion: reduce){.dcol.bx .bc,.dcol.bx .bc i{animation:none}}
 </style>
 </head>
 <body>
@@ -790,10 +840,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.10.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.10.0', 'Live players: a thin outline in the player’s position color (purple QB, cyan RB, green WR, pink TE, orange K, silver D/ST) now goes around a player’s half of the row while his game is on, with a soft band of light that slowly travels around it. The position square and the arrow sit on top of the outline. Starters get the moving light, bench players get the outline only, and the outline turns off while a row is opened. Tapping a row now shows every scoring bucket: for yards, a row of cells with the points each bucket pays (the bucket he’s in is lit, the next one fills as yards come in); every touchdown and field goal in its distance bucket; and the D/ST points-allowed buckets. The small “more yards” bar under a player hides while his row is open, since the breakdown shows it. While a matchup still has players left, finished players’ names and logos are slightly dimmed so the live ones stand out (their points stay bright).'],
   ['1.9.0', 'Player rows: the game clock is now a small pill with a green dot and white time (no game score). Before kickoff it shows the start time and opponent, and after the game it says “Final”. When a player’s team has the ball inside the 20, a red RED ZONE pill shows next to the clock; after a touchdown a gold TOUCHDOWN pill shows there for 3 minutes (it shortens to RZ / TD if a phone is too narrow). Team scores show “–” until a starter in that matchup kicks off, then both teams switch to their scores together; until then the player projections are bright, then they fade to gray. Card colors you picked: starters card solid dark (no shading), bench and IR cards solid, top matchup card a bit darker with less blue shading, softer color inside the position pills. Your scoreboard card has the “My matchup” diamond and the same border. Card titles are bigger and centered; the Bench title shows each team’s bench total and says “Tiebreaker only”.'],
   ['1.8.1', 'Your game is easy to find: it says “My matchup” in a diamond on the top edge of the matchup card, and its dot is a star, so you can swipe back to it fast. It follows whichever team you picked. The matchup and player cards have a cleaner blue border (no glow), and the badge now says “Division Week”.'],
   ['1.8.0', 'New Prediction Engine: every player\u2019s projection is now the average of the projected stats from CBS, Sleeper, ESPN and FantasyPros (when they have him), scored in our league\u2019s exact rules, for every spot including kickers (FGs by distance) and defenses (points allowed, sacks, INTs, fumble recoveries, TDs). Fumbles lost now count in projections. Our old model is only used when fewer than 2 sites project a player.'],
@@ -1343,6 +1394,7 @@ function begun(t, L){
 }
 function mBegun(A, la, B, lb){ return begun(A, la) || begun(B, lb); }
 let PJB = false;   // v1.9.0: matchup not begun yet → player projections bright
+let DIMF = false;  // v1.10.0: this matchup still has players left → finished players' name + logo dimmed
 function teamLive(t){
   if(!t) return null;
   let pts = 0, left = 0, any = false;
@@ -1453,6 +1505,7 @@ function syncChildren(from, to){
   for(let c = from.firstChild; c; c = c.nextSibling){ if(c.nodeType === 1){ const k = c.getAttribute('data-key'); if(k) keyed[k] = c; } }
   let cur = from.firstChild, t = to.firstChild;
   while(t){
+    while(keepNode(cur)) cur = cur.nextSibling;   // v1.10.0: live frames are added after render; morph skips them
     const next = t.nextSibling;
     let match = null;
     const k = t.nodeType === 1 ? t.getAttribute('data-key') : null;
@@ -1462,8 +1515,9 @@ function syncChildren(from, to){
     else from.insertBefore(t, cur);
     t = next;
   }
-  while(cur){ const n = cur.nextSibling; from.removeChild(cur); cur = n; }
+  while(cur){ const n = cur.nextSibling; if(!keepNode(cur)) from.removeChild(cur); cur = n; }
 }
+function keepNode(n){ return !!(n && n.nodeType === 1 && n.hasAttribute('data-keep')); }
 function morph(el, html){ const tpl = document.createElement('template'); tpl.innerHTML = html; syncChildren(el, tpl.content); }
 
 let holdRender = 0, renderQueued = false;
@@ -1479,7 +1533,7 @@ function render(){
   else if(S.view === 'chat') html = chatView();
   else html = homeView();
   morph(v, html);
-  if(S.view === 'match') fitPills();
+  if(S.view === 'match'){ fitPills(); lvFrames(); }
   lightTabs(S.view);
   paintRecBadge();
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
@@ -1638,7 +1692,7 @@ function side(p, L, r){
   const show = (st === 'pre' || st === 'bye' || L.pts == null) ? '–' : L.pts;
   const zero = !(L.pts > 0) ? ' zero' : '';
   const ep = (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null;
-  return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + '">' +
+  return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + (st === 'post' && DIMF ? ' fn' : '') + '"' + (st === 'in' ? ' data-pos="' + esc(p.pos) + '"' : '') + '>' +
     '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj' + (PJB ? ' pjb' : '') + '">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
     '<span class="pnm">' + esc(p.pos === 'DST' ? p.name : shortName(p.name)) + '<small>' + esc(p.nfl) + '</small></span>' +
     (L.evt && L.evt.kind !== 'td' ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
@@ -1663,6 +1717,132 @@ function fitPills(){
   over.forEach(function(e){ e.classList.add('short'); });
 }
 function pv(v, c){ return '<b class="pv ' + (c || '') + '">' + v + '</b>'; }
+
+/* ---------- v1.10.0 (Wes, Nov 12): live-player frame ----------
+   A thin outline in the player's position color around his half of the row while his game is on (halftime too), with a soft
+   band of light travelling around it ("Sweep"). The frame is the row's first child, so the position square and the arrow
+   paint on top of it; its inner edge sits on the center line. Starters: outline + light. Bench: outline only. Open row: none.
+   Every light runs on one shared clock (startTime 0), so they all move together and a re-render never makes one jump.
+   Right-side frames are mirrored, so in a row where both players are live the two lights meet under the square.
+   iPhone "Reduce Motion": outline only. morph() skips these nodes (data-keep); lvFrames() adds/removes/resizes them. */
+const LVF = { lap: 6000, base: 0.30, band: 0.45, glow: 0.144, r: 11 };
+const LVC = { QB: [157,108,255], RB: [34,211,238], WR: [46,230,128], TE: [255,72,110], K: [255,145,40], DST: [176,190,208] };
+let lvRM = false;
+try{ const mq = window.matchMedia('(prefers-reduced-motion: reduce)'); lvRM = mq.matches; if(mq.addEventListener) mq.addEventListener('change', function(e){ lvRM = e.matches; lvFrames(true); }); }catch(e){}
+function lvMix(a, b, t){ return a.map(function(v, i){ return Math.round(v + (b[i] - v) * t); }); }
+function lvRgba(c, a){ return 'rgba(' + c.join(',') + ',' + a + ')'; }
+function lvRect(svg, w, h, sw){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  e.setAttribute('x', sw / 2); e.setAttribute('y', sw / 2); e.setAttribute('width', Math.max(0, w - sw)); e.setAttribute('height', Math.max(0, h - sw));
+  e.setAttribute('rx', LVF.r); e.setAttribute('fill', 'none'); e.setAttribute('stroke-width', sw);
+  svg.appendChild(e); return e;
+}
+function lvBuild(fr, pos, light){
+  while(fr.firstChild) fr.removeChild(fr.firstChild);
+  const b = fr.getBoundingClientRect(), w = b.width, h = b.height;
+  fr.setAttribute('data-wh', Math.round(w) + 'x' + Math.round(h));
+  if(w < 24 || h < 24) return;
+  const c = LVC[pos] || [61,220,132];
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h); svg.setAttribute('aria-hidden', 'true'); fr.appendChild(svg);
+  lvRect(svg, w, h, 1).setAttribute('stroke', lvRgba(c, LVF.base));
+  if(!light || lvRM || !svg.animate) return;
+  const col = lvRgba(lvMix(lvMix(c, [255,255,255], 0.22), [255,255,255], 0.25), LVF.glow);
+  const P = 2 * (w - 1 - 2 * (LVF.r - 0.5)) + 2 * (h - 1 - 2 * (LVF.r - 0.5)) + 2 * Math.PI * (LVF.r - 0.5);   // the rect's own perimeter
+  for(let k = 1; k <= 8; k++){   // 8 overlapping dashes centered on one point = a band that is brightest in the middle
+    const f = LVF.band * k / 8, L = P * f, start = P * (LVF.band - f) / 2, e = lvRect(svg, w, h, 1);
+    e.setAttribute('stroke', col); e.setAttribute('stroke-dasharray', L + ' ' + (P - L));
+    try{
+      const a = e.animate([{ strokeDashoffset: (-start) + 'px' }, { strokeDashoffset: (-start - P) + 'px' }], { duration: LVF.lap, iterations: Infinity, easing: 'linear' });
+      a.startTime = 0;
+    }catch(x){}
+  }
+}
+function lvFrames(force){
+  if(S.view !== 'match') return;
+  document.querySelectorAll('#mrows .prow').forEach(function(row){
+    const want = {};
+    if(row.getAttribute('aria-expanded') !== 'true') row.querySelectorAll(':scope > .pside.lv').forEach(function(sd){ want[sd.classList.contains('r') ? 'r' : 'l'] = sd.getAttribute('data-pos') || ''; });
+    row.querySelectorAll(':scope > .lvf').forEach(function(fr){
+      const k = fr.getAttribute('data-sd');
+      if(force || !(k in want) || fr.getAttribute('data-pos') !== want[k]) fr.parentNode.removeChild(fr);
+    });
+    const light = !row.classList.contains('bench');
+    Object.keys(want).forEach(function(k){
+      let fr = row.querySelector(':scope > .lvf-' + k);
+      if(!fr){
+        fr = document.createElement('span');
+        fr.className = 'lvf lvf-' + k; fr.setAttribute('data-keep', ''); fr.setAttribute('data-sd', k); fr.setAttribute('data-pos', want[k]); fr.setAttribute('aria-hidden', 'true');
+        row.insertBefore(fr, row.firstChild);
+      }
+      const b = fr.getBoundingClientRect();
+      if(!fr.firstChild || fr.getAttribute('data-wh') !== Math.round(b.width) + 'x' + Math.round(b.height)) lvBuild(fr, want[k], light);
+    });
+  });
+}
+try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ lvFrames(); }); }catch(e){}
+
+/* ---------- v1.10.0 (Wes, Nov 12): tap-open bucket breakdown ----------
+   Every scoring bucket is a cell showing the points it pays, with what it takes underneath. Yards: buckets already passed
+   (dim green), the bucket he's in (lit = his points), the next one (white outline + a strip filling as yards come in).
+   Touchdowns: one group for every TD (same distance table for pass/rush/rec), gold where each landed (×2 = two there).
+   Kicker: field goals by distance + XP. D/ST: points-allowed buckets. Other items stay single lines. Cells fade in once. */
+const TDB = [[0, 6, '<40'], [40, 8, '40s'], [50, 10, '50s'], [60, 12, '60+']];
+const FGB = [[0, 3, '<40'], [40, 4, '40s'], [50, 5, '50+']];
+const PAB = [[0, 15, '0'], [7, 9, '≤7'], [17, 6, '≤17'], [24, 3, '≤24'], [29, 0, '≤29'], [1e9, -3, '30+']];
+function bkChip(v, td){ return pv(v > 0 ? '+' + v : String(v), td ? 'td' : v > 0 ? 'earn' : v < 0 ? 'neg' : 'zero'); }
+function bkGroup(g, head, pts, td, cells, cap, kind){
+  let h = '<div class="bg"><div class="bh"><span>' + head + '</span>' + bkChip(pts, td) + '</div>';
+  h += '<div class="bk' + (kind ? ' ' + kind : '') + '" style="--n:' + cells.length + '">' + cells.map(function(c, i){
+    return '<span class="bc' + (c.st ? ' ' + c.st : '') + '" style="--i:' + i + ';--g:' + g + '">' + (c.f != null ? '<i style="width:' + c.f.toFixed(1) + '%"></i>' : '') +
+      '<b>' + c.t + (c.n ? '<small>×' + c.n + '</small>' : '') + '</b></span>'; }).join('') + '</div>';
+  h += '<div class="bt" style="--n:' + cells.length + '">' + cells.map(function(c){ return '<span' + (c.st === 'next' ? ' class="nx"' : /^on/.test(c.st || '') ? ' class="cu"' : '') + '>' + c.th + '</span>'; }).join('') + '</div>';
+  if(cap) h += '<div class="bn">' + cap + '</div>';
+  return h + '</div>';
+}
+function bkDist(list, B){   // how many TDs / FGs landed in each distance bucket, and their points
+  const cnt = B.map(function(){ return 0; }); let pts = 0;
+  list.forEach(function(l){ const y = l == null ? 0 : l; let k = 0; B.forEach(function(x, i){ if(y >= x[0]) k = i; }); cnt[k]++; pts += B[k][1]; });
+  return { pts: pts, cells: B.map(function(x, i){ return { t: x[1], th: x[2], st: cnt[i] ? 'on' : '', n: cnt[i] > 1 ? cnt[i] : 0 }; }) };
+}
+function bkCol(p, L){
+  const live = L.state === 'in', s = L.s || {};
+  let h = '', g = 0;
+  L.sc.bars.forEach(function(b){
+    const T = b.T; let hi = -1; T.forEach(function(t, i){ if(b.y >= t[0]) hi = i; });
+    const nx = hi + 1 < T.length ? hi + 1 : -1, floor = hi >= 0 ? T[hi][0] : 0;
+    const cells = T.map(function(t, i){
+      const c = { t: t[1], th: t[0], st: i < hi ? 'done' : i === hi ? 'on' : '' };
+      if(i === nx){ c.f = clamp((b.y - floor) / (t[0] - floor) * 100, 0, 100); c.st = live ? 'next' : 'part'; }
+      return c; });
+    const cap = nx < 0 ? '<span>Top bucket</span><em class="mx">MAX</em>' : live ? '<span>' + (T[nx][0] - b.y) + ' more yds</span><span class="tgw">' + TGA + '</span><em>+' + (T[nx][1] - b.v) + '</em>' : '';
+    h += bkGroup(g++, b.k + ' <em>' + b.y + ' yds</em>', b.v, false, cells, cap);
+  });
+  const tds = [], by = {}, ord = [];
+  [['Pass', s.ptd], ['Rush', s.rtd], ['Rec', s.ctd]].forEach(function(x){ (x[1] || []).forEach(function(l){ tds.push(l); if(!by[x[0]]){ by[x[0]] = []; ord.push(x[0]); } by[x[0]].push(l == null ? '?' : l); }); });
+  if(tds.length){
+    const d = bkDist(tds, TDB);
+    h += bkGroup(g++, 'TD' + (tds.length > 1 ? ' <em class="x td">×' + tds.length + '</em>' : ''), d.pts, true, d.cells, '<span>' + ord.map(function(k){ return k + ' ' + by[k].join(' · '); }).join('  |  ') + ' yd</span>', 'td');
+  }
+  if(p.pos === 'K'){
+    const fg = s.fg || [], d = bkDist(fg, FGB);
+    h += bkGroup(g++, 'FG' + (fg.length > 1 ? ' <em class="x">×' + fg.length + '</em>' : ''), d.pts, false, d.cells, fg.length ? '<span>' + fg.map(function(l){ return l == null ? '?' : l; }).join(' · ') + ' yd</span>' : '<span>None yet</span>');
+  }
+  if(p.pos === 'DST'){
+    const pa = Math.max(0, Math.round((s.dst && s.dst.pa) || 0)); let k = 0; while(pa > PAB[k][0]) k++;
+    const cells = PAB.map(function(x, i){ return { t: x[1], th: x[2], st: i < k ? 'gone' : i === k ? 'on' + (x[1] === 0 ? ' zero' : x[1] < 0 ? ' neg' : '') : '' }; });
+    const cap = live && k < PAB.length - 1 ? '<span>Drops to ' + (PAB[k + 1][1] > 0 ? '+' : '') + PAB[k + 1][1] + ' at ' + (PAB[k][0] + 1) + ' allowed</span>' : '';
+    h += bkGroup(g++, 'ALLOWED <em>' + pa + ' pts</em>', PAB[k][1], false, cells, cap);
+  }
+  // everything else (INT, fumble lost, 2-pt, return TD, XP, sacks, D/ST INT / fumble rec / TD / safety) stays a single line
+  const ln = L.sc.lines.filter(function(l){ return !(l.lab === 'PASS TD' || l.lab === 'RUSH TD' || l.lab === 'REC TD' || l.lab === 'FG' || l.lab === 'PTS ALLOWED'); });
+  if(ln.length) h += '<div class="bg ln">' + ln.map(function(l){ return '<div class="bh"><span>' + esc(l.lab) + ' <em>' + esc(l.em) + '</em></span>' + bkChip(l.v, l.cls === 'td') + '</div>'; }).join('') + '</div>';
+  if(L.mismatch) h += '<div class="bg ln"><div class="bh"><span class="cbsl">CBS HAS</span>' + pv(p.cbsPts, 'cbs') + '</div><div class="bsrc">Stat correction or rule difference</div></div>';
+  h += '<div class="dtot"><span>TOTAL</span>' + pv(L.pts, 'total') + '</div>';
+  if(L.cbsFinal) h += '<div class="bsrc">Official CBS points (includes stat corrections)</div>';
+  else if(L.src === 'cbs') h += '<div class="bsrc">Stats from CBS</div>';
+  return '<div class="dcol bx">' + h + '</div>';
+}
 function dcol(p, L){
   if(!p || !L) return '<div class="dcol"></div>';
   let h = '';
@@ -1674,6 +1854,7 @@ function dcol(p, L){
     if(r && (r.inj || (r.f && r.f.length) || r.src)) x += '<div class="grp"><div class="dsub"><span class="cbsl">' + esc([r.inj ? r.inj + (r.pp < 1 ? ' · ' + Math.round(r.pp * 100) + '% to play' : '') : ''].concat(r.f || []).concat(r.src ? ['Source: ' + r.src] : []).filter(Boolean).join(' · ')) + '</span></div></div>';
     return '<div class="dcol">' + x + '</div>';
   }
+  if(L.state === 'in' || L.state === 'post') return bkCol(p, L);
   L.sc.bars.forEach(function(b){
     const v = tierPts(b.y, b.T), n = nextTier(b.y, b.T);
     const pct = n ? clamp((b.y - n.floor) / (n.at - n.floor) * 100, 3, 100) : 100;
@@ -1724,7 +1905,7 @@ function matchView(){
   // v1.8.1: "My matchup" diamond on the picked team's game; its dot (always first, see orderedMatchups) is a star
   const isMy = function(x){ return !!(S.team && x && ((x.home && x.home.id === S.team) || (x.away && x.away.id === S.team))); };
   const ISM = isMy(mt), HASM = isMy(X.list[0]);
-  const ON = mBegun(A, la, B, lb); PJB = isCurrentWeek() && !ON;
+  const ON = mBegun(A, la, B, lb); PJB = isCurrentWeek() && !ON; DIMF = left > 0;
   h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
     (E && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
@@ -1756,7 +1937,7 @@ function matchView(){
   for(let i = 0; i < ni; i++){ const x = iA[i] || [], y = iB[i] || []; h += prow(x[0] || null, x[1], y[0] || null, y[1], 200 + i, '', 'ir', mt.key); }
   h += '</div>';
   h += '</div><p class="note">Swipe the score card left or right to change games.</p>';
-  PJB = false;
+  PJB = false; DIMF = false;
   if(S.proj && S.proj.raw && S.proj.raw.consensus && S.proj.raw.consensus.used) h += '<p class="note fpnote">Projections: consensus of CBS, Sleeper, ESPN and FantasyPros projected stats, scored in our league\u2019s rules.</p>';
   else if(S.proj && S.proj.raw && S.proj.raw.fp_blended) h += '<p class="note fpnote">Projections: our model blended 50/50 with data from FantasyPros.</p>';
   return h;
@@ -3444,14 +3625,14 @@ $('#chatDelYes').addEventListener('click', function(){
     .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); CH.msgs = Object.assign({}, CH.msgs); delete CH.msgs[id]; paintChat(true); paintBadge(); toast('Message deleted'); })
     .catch(function(){ toast('Couldn’t delete that message'); });
 });
-window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); if(S.view === 'match') fitPills(); });
+window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); if(S.view === 'match'){ fitPills(); lvFrames(); } });
 beat(true); openStream('pres'); openStream('chat'); setTimeout(function(){ poll('pres'); poll('chat'); }, 3000);
 var chatHook = function(){ placePane(); paintBadge(); };
 /* pinch-zoom off (iPhone Safari ignores user-scalable=no, so block the gesture itself) */
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
+window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){
