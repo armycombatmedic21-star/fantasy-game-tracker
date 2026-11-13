@@ -232,7 +232,7 @@ with sync_playwright() as pw:
                    sum: chips.reduce((a, b) => a + b, 0), tot: tot, over: [...d.querySelectorAll('.bh > span, .bn > span:first-child, .dcol')].filter(e => e.scrollWidth > e.clientWidth + 1).length,
                    mini: [...document.querySelectorAll('.prow[data-row="0"] .mini')].filter(m => m.offsetHeight > 0).length, fr: document.querySelectorAll('.prow[data-row="0"] .lvf').length }; })()""")
         check(f'[{tag}] breakdown: PASS 271 lights the 7-pt bucket (226), two passed buckets, thresholds under the cells', bk['passOn'] == '7' and bk['passDone'] == 2 and bk['passLab'] == '75 150 226 300 350 400', bk)
-        check(f'[{tag}] breakdown: one TD group x4 = +26 (three <40, one 40s), lengths listed by type', bk['tdHead'] == 'TD ×4 +26' and bk['tdOn'] == ['6×3', '8'] and bk['tdCap'].startswith('Pass 47 · 4 · 8') and 'Rush 1' in bk['tdCap'], bk)
+        check(f'[{tag}] breakdown: one TD group x4 = +26 (three <40, one 40s), each distance listed with yd', bk['tdHead'] == 'TD ×4 +26' and bk['tdOn'] == ['6×3', '8'] and bk['tdCap'] == '47 yd, 4 yd, 8 yd, 1 yd', bk)
         check(f'[{tag}] breakdown: every point chip adds up to TOTAL, nothing cut off', bk['sum'] == bk['tot'] == 33 and bk['over'] == 0, bk)
         page.click('.prow[data-row="0"]'); page.wait_for_timeout(200)
         page.click('.prow[data-row="4"]'); page.wait_for_timeout(300)

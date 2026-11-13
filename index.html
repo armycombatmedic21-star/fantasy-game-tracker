@@ -778,6 +778,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .bt .cu{color:var(--muted)}
 .bn{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--muted);line-height:13px}
 .bn > span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bn > span.bl{white-space:normal;overflow:visible}
 .bn .tgw{flex:1 1 auto;display:flex;justify-content:center;min-width:12px}
 .bn em{font-style:normal;color:#fff;font-weight:800;font-size:11.5px}
 .bn em.mx{color:var(--gold)}
@@ -840,10 +841,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.10.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.10.1', 'Tap-open breakdown: touchdown and field-goal distances now read “1 yd, 31 yd” (each with its own yd; no Pass/Rush label, since every TD is scored by its distance). On a big day the list wraps to a second line instead of being cut off.'],
   ['1.10.0', 'Live players: a thin outline in the player’s position color (purple QB, cyan RB, green WR, pink TE, orange K, silver D/ST) now goes around a player’s half of the row while his game is on, with a soft band of light that slowly travels around it. The position square and the arrow sit on top of the outline. Starters get the moving light, bench players get the outline only, and the outline turns off while a row is opened. Tapping a row now shows every scoring bucket: for yards, a row of cells with the points each bucket pays (the bucket he’s in is lit, the next one fills as yards come in); every touchdown and field goal in its distance bucket; and the D/ST points-allowed buckets. The small “more yards” bar under a player hides while his row is open, since the breakdown shows it. While a matchup still has players left, finished players’ names and logos are slightly dimmed so the live ones stand out (their points stay bright).'],
   ['1.9.0', 'Player rows: the game clock is now a small pill with a green dot and white time (no game score). Before kickoff it shows the start time and opponent, and after the game it says “Final”. When a player’s team has the ball inside the 20, a red RED ZONE pill shows next to the clock; after a touchdown a gold TOUCHDOWN pill shows there for 3 minutes (it shortens to RZ / TD if a phone is too narrow). Team scores show “–” until a starter in that matchup kicks off, then both teams switch to their scores together; until then the player projections are bright, then they fade to gray. Card colors you picked: starters card solid dark (no shading), bench and IR cards solid, top matchup card a bit darker with less blue shading, softer color inside the position pills. Your scoreboard card has the “My matchup” diamond and the same border. Card titles are bigger and centered; the Bench title shows each team’s bench total and says “Tiebreaker only”.'],
   ['1.8.1', 'Your game is easy to find: it says “My matchup” in a diamond on the top edge of the matchup card, and its dot is a star, so you can swipe back to it fast. It follows whichever team you picked. The matchup and player cards have a cleaner blue border (no glow), and the badge now says “Division Week”.'],
@@ -1805,6 +1807,7 @@ function bkDist(list, B){   // how many TDs / FGs landed in each distance bucket
   list.forEach(function(l){ const y = l == null ? 0 : l; let k = 0; B.forEach(function(x, i){ if(y >= x[0]) k = i; }); cnt[k]++; pts += B[k][1]; });
   return { pts: pts, cells: B.map(function(x, i){ return { t: x[1], th: x[2], st: cnt[i] ? 'on' : '', n: cnt[i] > 1 ? cnt[i] : 0 }; }) };
 }
+function bkYds(a){ return a.map(function(l){ return (l == null ? '?' : l) + ' yd'; }).join(', '); }
 function bkCol(p, L){
   const live = L.state === 'in', s = L.s || {};
   let h = '', g = 0;
@@ -1818,15 +1821,14 @@ function bkCol(p, L){
     const cap = nx < 0 ? '<span>Top bucket</span><em class="mx">MAX</em>' : live ? '<span>' + (T[nx][0] - b.y) + ' more yds</span><span class="tgw">' + TGA + '</span><em>+' + (T[nx][1] - b.v) + '</em>' : '';
     h += bkGroup(g++, b.k + ' <em>' + b.y + ' yds</em>', b.v, false, cells, cap);
   });
-  const tds = [], by = {}, ord = [];
-  [['Pass', s.ptd], ['Rush', s.rtd], ['Rec', s.ctd]].forEach(function(x){ (x[1] || []).forEach(function(l){ tds.push(l); if(!by[x[0]]){ by[x[0]] = []; ord.push(x[0]); } by[x[0]].push(l == null ? '?' : l); }); });
-  if(tds.length){
+  const tds = [].concat(s.ptd || [], s.rtd || [], s.ctd || []);
+  if(tds.length){   // v1.10.1 (Wes): "1 yd, 31 yd" (no Pass/Rush label: every TD is scored by its distance); wraps on a big day
     const d = bkDist(tds, TDB);
-    h += bkGroup(g++, 'TD' + (tds.length > 1 ? ' <em class="x td">×' + tds.length + '</em>' : ''), d.pts, true, d.cells, '<span>' + ord.map(function(k){ return k + ' ' + by[k].join(' · '); }).join('  |  ') + ' yd</span>', 'td');
+    h += bkGroup(g++, 'TD' + (tds.length > 1 ? ' <em class="x td">×' + tds.length + '</em>' : ''), d.pts, true, d.cells, '<span class="bl">' + bkYds(tds) + '</span>', 'td');
   }
   if(p.pos === 'K'){
     const fg = s.fg || [], d = bkDist(fg, FGB);
-    h += bkGroup(g++, 'FG' + (fg.length > 1 ? ' <em class="x">×' + fg.length + '</em>' : ''), d.pts, false, d.cells, fg.length ? '<span>' + fg.map(function(l){ return l == null ? '?' : l; }).join(' · ') + ' yd</span>' : '<span>None yet</span>');
+    h += bkGroup(g++, 'FG' + (fg.length > 1 ? ' <em class="x">×' + fg.length + '</em>' : ''), d.pts, false, d.cells, fg.length ? '<span class="bl">' + bkYds(fg) + '</span>' : '<span>None yet</span>');
   }
   if(p.pos === 'DST'){
     const pa = Math.max(0, Math.round((s.dst && s.dst.pa) || 0)); let k = 0; while(pa > PAB[k][0]) k++;
