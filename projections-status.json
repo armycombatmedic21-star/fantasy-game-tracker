@@ -1,5 +1,5 @@
 {
- "at": "2026-11-13T03:29:37+00:00",
+ "at": "2026-11-13T20:10:08+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -11,7 +11,7 @@
    "total_available": {
     "QB": "77",
     "RB": "137",
-    "WR": "227",
+    "WR": "225",
     "TE": "136"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 421,
-   "secs": 3.7,
+   "records": 417,
+   "secs": 3.4,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 28,
-    "injury_flags": 269
+    "injury_flags": 266
    }
   },
   "espn": {
    "ok": true,
-   "records": 361,
-   "secs": 0.4,
+   "records": 359,
+   "secs": 0.6,
    "info": {
     "players": 1061,
-    "kept": 361,
+    "kept": 359,
     "dropped": {
      "pos": 0,
      "team": 333,
-     "no_week_proj": 367
+     "no_week_proj": 369
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 154,
-   "secs": 36.1,
+   "records": 149,
+   "secs": 31.8,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 37
+    "no_projection": 42
    }
   },
   "fp": {
@@ -87,64 +87,63 @@
   }
  },
  "checks": {
-  "players": 644,
+  "players": 643,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Khalil Shakir BUF",
-  "C.J. Stroud HOU",
-  "Braelon Allen NYJ",
-  "Malik Nabers NYG",
-  "Blake Corum LA",
-  "A.J. Brown NE",
-  "George Pickens DAL",
-  "Rhamondre Stevenson NE",
-  "Jordan Addison MIN",
-  "Quinshon Judkins CLE",
-  "Daniel Jones IND",
-  "Tony Pollard TEN",
-  "Mike Gesicki CIN",
-  "Kyler Murray MIN",
-  "Mike Evans SF",
-  "Cam Skattebo NYG",
-  "Stefon Diggs WAS",
+  "T.J. Hockenson MIN",
+  "Woody Marks HOU",
   "J.J. McCarthy NYG",
-  "Cam Ward TEN",
-  "Breece Hall NYJ",
-  "Jordan Mason MIN",
-  "Drake London ATL",
-  "Shedeur Sanders CLE",
+  "Fernando Mendoza LV",
+  "Denzel Boston CLE",
+  "Jacoby Brissett ARI",
+  "Quinshon Judkins CLE",
+  "Tony Pollard TEN",
+  "Jameis Winston NYG",
   "Nico Collins HOU",
+  "Drew Lock SEA",
+  "Adonai Mitchell NYJ",
+  "Blake Corum LA",
+  "DK Metcalf PIT",
+  "Deebo Samuel Sr. SF",
+  "Chris Rodriguez Jr. JAX",
+  "Cam Ward TEN",
+  "Geno Smith NYJ",
+  "DeMario Douglas NE",
+  "Ladd McConkey LAC",
+  "Tyler Allgeier ARI",
+  "Rico Dowdle PIT",
+  "DJ Moore BUF",
+  "Chase Brown CIN",
   "Omarion Hampton LAC"
  ],
- "fp_unmatched_5plus_count": 73,
- "scorecard": "week 10: 514 pre-kickoff projections saved",
+ "fp_unmatched_5plus_count": 71,
+ "scorecard": "week 10: 513 pre-kickoff projections saved",
  "consensus": {
-  "used": 351,
-  "fallback": 64,
-  "single_source_blend": 55,
-  "out_by_injury": 61,
-  "no_source_zero": 76,
-  "added_from_sites": 8,
+  "used": 348,
+  "fallback": 61,
+  "single_source_blend": 53,
+  "out_by_injury": 66,
+  "no_source_zero": 77,
+  "added_from_sites": 7,
   "added_4plus": [
-   "Andres Borregales NE K 6.7",
    "Carson Beck ARI QB 10.1",
    "Kyle McCord MIA QB 11.0",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 131,
-   "1": 69,
-   "2": 206,
-   "3": 104,
+   "0": 135,
+   "1": 68,
+   "2": 207,
+   "3": 100,
    "4": 42
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 644,
+ "players": 643,
  "spread_k": 1.35,
  "spread_rho": 0.06,
  "no_games_yet": 0
