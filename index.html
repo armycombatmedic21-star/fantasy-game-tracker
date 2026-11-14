@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#060b16">
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link id="manifestLink" rel="manifest">
-<link id="touchIcon" rel="apple-touch-icon">
+<link id="manifestLink" rel="manifest" href="manifest.json">
+<link id="touchIcon" rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Game Tracker">
 <meta name="mobile-web-app-capable" content="yes">
@@ -855,10 +855,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.11.0';
+const APP_VERSION = '1.12.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.12.0', 'New home-screen icon: a gold football with a blue live pulse line through it, and FANTASY in white italic letters with a blue underline across the top (replaces the old blue “GT”). The app’s name is unchanged. The app now uses a real install file (manifest) with proper PNG icons, so Android Chrome can install it as a real app, which should remove the little Chrome logo from the icon. To see the new icon: iPhone — delete the old icon, then in Safari tap Share → Add to Home Screen. Android — remove the old icon, then in Chrome tap ⋮ → Install app. Your saved team and settings are not affected. Nothing inside the app looks different.'],
   ['1.11.0', 'Injury letters from CBS: a bold red letter now shows next to a player, just like on CBS: Q (questionable), D (doubtful), O (out), IR (injured reserve), SUS (suspended). It slowly fades in and out. On the left team it sits after the NFL team, on the right team before the name. When CBS lists a player Out (or IR / suspended) for this week, his projection drops to 0, the win % is redone right away, and his name, team and logo are dimmed (the letter stays bright). This updates within about a minute or two of CBS posting it, instead of waiting for the next projections run. Tap a player before kickoff to see an INJURY note (what\u2019s hurt, CBS\u2019s status and expected return). The old \u201c% to play\u201d line is gone. If a long name plus the letter doesn\u2019t fit, the name is shortened with \u201c\u2026\u201d. Projections also refresh more often now (after injury reports Wed\u2013Fri, three times Saturday, and after the inactive lists on game days).'],
   ['1.10.1', 'Tap-open breakdown: touchdown and field-goal distances now read “1 yd, 31 yd” (each with its own yd; no Pass/Rush label, since every TD is scored by its distance). On a big day the list wraps to a second line instead of being cut off.'],
   ['1.10.0', 'Live players: a thin outline in the player’s position color (purple QB, cyan RB, green WR, pink TE, orange K, silver D/ST) now goes around a player’s half of the row while his game is on, with a soft band of light that slowly travels around it. The position square and the arrow sit on top of the outline. Starters get the moving light, bench players get the outline only, and the outline turns off while a row is opened. Tapping a row now shows every scoring bucket: for yards, a row of cells with the points each bucket pays (the bucket he’s in is lit, the next one fills as yards come in); every touchdown and field goal in its distance bucket; and the D/ST points-allowed buckets. The small “more yards” bar under a player hides while his row is open, since the breakdown shows it. While a matchup still has players left, finished players’ names and logos are slightly dimmed so the live ones stand out (their points stay bright).'],
@@ -3008,21 +3009,10 @@ function checkUpdate(reason){
 }
 setInterval(function(){ checkUpdate('timer'); }, 20000);
 
-/* ---------- single-file PWA: manifest + home-screen icon built at runtime ---------- */
-(function(){
-  try{
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="34" fill="#0d1626"/><text x="96" y="124" font-family="Helvetica,Arial,sans-serif" font-size="92" font-weight="bold" fill="#4f8dff" text-anchor="middle">GT</text></svg>';
-    const manifest = { name: 'Game Tracker', short_name: 'Tracker', start_url: location.pathname, display: 'standalone', background_color: '#060b16', theme_color: '#060b16', orientation: 'portrait',
-      icons: [{ src: 'data:image/svg+xml,' + encodeURIComponent(svg), sizes: '192x192', type: 'image/svg+xml', purpose: 'any' }] };
-    $('#manifestLink').setAttribute('href', URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' })));
-  }catch(e){}
-  try{
-    const c = document.createElement('canvas'); c.width = 180; c.height = 180; const x = c.getContext('2d');
-    x.fillStyle = '#0d1626'; x.fillRect(0, 0, 180, 180);
-    x.fillStyle = '#4f8dff'; x.font = 'bold 86px Helvetica, Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('GT', 90, 96);
-    $('#touchIcon').setAttribute('href', c.toDataURL('image/png'));
-  }catch(e){}
-})();
+/* ---------- home-screen icon + manifest (v1.12.0) ----------
+   Real files next to index.html: manifest.json (same name/short_name as before), apple-touch-icon.png (iPhone),
+   icon-192.png / icon-512.png / icon-maskable-512.png (Android). The old runtime blob manifest + "GT" canvas icon are gone:
+   Chrome on Android can only truly install (no Chrome badge on the icon) from a manifest file it can fetch, with PNG icons. */
 
 /* ---------- old saved box scores: keep this week and last week only ---------- */
 (function cleanup(){
