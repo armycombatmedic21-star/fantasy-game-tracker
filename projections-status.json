@@ -1,5 +1,5 @@
 {
- "at": "2026-11-14T19:57:41+00:00",
+ "at": "2026-11-14T23:00:37+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -10,7 +10,7 @@
    "requests": 4,
    "total_available": {
     "QB": "76",
-    "RB": "135",
+    "RB": "136",
     "WR": "224",
     "TE": "135"
    },
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 407,
-   "secs": 3.7,
+   "records": 405,
+   "secs": 3.5,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,32 +54,27 @@
     "TE": 646,
     "K": 157,
     "DST": 28,
-    "injury_flags": 255
+    "injury_flags": 254
    }
   },
   "espn": {
    "ok": true,
    "records": 355,
-   "secs": 0.4,
+   "secs": 0.6,
    "info": {
     "players": 1061,
     "kept": 355,
     "dropped": {
      "pos": 0,
-     "team": 334,
-     "no_week_proj": 372
+     "team": 335,
+     "no_week_proj": 371
     }
    }
   },
   "cbs": {
-   "ok": true,
-   "records": 147,
-   "secs": 27.2,
-   "info": {
-    "rostered": 191,
-    "calls": 5,
-    "no_projection": 44
-   }
+   "ok": false,
+   "error": "RuntimeError: worker live/rosters: no teams",
+   "secs": 37.9
   },
   "fp": {
    "ok": true,
@@ -87,64 +82,62 @@
   }
  },
  "checks": {
-  "players": 645,
+  "players": 644,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Chris Rodriguez Jr. JAX",
-  "Corey Kiner NE",
-  "J.J. McCarthy NYG",
-  "Justin Herbert LAC",
-  "Jordan Mason MIN",
-  "Malik Nabers NYG",
-  "Breece Hall NYJ",
-  "Matthew Stafford LA",
-  "DK Metcalf PIT",
-  "Jacoby Brissett ARI",
-  "Ollie Gordon II MIA",
-  "Woody Marks HOU",
+  "Travis Etienne NO",
   "Tony Pollard TEN",
+  "Geno Smith NYJ",
   "Deshaun Watson CLE",
-  "Jordan Love GB",
-  "Cam Ward TEN",
+  "Tyler Allgeier ARI",
+  "Drew Lock SEA",
+  "Kirk Cousins LV",
+  "Jakobi Meyers JAX",
+  "Rashee Rice KC",
+  "Adonai Mitchell NYJ",
   "Jameis Winston NYG",
-  "Nico Collins HOU",
-  "Omarion Hampton LAC",
-  "Drake London ATL",
-  "Daniel Jones IND",
-  "Harold Fannin Jr. CLE",
+  "Jordan Love GB",
   "C.J. Stroud HOU",
-  "Jordan Addison MIN",
-  "Garrett Wilson NYJ"
+  "Chase Brown CIN",
+  "Khalil Shakir BUF",
+  "Garrett Wilson NYJ",
+  "Jared Goff DET",
+  "DK Metcalf PIT",
+  "Zay Flowers BAL",
+  "Deebo Samuel Sr. SF",
+  "Ollie Gordon II MIA",
+  "Chris Rodriguez Jr. JAX",
+  "Emanuel Wilson SEA",
+  "Stefon Diggs WAS",
+  "Jordan Addison MIN"
  ],
- "fp_unmatched_5plus_count": 68,
- "scorecard": "week 10: 515 pre-kickoff projections saved",
+ "fp_unmatched_5plus_count": 65,
+ "scorecard": "week 10: 514 pre-kickoff projections saved",
  "consensus": {
-  "used": 345,
-  "fallback": 54,
-  "single_source_blend": 47,
-  "out_by_injury": 75,
-  "no_source_zero": 78,
-  "added_from_sites": 9,
+  "used": 344,
+  "fallback": 51,
+  "single_source_blend": 45,
+  "out_by_injury": 72,
+  "no_source_zero": 85,
+  "added_from_sites": 8,
   "added_4plus": [
-   "Andres Borregales NE K 6.8",
    "Carson Beck ARI QB 10.1",
-   "Kyle McCord MIA QB 10.8",
+   "Kyle McCord MIA QB 10.7",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 149,
-   "1": 58,
-   "2": 202,
-   "3": 101,
-   "4": 42
+   "0": 155,
+   "1": 53,
+   "2": 302,
+   "3": 42
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 645,
+ "players": 644,
  "spread_k": 1.35,
  "spread_rho": 0.06,
  "no_games_yet": 0
