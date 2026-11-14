@@ -28,6 +28,22 @@ def _png(w=8, h=8):
     return b'\x89PNG\r\n\x1a\n' + ch(b'IHDR', _st.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0)) + ch(b'IDAT', _zl.compress(raw)) + ch(b'IEND', b'')
 TINY_PNG = _png()
 LEAGUE_WEEKS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'league-weeks-2026.json')))
+# v1.11.0: CBS injury text (icons.injury + pro_status), same shape as the real live feed (checked Nov 13)
+INJ = {'Nico Collins': 'Groin: Questionable for Week 9 at LA Chargers',
+       'Woody Marks': 'Ankle: Doubtful for Week 9 vs. LA Chargers',
+       'Saquon Barkley': 'Knee: Out for Week 9 vs. NY Giants. Expected Return - Week 10',
+       'Harold Fannin Jr.': 'Hamstring: Questionable for Week 10 vs. Pittsburgh',
+       'Matthew Golden': 'Ankle: Out for Week 10 at Seattle. Expected Return - Week 11',
+       'Kenneth Walker III': 'Ankle: Out for Week 9 at Kansas City',
+       'Carnell Tate': 'Shoulder: Injured Reserve. Expected Return - Week 12'}
+def with_inj(d):
+    if not state.get('inj'): return d
+    for t in d['live_scoring']['teams']:
+        for p in t.get('players', []):
+            if p.get('fullname') in INJ:
+                p['icons'] = {'injury': INJ[p['fullname']]}
+                if p['fullname'] == 'Carnell Tate': p['pro_status'] = 'IR'
+    return d
 def route(r):
     u = r.request.url
     if state.get('net') == 'off' and not u.startswith(f'http://127.0.0.1:{PORT}/index.html'):   # v1.7.0 tests: phone offline
@@ -49,10 +65,10 @@ def route(r):
                 return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": {"live_scoring": {"period": wk, "teams": [
                     {"id": t[0], "pts": t[1], "opp_team_id": t[2], "players": [{"id": "b" + t[0], "status": "Reserve", "fpts": t[3]}]} for t in LEAGUE_WEEKS[str(wk)]]}}})
             return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": F.build_future(wk)})
-        return r.fulfill(json={"ok": True, "source": "cbs", "feed": "league/scoring/live", "at": int(time.time() * 1000) - 20000, "data": F.build_live()})
+        return r.fulfill(json={"ok": True, "source": "cbs", "feed": "league/scoring/live", "at": int(time.time() * 1000) - 20000, "data": with_inj(F.build_live())})
     if 'workers.dev/rosters' in u:   # v1.5.2: rosters feed mirrors the live feed's lineup (lineup-change cases: scratchpad test_ros.py)
         wk = int(u.split('week=')[1].split('&')[0]) if 'week=' in u else 9
-        src = F.build_live() if wk == 9 else F.build_future(wk)
+        src = with_inj(F.build_live()) if wk == 9 else F.build_future(wk)
         rs = {'Active': 'A', 'Reserve': 'RS', 'Injured': 'I'}
         teams = [{'id': t['id'], 'players': [{**p, 'roster_status': rs.get(p.get('status'), 'RS')} for p in t.get('players', [])]} for t in src['live_scoring']['teams']]
         return r.fulfill(json={"ok": True, "source": "cbs", "at": int(time.time() * 1000), "data": {"rosters": {"period": str(wk), "teams": teams}}})
@@ -586,6 +602,94 @@ with sync_playwright() as pw:
         page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(400); page.screenshot(path=f'{SHOTS}/v172-match.png')
     check(f'[{tag}] no page errors', not errs, errs)
     state['fb'] = 'off'
+    ctx.close()
+    # ---------- v1.11.0: CBS injury letters (Q, D, O, IR, SUS), Out -> 0 + dimmed, INJURY panel ----------
+    tag = 'v1.11'
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True,
+                         user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')
+    ctx.route('**/*', route)
+    page = ctx.new_page()
+    errs = []
+    page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e) + ' ' + str(getattr(e, 'stack', '') or '')[:400]))
+    state.update({'net': 'ok', 'worker': 'ok', 'lp': 'p1', 'gordon_td': False, 'gordon_rush': 46, 'gordon_fl': 0, 'det_mia': (13, 10), 'inj': False})
+    page.goto(f'http://127.0.0.1:{PORT}/index.html'); page.wait_for_timeout(300)
+    page.evaluate("() => { localStorage.clear(); localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1'); }")
+    page.reload(); page.wait_for_timeout(800)
+    wait_fresh(page); page.wait_for_timeout(2500)
+    mk = page.evaluate("Object.keys(window.__fgt.ENG.res.m).find(k => k.split('-').includes('11') || k === 'm5-11')")
+    wa0 = page.evaluate("(k) => window.__fgt.ENG.res.m[k].wa", mk)
+    check(f'[{tag}] no letters without CBS injuries', page.evaluate("document.querySelectorAll('.ijt').length") == 0)
+    # unit cases (current week = 9 in the test feed)
+    cases = page.evaluate("""() => { const f = window.__fgt.cbsInj, P = (t, ps) => ({ cinj: t, cps: ps || 'A' });
+        const g = (x) => x ? [x.code, x.out, x.thisWk, x.body, x.line, x.ret].join('|') : null;
+        return [g(f(P('Wrist: Out for Week 9 at Green Bay. Expected Return - Week 10'))), g(f(P('Limited Practice on Friday. Questionable for Week 9 at Detroit'))),
+                g(f(P('Concussion: Questionable for Week 10 vs. New Orleans'))), g(f(P('Calf: Doubtful for Week 9 vs. Minnesota'))),
+                g(f(P('', 'IR'))), g(f(P('Injured Reserve. Expected Return - Week 13', 'IR'))), g(f(P('Suspended'))), g(f(P('Knee: Day-to-Day'))), g(f(P(''))),
+                g(f(P('Ankle: Out for Week 10 at Seattle. Expected Return - Week 11')))]; }""")
+    want = ['O|true|true|Wrist|Out for Week 9 at Green Bay|Week 10', 'Q|false|true||Limited Practice on Friday. Questionable for Week 9 at Detroit|',
+            'Q|false|false|Concussion|Questionable for Week 10 vs. New Orleans|', 'D|false|true|Calf|Doubtful for Week 9 vs. Minnesota|',
+            'IR|true|true||Injured Reserve|', 'IR|true|true||Injured Reserve|Week 13', 'SUS|true|true||Suspended|', None, None,
+            'O|false|false|Ankle|Out for Week 10 at Seattle|Week 11']
+    check(f'[{tag}] reads CBS injury text: Q / D / O / IR / SUS, week, body part, expected return', cases == want, list(zip(cases, want)))
+    past = page.evaluate("() => { const S = window.__fgt.S, w = S.week; S.week = 8; const x = window.__fgt.cbsInj({ cinj: 'Knee: Out for Week 9' }); S.week = w; return x; }")
+    check(f'[{tag}] letters only on the current week', past is None, past)
+    # turn CBS injuries on (both feeds) and open my matchup
+    state['inj'] = True
+    page.reload(); page.wait_for_timeout(800)
+    wait_fresh(page); page.wait_for_timeout(2500)
+    page.click('.mc.mine'); page.wait_for_timeout(1500)
+    info = page.evaluate("""() => [...document.querySelectorAll('.pside')].filter(s => s.querySelector('.pnm')).map(s => {
+        const n = s.querySelector('.pnm'), t = n.querySelector('.ijt');
+        return { nm: (n.querySelector('.nmx') || n).childNodes[0].textContent, r: s.classList.contains('r'), io: s.classList.contains('io'), code: t ? t.textContent : '',
+                 first: !!t && n.firstElementChild === t, last: !!t && n.lastElementChild === t, pj: (s.querySelector('.ppt small') || {}).textContent || '', pts: s.querySelector('.ppt b').textContent }; })""")
+    by = {x['nm']: x for x in info}
+    got = {k: by[k]['code'] for k in by if by[k]['code']}
+    check(f'[{tag}] letters like CBS on the matchup page', got == {'W. Marks': 'D', 'M. Golden': 'O', 'H. Fannin Jr.': 'Q', 'C. Tate': 'IR', 'K. Walker III': 'O', 'N. Collins': 'Q', 'S. Barkley': 'O'}, got)
+    check(f'[{tag}] left side: letter after the team; right side: before the name', by['W. Marks']['last'] and not by['W. Marks']['r'] and by['N. Collins']['first'] and by['N. Collins']['r'] and by['S. Barkley']['first'], (by['W. Marks'], by['N. Collins']))
+    st = page.evaluate("() => { const t = document.querySelector('.ijt'), c = getComputedStyle(t); return [c.color, c.fontWeight, c.animationName, c.animationDuration, c.borderTopWidth, c.backgroundColor]; }")
+    check(f'[{tag}] bold red letter (#E62626), no box, slow 3.2 s pulse', st == ['rgb(230, 38, 38)', '800', 'ijs', '3.2s', '0px', 'rgba(0, 0, 0, 0)'], st)
+    check(f'[{tag}] Out this week: dimmed + 0.0 (Barkley)', by['S. Barkley']['io'] and by['S. Barkley']['pj'] == '0.0', by['S. Barkley'])
+    dim = page.evaluate("() => { const s = [...document.querySelectorAll('.pside.io')].find(x => x.textContent.includes('Barkley')); return [getComputedStyle(s.querySelector('.nmx')).opacity, getComputedStyle(s.querySelector('.nfl')).opacity, getComputedStyle(s.querySelector('.ijt')).opacity > 0.4]; }")
+    check(f'[{tag}] dimmed name + logo 72%, letter not dimmed', dim[0] == '0.72' and dim[1] == '0.72' and dim[2], dim)
+    check(f'[{tag}] next week\'s Out / Q (bye-week style) shows the letter but keeps the projection', not by['M. Golden']['io'] and float(by['M. Golden']['pj'] or 0) > 0 and not by['H. Fannin Jr.']['io'] and float(by['H. Fannin Jr.']['pj'] or 0) > 0, (by['M. Golden'], by['H. Fannin Jr.']))
+    check(f'[{tag}] Q / D keep their projection', not by['W. Marks']['io'] and float(by['W. Marks']['pj'] or 0) > 0 and not by['N. Collins']['io'], (by['W. Marks'], by['N. Collins']))
+    check(f'[{tag}] playing with stats: an Out tag never zeroes real points (Walker)', not by['K. Walker III']['io'] and by['K. Walker III']['pts'] == '15', by['K. Walker III'])
+    check(f'[{tag}] IR player: letter IR + dimmed', by['C. Tate']['io'], by['C. Tate'])
+    check(f'[{tag}] untagged names unchanged', page.evaluate("[...document.querySelectorAll('.pnm')].filter(n => !n.querySelector('.ijt')).every(n => !n.classList.contains('hasij'))"))
+    bid = page.evaluate("() => { const m = window.__fgt.weekModel(); for (const t of Object.values(m.teams)) for (const p of t.lineup.concat(t.bench)) if (p && p.name === 'Saquon Barkley') return p.id; }")
+    eb = page.evaluate("(id) => { const r = window.__fgt.ENG.res.p[id]; const m = window.__fgt.weekModel(); let pl; for (const t of Object.values(m.teams)) for (const p of t.lineup.concat(t.bench)) if (p && p.id === id) pl = p; const q = window.__fgt.engState(pl, { state: 'pre' }); return [r ? r[0] : null, q.mode, q.pts, q.bye]; }", bid)
+    check(f'[{tag}] engine: Out player = 0 and never in a best lineup', eb == [0, 'final', 0, True], eb)
+    wa1 = page.evaluate("(k) => window.__fgt.ENG.res.m[k].wa", mk)
+    check(f'[{tag}] win % redone without him (Dallas up)', wa1 > wa0, (wa0, wa1))
+    sync = page.evaluate("() => [...document.querySelectorAll('.ijt')].map(e => (e.getAnimations()[0] || {}).startTime)")
+    check(f'[{tag}] all letters pulse together (one clock)', len(sync) == 7 and all(x == 0 for x in sync), sync)
+    fit = page.evaluate("() => [...document.querySelectorAll('.pnm.hasij')].every(n => { const s = n.closest('.pside').getBoundingClientRect(), t = n.querySelector('.ijt').getBoundingClientRect(); return n.scrollWidth <= n.clientWidth + 1 && t.left >= s.left - 1 && t.right <= s.right + 1 && n.getBoundingClientRect().height < 26; })")
+    check(f'[{tag}] iPhone: every name + letter fits on one line', fit)
+    # open Barkley's row: INJURY block, 0.0, no "% to play"
+    rows = page.locator('.plist .prow')
+    for i in range(rows.count()):
+        if 'Barkley' in rows.nth(i).inner_text():
+            rows.nth(i).click(); page.wait_for_timeout(700); break
+    det = page.inner_text('.plist .detail') if page.locator('.plist .detail').count() else ''
+    check(f'[{tag}] INJURY panel: body part, CBS status, expected return', 'INJURY' in det and 'Knee · Out for Week 9 vs. NY Giants' in det and 'Expected return: Week 10' in det, det)
+    check(f'[{tag}] panel projection 0.0 for an Out player', '0.0' in det and 'Floor 0 · Ceiling 0' in det, det)
+    check(f'[{tag}] no "% to play" anywhere', '% to play' not in page.inner_text('#view'))
+    rows.nth(i).click(); page.wait_for_timeout(500)
+    # Android sizes: letter stays inside, one line
+    for w in (384, 360):
+        page.set_viewport_size({'width': w, 'height': 800}); page.wait_for_timeout(600)
+        check(f'[{tag}] {w} px: every name + letter fits on one line', page.evaluate("() => [...document.querySelectorAll('.pnm.hasij')].every(n => { const s = n.closest('.pside').getBoundingClientRect(), t = n.querySelector('.ijt').getBoundingClientRect(); return t.left >= s.left - 1 && t.right <= s.right + 1 && n.getBoundingClientRect().height < 26; })"))
+    page.set_viewport_size({'width': 393, 'height': 852}); page.wait_for_timeout(300)
+    page.emulate_media(reduced_motion='reduce'); page.wait_for_timeout(200)
+    check(f'[{tag}] Reduce Motion: no pulse', page.evaluate("getComputedStyle(document.querySelector('.ijt')).animationName") == 'none')
+    page.emulate_media(reduced_motion='no-preference')
+    # the letter goes away when CBS clears it
+    state['inj'] = False
+    page.evaluate("() => { window.__fgt.S.cbs = {}; }")
+    page.reload(); page.wait_for_timeout(800); wait_fresh(page); page.wait_for_timeout(2500)
+    if not page.locator('.plist').count(): page.click('.mc.mine'); page.wait_for_timeout(1200)   # reopens on the matchup it was on
+    check(f'[{tag}] cleared on CBS -> letter gone, not dimmed', page.evaluate("document.querySelectorAll('.ijt, .pside.io').length") == 0)
+    check(f'[{tag}] no page errors', not errs, errs)
     ctx.close()
     # logo cache helper (sw.js): a CBS logo that can't be copied is still there offline, from the phone's cache
     ctx = br.new_context(viewport={'width': 393, 'height': 852}, service_workers='allow')

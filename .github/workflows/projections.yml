@@ -3,10 +3,17 @@
 name: Projections
 on:
   schedule:
+    # v1.11.0 (Wes, Nov 13): more runs around injury news and inactive lists. Odd minutes: GitHub delays :00 runs the most.
     - cron: "0 13 * * *"      # every day 8:00 AM ET
+    - cron: "47 21 * * 3,4,5" # Wed-Fri 4:47 PM ET (after the daily injury reports; Friday = final game statuses)
+    - cron: "17 15 * * 6"     # Saturday 10:17 AM ET
+    - cron: "17 19 * * 6"     # Saturday 2:17 PM ET
+    - cron: "17 0 * * 0"      # Saturday 7:17 PM ET (Sunday 00:17 UTC)
     - cron: "0 16 * * 0"      # Sunday 11:00 AM ET (after most injury news, before 1 PM kickoffs)
+    - cron: "47 16 * * 0"     # Sunday 11:47 AM ET (1 PM inactives come ~11:30)
     - cron: "30 17 * * 0"     # Sunday 12:30 PM ET (1 PM inactives are out)
-    - cron: "30 23 * * 1,4"   # Monday + Thursday 6:30 PM ET (before the night games)
+    - cron: "7 20 * * 0"      # Sunday 3:07 PM ET (4:05 / 4:25 PM inactives come ~2:35-2:55)
+    - cron: "7 0 * * 1,2,5"   # Sun / Mon / Thu 7:07 PM ET (Mon/Tue/Fri 00:07 UTC; night-game inactives come ~6:45-6:50)
   push:
     branches: [main]
     paths: [model/fgt_model.py, model/fetch_fp.py, model/fetch_sources.py, model/run_projections.py, model/grade.py, .github/workflows/projections.yml, run-now.txt]

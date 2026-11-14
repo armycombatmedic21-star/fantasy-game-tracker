@@ -789,6 +789,20 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .dcol.bx .bc{animation:bcin .26s ease-out backwards;animation-delay:calc(var(--i) * 38ms + var(--g) * 70ms)}
 .dcol.bx .bc i{animation:bfill .55s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--g) * 70ms + 260ms)}
 @media (prefers-reduced-motion: reduce){.dcol.bx .bc,.dcol.bx .bc i{animation:none}}
+
+/* ---- v1.11.0 (Wes, Nov 13): CBS injury letters (Q, D, O, IR, SUS) — bold red letter, no box, slow gentle pulse ---- */
+.ijt{display:inline-block;flex:none;color:#e62626;font-weight:800;font-size:14px;line-height:1;vertical-align:1px;animation:ijs 3.2s ease-in-out infinite}
+.pnm > .ijt:last-child{margin-left:7px}
+.pnm > .ijt:first-child{margin-right:7px}
+@keyframes ijs{0%,100%{opacity:1}50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){ .ijt{animation:none} }
+.pnm.hasij{display:flex;align-items:baseline;white-space:nowrap;min-width:0;max-width:100%}
+.pside.r .pnm.hasij{justify-content:flex-end}
+.pnm.hasij .nmx{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pnm.hasij small{flex:none}
+.pside.io .pnm .nmx,.pside.io .pnm small,.pside.io .nfl{opacity:.72}   /* Out / IR / Suspended: dimmed like finished players; the letter stays bright */
+.ijb .ijh{color:#ff6b72;font-weight:800;letter-spacing:.6px}
+.ijb .dsub span{white-space:normal;overflow:visible;text-overflow:clip}
 </style>
 </head>
 <body>
@@ -841,10 +855,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.10.1';
+const APP_VERSION = '1.11.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.11.0', 'Injury letters from CBS: a bold red letter now shows next to a player, just like on CBS: Q (questionable), D (doubtful), O (out), IR (injured reserve), SUS (suspended). It slowly fades in and out. On the left team it sits after the NFL team, on the right team before the name. When CBS lists a player Out (or IR / suspended) for this week, his projection drops to 0, the win % is redone right away, and his name, team and logo are dimmed (the letter stays bright). This updates within about a minute or two of CBS posting it, instead of waiting for the next projections run. Tap a player before kickoff to see an INJURY note (what\u2019s hurt, CBS\u2019s status and expected return). The old \u201c% to play\u201d line is gone. If a long name plus the letter doesn\u2019t fit, the name is shortened with \u201c\u2026\u201d. Projections also refresh more often now (after injury reports Wed\u2013Fri, three times Saturday, and after the inactive lists on game days).'],
   ['1.10.1', 'Tap-open breakdown: touchdown and field-goal distances now read “1 yd, 31 yd” (each with its own yd; no Pass/Rush label, since every TD is scored by its distance). On a big day the list wraps to a second line instead of being cut off.'],
   ['1.10.0', 'Live players: a thin outline in the player’s position color (purple QB, cyan RB, green WR, pink TE, orange K, silver D/ST) now goes around a player’s half of the row while his game is on, with a soft band of light that slowly travels around it. The position square and the arrow sit on top of the outline. Starters get the moving light, bench players get the outline only, and the outline turns off while a row is opened. Tapping a row now shows every scoring bucket: for yards, a row of cells with the points each bucket pays (the bucket he’s in is lit, the next one fills as yards come in); every touchdown and field goal in its distance bucket; and the D/ST points-allowed buckets. The small “more yards” bar under a player hides while his row is open, since the breakdown shows it. While a matchup still has players left, finished players’ names and logos are slightly dimmed so the live ones stand out (their points stay bright).'],
   ['1.9.0', 'Player rows: the game clock is now a small pill with a green dot and white time (no game score). Before kickoff it shows the start time and opponent, and after the game it says “Final”. When a player’s team has the ball inside the 20, a red RED ZONE pill shows next to the clock; after a touchdown a gold TOUCHDOWN pill shows there for 3 minutes (it shortens to RZ / TD if a phone is too narrow). Team scores show “–” until a starter in that matchup kicks off, then both teams switch to their scores together; until then the player projections are bright, then they fade to gray. Card colors you picked: starters card solid dark (no shading), bench and IR cards solid, top matchup card a bit darker with less blue shading, softer color inside the position pills. Your scoreboard card has the “My matchup” diamond and the same border. Card titles are bigger and centered; the Bench title shows each team’s bench total and says “Tiebreaker only”.'],
@@ -1217,7 +1232,8 @@ if(S.curWeek){
 // the rosters feed, cut to what the app reads (keeps the phone copy small)
 function rosCompact(d){
   return { period: d.period, teams: d.teams.map(function(t){ return { id: t.id, players: (t.players || []).map(function(p){
-    return { id: p.id, fullname: p.fullname, position: p.position, roster_pos: p.roster_pos, roster_status: p.roster_status, pro_team: p.pro_team }; }) }; }) };
+    return { id: p.id, fullname: p.fullname, position: p.position, roster_pos: p.roster_pos, roster_status: p.roster_status, pro_team: p.pro_team,
+      pro_status: p.pro_status, icons: p.icons && p.icons.injury ? { injury: p.icons.injury } : undefined }; }) }; }) };
 }
 const rosSaved = {};
 function saveRos(w){
@@ -1260,11 +1276,14 @@ function weekModel(){
         if(st === 'Active') prev.status = 'Active';
         else if(prev.status === 'Injured' && st) prev.status = st;
         if(prev.cbsPts == null && p.fpts !== '' && p.fpts != null) prev.cbsPts = num(p.fpts);
+        if(!prev.cinj && p.icons && p.icons.injury) prev.cinj = String(p.icons.injury);
+        if(p.pro_status === 'IR') prev.cps = 'IR';
         return;
       }
       const pos = String(p.position || '').toUpperCase();
       const pl = { id: pid, name: trim(p.fullname), pos: pos === 'D' || pos === 'DEF' ? 'DST' : pos, rpos: String(p.roster_pos || '').toUpperCase(), status: st, ir: st === 'Injured',
-                   nfl: nflAb(p.pro_team), cbsPts: (p.fpts === '' || p.fpts == null) ? null : num(p.fpts), cbsStats: p.stats_period || '', gi: p.game_info || {}, ord: list.length };
+                   nfl: nflAb(p.pro_team), cbsPts: (p.fpts === '' || p.fpts == null) ? null : num(p.fpts), cbsStats: p.stats_period || '', gi: p.game_info || {}, ord: list.length,
+                   cinj: (p.icons && p.icons.injury) ? String(p.icons.injury) : '', cps: p.pro_status || '' };
       seen[pid] = pl; list.push(pl);
     });
     // v1.5.2 (Wes, Nov 10): CBS's live feed keeps last week's lineup until CBS rolls the week, but the rosters feed
@@ -1274,10 +1293,13 @@ function weekModel(){
       const want = {};
       rt.players.forEach(function(rp){
         const pid = String(rp.id), st = ROS_ST[rp.roster_status] || 'Reserve'; want[pid] = 1;
-        if(seen[pid]){ seen[pid].status = st; seen[pid].ir = st === 'Injured'; return; }
+        if(seen[pid]){ seen[pid].status = st; seen[pid].ir = st === 'Injured';
+          if('pro_status' in rp){ seen[pid].cinj = (rp.icons && rp.icons.injury) ? String(rp.icons.injury) : ''; seen[pid].cps = rp.pro_status || ''; }   // v1.11.0
+          return; }
         const pos = String(rp.position || '').toUpperCase();
         const pl = { id: pid, name: trim(rp.fullname), pos: pos === 'D' || pos === 'DEF' ? 'DST' : pos, rpos: String(rp.roster_pos || '').toUpperCase(), status: st, ir: st === 'Injured',
-                     nfl: nflAb(rp.pro_team), cbsPts: null, cbsStats: '', gi: {}, ord: list.length };
+                     nfl: nflAb(rp.pro_team), cbsPts: null, cbsStats: '', gi: {}, ord: list.length,
+                     cinj: (rp.icons && rp.icons.injury) ? String(rp.icons.injury) : '', cps: rp.pro_status || '' };
         seen[pid] = pl; list.push(pl);
       });
       list = list.filter(function(p){ return want[p.id]; });   // dropped players leave the roster
@@ -1386,11 +1408,41 @@ function playerLive(pl, teamId){
 // v1.9.0 (Wes, Nov 12): a matchup has begun once any starter on either team is in a game that has kicked off
 // (bye, Out, IR and Suspended starters don't count). Until then both team scores show "–". Past weeks always show numbers.
 const OUTISH = /^(out|ir|injured reserve|suspended|pup|nfi)/i;
+/* v1.11.0 (Wes, Nov 13): CBS's own injury designation, from the live/rosters feeds' icons.injury text, e.g.
+   "Wrist: Out for Week 10 at Green Bay. Expected Return - Week 11" (+ pro_status "IR"). Letters like CBS: Q, D, O, IR, SUS.
+   CBS's week numbers match ours. A player on a bye can carry NEXT week's tag ("Questionable for Week 11"): the letter
+   still shows (like CBS), but only an Out for THIS week (or IR / Suspended) zeroes him. Current week only. */
+function cbsInj(p){
+  if(!p || !isCurrentWeek()) return null;
+  const s = String(p.cinj || '').trim(), ir = p.cps === 'IR';
+  if(!s && !ir) return null;
+  const c = s.indexOf(':'), body = c > 0 && c < 40 ? s.slice(0, c).trim() : '', txt = (body ? s.slice(c + 1) : s).trim();
+  const rm = /Expected Return\s*-\s*(Week\s*\d+)/i.exec(txt);
+  const line = txt.replace(/\.?\s*Expected Return\s*-\s*Week\s*\d+\.?/i, '').trim().replace(/\.$/, '');
+  let code = '';
+  if(ir || /injured reserve/i.test(line)) code = 'IR';
+  else if(/suspen/i.test(line)) code = 'SUS';
+  else if(/\bout\b/i.test(line)) code = 'O';
+  else if(/doubtful/i.test(line)) code = 'D';
+  else if(/questionable/i.test(line)) code = 'Q';
+  if(!code) return null;
+  const wm = /\bweek\s*(\d+)/i.exec(line), thisWk = !wm || num(wm[1]) === num(S.curWeek);
+  return { code: code, body: body, line: line || (code === 'IR' ? 'Injured Reserve' : ''), ret: rm ? rm[1].replace(/\s+/, ' ') : '', thisWk: thisWk,
+           out: code === 'IR' || code === 'SUS' || (code === 'O' && thisWk) };
+}
+// Out for this week and not playing: game not started, or started with no stats for him (inactive). Once he has stats
+// or his game is final, his real points rule.
+function liveHas(L){ const s = L && L.s; return !!(s && (s.py || s.ry || s.cy || s.rcar || s.rec || (s.ptd || []).length || (s.rtd || []).length || (s.ctd || []).length || (s.fg || []).length || s.xp)); }
+function cbsGone(p, L){
+  const ci = cbsInj(p); if(!(ci && ci.out)) return false;
+  return !L || L.state === 'pre' || L.state === 'bye' || (L.state === 'in' && !(L.pts > 0) && !liveHas(L));
+}
 function begun(t, L){
   if(!t || !L) return false;
   if(!isCurrentWeek()) return !!L.any;
   return (L.rows || []).some(function(R, i){
     const p = t.lineup[i]; if(!R || !p || !(R.state === 'in' || R.state === 'post')) return false;
+    const ci = cbsInj(p); if(ci && ci.out) return false;   // v1.11.0: CBS Out / IR / Suspended doesn't count
     const r = projFor(p); return !(r && OUTISH.test(r.inj || ''));
   });
 }
@@ -1535,7 +1587,7 @@ function render(){
   else if(S.view === 'chat') html = chatView();
   else html = homeView();
   morph(v, html);
-  if(S.view === 'match'){ fitPills(); lvFrames(); }
+  if(S.view === 'match'){ fitPills(); lvFrames(); ijSync(); }
   lightTabs(S.view);
   paintRecBadge();
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
@@ -1693,13 +1745,29 @@ function side(p, L, r){
   const st = L.state, cls = st === 'in' ? 'live' : st === 'post' ? 'fin' : '';
   const show = (st === 'pre' || st === 'bye' || L.pts == null) ? '–' : L.pts;
   const zero = !(L.pts > 0) ? ' zero' : '';
-  const ep = (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null;
-  return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + (st === 'post' && DIMF ? ' fn' : '') + '"' + (st === 'in' ? ' data-pos="' + esc(p.pos) + '"' : '') + '>' +
+  const gone = cbsGone(p, L), ci = cbsInj(p);
+  const ep0 = (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && gone ? [0, 0, 0] : ep0;
+  return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + (st === 'post' && DIMF ? ' fn' : '') + (gone ? ' io' : '') + '"' + (st === 'in' ? ' data-pos="' + esc(p.pos) + '"' : '') + '>' +
     '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj' + (PJB ? ' pjb' : '') + '">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
-    '<span class="pnm">' + esc(p.pos === 'DST' ? p.name : shortName(p.name)) + '<small>' + esc(p.nfl) + '</small></span>' +
+    pnmHtml(p, ci, r) +
     (L.evt && L.evt.kind !== 'td' ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
     pillRow(L, cls) + hot(p, L) + '</div>';
 }
+// v1.11.0 (Wes, Nov 13): CBS injury letter in red (#E62626), slow pulse; left side after the team, right side before the
+// name (toward the middle). If name + team + letter don't fit, the name is cut with "…" (untagged names wrap like before).
+function pnmHtml(p, ci, r){
+  const nm = esc(p.pos === 'DST' ? p.name : shortName(p.name)), tm = '<small>' + esc(p.nfl) + '</small>';
+  if(!ci) return '<span class="pnm">' + nm + tm + '</span>';
+  const tag = '<span class="ijt">' + ci.code + '</span>';
+  return '<span class="pnm hasij">' + (r ? tag : '') + '<span class="nmx">' + nm + '</span>' + tm + (r ? '' : tag) + '</span>';
+}
+function injBlock(p){
+  const ci = cbsInj(p); if(!ci) return '';
+  return '<div class="grp ijb"><div class="dl"><span class="ijh">INJURY</span></div><div class="dsub"><span>' + esc((ci.body ? ci.body + ' · ' : '') + ci.line) + '</span></div>' +
+    (ci.ret ? '<div class="dsub"><span>Expected return: ' + esc(ci.ret) + '</span></div>' : '') + '</div>';
+}
+// all letters pulse on one clock (like the live frames), so they fade together
+function ijSync(){ document.querySelectorAll('#view .ijt').forEach(function(e){ try{ (e.getAnimations ? e.getAnimations() : []).forEach(function(a){ if(a.startTime !== 0) a.startTime = 0; }); }catch(x){} }); }
 // v1.9.0 (Wes, Nov 12): clock pill (green dot + white quarter/time, no game score; before kickoff the start time and
 // opponent; "Final" after) and, on the inside, a RED ZONE (red) or TOUCHDOWN (gold, 3 min) pill. If the words don't fit,
 // fitPills() switches that row to RZ / TD.
@@ -1848,12 +1916,15 @@ function bkCol(p, L){
 function dcol(p, L){
   if(!p || !L) return '<div class="dcol"></div>';
   let h = '';
-  if(L.state === 'bye') return '<div class="dcol"><div class="grp"><div class="dl"><span>' + (p.ir ? 'INJURED RESERVE' : 'BYE WEEK') + '</span>' + pv(0) + '</div><div class="dsub"><span>No game this week</span></div></div></div>';
+  if(L.state === 'bye') return '<div class="dcol"><div class="grp"><div class="dl"><span>' + (p.ir ? 'INJURED RESERVE' : 'BYE WEEK') + '</span>' + pv(0) + '</div><div class="dsub"><span>No game this week</span></div></div>' + injBlock(p) + '</div>';
   if(L.state === 'pre' || !L.sc){
-    const ep = isCurrentWeek() ? engPlayer(p.id) : null, r = isCurrentWeek() ? projFor(p) : null;
+    const ep0 = isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && cbsGone(p, L) ? [0, 0, 0] : ep0, r = isCurrentWeek() ? projFor(p) : null, ib = injBlock(p);
     let x = '<div class="grp"><div class="dl"><span>' + (ep ? 'PROJECTED' : 'NOT STARTED') + '</span>' + pv(ep ? ep[0].toFixed(1) : '–', ep ? 'proj' : '') + '</div>' +
       (ep ? '<div class="dsub"><span>Floor ' + Math.round(ep[1]) + ' · Ceiling ' + Math.round(ep[2]) + '</span></div>' : '') + '<div class="dsub"><span>Kicks off ' + esc(L.kick) + '</span></div></div>';
-    if(r && (r.inj || (r.f && r.f.length) || r.src)) x += '<div class="grp"><div class="dsub"><span class="cbsl">' + esc([r.inj ? r.inj + (r.pp < 1 ? ' · ' + Math.round(r.pp * 100) + '% to play' : '') : ''].concat(r.f || []).concat(r.src ? ['Source: ' + r.src] : []).filter(Boolean).join(' · ')) + '</span></div></div>';
+    // v1.11.0 (Wes): CBS's INJURY block when CBS lists him; no "% to play" anywhere
+    x += ib;
+    const extra = [ib ? '' : (r && r.inj) || ''].concat((r && r.f) || []).concat(r && r.src ? ['Source: ' + r.src] : []).filter(Boolean);
+    if(extra.length) x += '<div class="grp"><div class="dsub"><span class="cbsl">' + esc(extra.join(' · ')) + '</span></div></div>';
     return '<div class="dcol">' + x + '</div>';
   }
   if(L.state === 'in' || L.state === 'post') return bkCol(p, L);
@@ -3314,6 +3385,8 @@ function engState(pl, L){
   const r = projFor(pl);
   const q = { pid: pl.id, key: r ? r.k : '', pos: pl.pos, nfl: nvTeam(pl.nfl), wr1: !!(r && r.wr1), mode: 'pre' };
   if(!r) q.mode = 'none';
+  // v1.11.0: CBS lists him Out / IR / Suspended for this week -> 0, treated like a bye (never in a best lineup)
+  if(cbsGone(pl, L)){ q.mode = 'final'; q.pts = 0; q.bye = true; q.out = true; return q; }
   if(!L) return q;
   if(L.state === 'bye'){ q.mode = 'final'; q.pts = 0; q.bye = true; return q; }
   if(L.state === 'post'){ q.mode = 'final'; q.pts = L.pts || 0; return q; }
@@ -3634,7 +3707,7 @@ var chatHook = function(){ placePane(); paintBadge(); };
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
+window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){
