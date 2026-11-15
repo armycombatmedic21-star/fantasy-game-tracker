@@ -23,6 +23,7 @@ Miami (team 6) made no lineup changes after Nov 12, 11:40 AM.
 | Nov 12, 11:39 AM | Miami drops Lane (3 min after the trade), adds K Brandon McManus | CBS add/drop report |
 | Nov 12, 4:21 PM | Jacksonville re-adds Lane (drops Deshaun Watson) | CBS add/drop report |
 | Nov 12, 5:06 PM | Jacksonville: Lane activated, Jordan Mason benched | CBS lineup log |
+| Nov 12, 10:15 PM | Wes messages commissioner Dale (Messenger) with a screenshot showing Lane in Jacksonville's lineup; says Jacksonville is "throwing the game" | Wes's Messenger screenshot |
 | Nov 13, 5:17 PM | RotoWire/ESPN: Pickens (hamstring) **has no designation** for Sunday; practiced fully Friday. Same note on CBS's Pickens page ("Clear for return in Week 10") | ESPN news feed timestamp; CBS player page |
 | Nov 14, 6:40 PM | Jacksonville: **Pickens activated**, Lane benched | CBS lineup log |
 | Nov 15, 9:33 AM | Our capture: Pickens starting (flex), Lane on bench | `history/h2h-w10.json` (CBS feed via our app) |
