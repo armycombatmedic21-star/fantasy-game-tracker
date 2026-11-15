@@ -1,5 +1,5 @@
 {
- "at": "2026-11-15T06:24:08+00:00",
+ "at": "2026-11-15T14:29:19+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 410,
-   "secs": 3.8,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 28,
-    "injury_flags": 254
+    "injury_flags": 249
    }
   },
   "espn": {
    "ok": true,
-   "records": 358,
+   "records": 360,
    "secs": 0.5,
    "info": {
     "players": 1061,
-    "kept": 358,
+    "kept": 360,
     "dropped": {
      "pos": 0,
-     "team": 327,
-     "no_week_proj": 376
+     "team": 326,
+     "no_week_proj": 375
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 147,
-   "secs": 30.5,
+   "records": 148,
+   "secs": 36.6,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 44
+    "no_projection": 43
    }
   },
   "fp": {
@@ -92,51 +92,51 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Javonte Williams DAL",
-  "Shedeur Sanders CLE",
-  "Chris Rodriguez Jr. JAX",
-  "Matthew Stafford LA",
-  "Denzel Boston CLE",
-  "DK Metcalf PIT",
-  "DeMario Douglas NE",
-  "Ashton Jeanty LV",
-  "Drew Lock SEA",
-  "Jameis Winston NYG",
+  "Zay Flowers BAL",
+  "Emmett Johnson KC",
+  "Jordan Mason MIN",
   "Kirk Cousins LV",
-  "A.J. Brown NE",
-  "Rachaad White WAS",
-  "Mike Gesicki CIN",
-  "Jadarian Price SEA",
-  "Tony Pollard TEN",
-  "Quinshon Judkins CLE",
-  "Woody Marks HOU",
-  "Jakobi Meyers JAX",
-  "Ladd McConkey LAC",
-  "Deebo Samuel Sr. SF",
-  "Zach Charbonnet SEA",
+  "Chase Brown CIN",
   "Braelon Allen NYJ",
-  "Corey Kiner NE",
-  "J.J. McCarthy NYG"
+  "Jadarian Price SEA",
+  "Shedeur Sanders CLE",
+  "Ollie Gordon II MIA",
+  "Khalil Shakir BUF",
+  "Travis Etienne NO",
+  "Breece Hall NYJ",
+  "A.J. Brown NE",
+  "Jameis Winston NYG",
+  "Adonai Mitchell NYJ",
+  "Blake Corum LA",
+  "Rachaad White WAS",
+  "Ladd McConkey LAC",
+  "Rashee Rice KC",
+  "DJ Moore BUF",
+  "Rhamondre Stevenson NE",
+  "Garrett Wilson NYJ",
+  "Omarion Hampton LAC",
+  "Jordan Love GB",
+  "Michael Penix Jr. ATL"
  ],
  "fp_unmatched_5plus_count": 68,
- "scorecard": "week 10: 515 pre-kickoff projections saved",
+ "scorecard": "week 10: 478 pre-kickoff projections saved",
  "consensus": {
-  "used": 349,
-  "fallback": 49,
-  "single_source_blend": 42,
+  "used": 351,
+  "fallback": 48,
+  "single_source_blend": 41,
   "out_by_injury": 72,
-  "no_source_zero": 82,
+  "no_source_zero": 81,
   "added_from_sites": 9,
   "added_4plus": [
    "Andres Borregales NE K 6.8",
-   "Carson Beck ARI QB 9.8",
+   "Carson Beck ARI QB 9.6",
    "Kyle McCord MIA QB 10.7",
-   "Zonovan Knight ARI RB 4.7"
+   "Zonovan Knight ARI RB 4.6"
   ],
   "sources_per_player": {
-   "0": 153,
-   "1": 50,
-   "2": 205,
+   "0": 152,
+   "1": 49,
+   "2": 207,
    "3": 102,
    "4": 42
   },
