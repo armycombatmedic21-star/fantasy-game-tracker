@@ -1,5 +1,5 @@
 {
- "at": "2026-11-14T23:00:37+00:00",
+ "at": "2026-11-15T01:35:50+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -46,35 +46,40 @@
   "sleeper": {
    "ok": true,
    "records": 405,
-   "secs": 3.5,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
-    "WR": 1364,
+    "WR": 1365,
     "TE": 646,
     "K": 157,
     "DST": 28,
-    "injury_flags": 254
+    "injury_flags": 255
    }
   },
   "espn": {
    "ok": true,
    "records": 355,
-   "secs": 0.6,
+   "secs": 0.5,
    "info": {
     "players": 1061,
     "kept": 355,
     "dropped": {
      "pos": 0,
-     "team": 335,
-     "no_week_proj": 371
+     "team": 329,
+     "no_week_proj": 377
     }
    }
   },
   "cbs": {
-   "ok": false,
-   "error": "RuntimeError: worker live/rosters: no teams",
-   "secs": 37.9
+   "ok": true,
+   "records": 147,
+   "secs": 36.5,
+   "info": {
+    "rostered": 191,
+    "calls": 5,
+    "no_projection": 44
+   }
   },
   "fp": {
    "ok": true,
@@ -82,62 +87,64 @@
   }
  },
  "checks": {
-  "players": 644,
+  "players": 646,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Travis Etienne NO",
-  "Tony Pollard TEN",
-  "Geno Smith NYJ",
-  "Deshaun Watson CLE",
-  "Tyler Allgeier ARI",
-  "Drew Lock SEA",
-  "Kirk Cousins LV",
+  "Emmett Johnson KC",
+  "Woody Marks HOU",
+  "Omarion Hampton LAC",
+  "Jameson Williams DET",
+  "Austin Ekeler WAS",
+  "Chris Rodriguez Jr. JAX",
+  "DK Metcalf PIT",
+  "Drake London ATL",
+  "Garrett Wilson NYJ",
   "Jakobi Meyers JAX",
-  "Rashee Rice KC",
+  "Jalen Coker CAR",
+  "DJ Moore BUF",
+  "Chase Brown CIN",
   "Adonai Mitchell NYJ",
   "Jameis Winston NYG",
-  "Jordan Love GB",
-  "C.J. Stroud HOU",
-  "Chase Brown CIN",
-  "Khalil Shakir BUF",
-  "Garrett Wilson NYJ",
-  "Jared Goff DET",
-  "DK Metcalf PIT",
+  "Justin Herbert LAC",
   "Zay Flowers BAL",
-  "Deebo Samuel Sr. SF",
-  "Ollie Gordon II MIA",
-  "Chris Rodriguez Jr. JAX",
-  "Emanuel Wilson SEA",
-  "Stefon Diggs WAS",
-  "Jordan Addison MIN"
+  "Tank Dell HOU",
+  "Jordan Mason MIN",
+  "Travis Etienne NO",
+  "Geno Smith NYJ",
+  "DeMario Douglas NE",
+  "Deshaun Watson CLE",
+  "Jordan Love GB",
+  "Ladd McConkey LAC"
  ],
- "fp_unmatched_5plus_count": 65,
- "scorecard": "week 10: 514 pre-kickoff projections saved",
+ "fp_unmatched_5plus_count": 68,
+ "scorecard": "week 10: 516 pre-kickoff projections saved",
  "consensus": {
-  "used": 344,
+  "used": 345,
   "fallback": 51,
   "single_source_blend": 45,
   "out_by_injury": 72,
-  "no_source_zero": 85,
-  "added_from_sites": 8,
+  "no_source_zero": 84,
+  "added_from_sites": 10,
   "added_4plus": [
+   "Andres Borregales NE K 6.8",
    "Carson Beck ARI QB 10.1",
    "Kyle McCord MIA QB 10.7",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 155,
+   "0": 154,
    "1": 53,
-   "2": 302,
-   "3": 42
+   "2": 201,
+   "3": 102,
+   "4": 42
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 644,
+ "players": 646,
  "spread_k": 1.35,
  "spread_rho": 0.06,
  "no_games_yet": 0
