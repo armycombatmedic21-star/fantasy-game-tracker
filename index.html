@@ -794,7 +794,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .ijt{display:inline-block;flex:none;color:#e62626;font-weight:800;font-size:14px;line-height:1;vertical-align:1px;animation:ijs 3.2s ease-in-out infinite}
 .pnm > .ijt:last-child{margin-left:7px}
 .pnm > .ijt:first-child{margin-right:7px}
-@keyframes ijs{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes ijs{0%,100%{opacity:1}50%{opacity:.75}}
 @media (prefers-reduced-motion:reduce){ .ijt{animation:none} }
 .pnm.hasij{display:flex;align-items:baseline;white-space:nowrap;min-width:0;max-width:100%}
 .pside.r .pnm.hasij{justify-content:flex-end}
@@ -855,10 +855,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.13.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.13.0', 'TOUCHDOWN pill fixed: it now shows for 3 minutes from the moment the touchdown actually happened (ESPN’s play time), not from when your phone first noticed it. Before, if the app was in the background or your phone was locked when a TD was scored, coming back gave it a fresh 3 minutes (Goff’s TD at 10:15 was still showing at 10:38). Opening the app a minute after a TD still shows the pill for the rest of the 3 minutes. Look change: the red injury letters (Q, D, O, IR, SUS) now pulse only down to 75% brightness instead of 50%, so they stay easier to read. Nothing else looks different.'],
   ['1.12.0', 'New home-screen icon: a gold football with a blue live pulse line through it, and FANTASY in white italic letters with a blue underline across the top (replaces the old blue “GT”). The app’s name is unchanged. The app now uses a real install file (manifest) with proper PNG icons, so Android Chrome can install it as a real app, which should remove the little Chrome logo from the icon. To see the new icon: iPhone — delete the old icon, then in Safari tap Share → Add to Home Screen. Android — remove the old icon, then in Chrome tap ⋮ → Install app. Your saved team and settings are not affected. Nothing inside the app looks different.'],
   ['1.11.0', 'Injury letters from CBS: a bold red letter now shows next to a player, just like on CBS: Q (questionable), D (doubtful), O (out), IR (injured reserve), SUS (suspended). It slowly fades in and out. On the left team it sits after the NFL team, on the right team before the name. When CBS lists a player Out (or IR / suspended) for this week, his projection drops to 0, the win % is redone right away, and his name, team and logo are dimmed (the letter stays bright). This updates within about a minute or two of CBS posting it, instead of waiting for the next projections run. Tap a player before kickoff to see an INJURY note (what\u2019s hurt, CBS\u2019s status and expected return). The old \u201c% to play\u201d line is gone. If a long name plus the letter doesn\u2019t fit, the name is shortened with \u201c\u2026\u201d. Projections also refresh more often now (after injury reports Wed\u2013Fri, three times Saturday, and after the inactive lists on game days).'],
   ['1.10.1', 'Tap-open breakdown: touchdown and field-goal distances now read “1 yd, 31 yd” (each with its own yd; no Pass/Rush label, since every TD is scored by its distance). On a big day the list wraps to a second line instead of being cut off.'],
@@ -1091,9 +1092,14 @@ function parseSummary(sm){
     });
   });
   const td = function(T, name){ const k = normName(name); return T.td[k] || (T.td[k] = { rush: [], rec: [], pass: [], two: 0, ret: 0 }); };
+  // v1.13.0 (Wes, Nov 15): the real time of each play (ESPN drives → plays[].wallclock), so the TOUCHDOWN pill runs
+  // 3 minutes from the actual TD — not from when this phone first noticed it (e.g. after the app sat in the background)
+  const wc = {};
+  try{ const dv = sm.drives || {}; (dv.previous || []).concat(dv.current ? [dv.current] : []).forEach(function(d){ (d.plays || []).forEach(function(pp){ const t = pp && pp.id && pp.wallclock ? Date.parse(pp.wallclock) : 0; if(t) wc[String(pp.id)] = t; }); }); }catch(e){}
+  const mark = function(r, at, lab){ if(at && at >= (r.at || 0)){ r.at = at; r.lab = lab; } };
   (sm.scoringPlays || []).forEach(function(p){
     const ab = p.team && p.team.abbreviation; if(!ab) return;
-    const T = team(ab);
+    const T = team(ab), at = wc[String(p.id)] || 0;
     const type = String((p.type && p.type.text) || ''), x = trim(p.text);
     const sa = String((p.scoringType && p.scoringType.abbreviation) || (p.type && p.type.abbreviation) || '').toUpperCase();
     const sn = String((p.scoringType && p.scoringType.name) || '').toLowerCase();
@@ -1106,13 +1112,14 @@ function parseSummary(sm){
     if(!(sa === 'TD' || sn === 'touchdown' || /touchdown/i.test(type))) return;
     if((m = /^(.+?)\s+(\d+)\s*Yds?\s+pass\s+from\s+(.+?)(?:\s*\(.*)?$/i.exec(x)) && !/return/i.test(type)){
       td(T, m[1]).rec.push(+m[2]); td(T, m[3]).pass.push(+m[2]);
+      mark(td(T, m[1]), at, 'TD · ' + m[2] + ' yd catch'); mark(td(T, m[3]), at, 'TD · ' + m[2] + ' yd pass');
     }else if((m = /^(.+?)\s+(\d+)\s*Yds?\s+(?:run|rush)\b/i.exec(x)) && !/return|recovery/i.test(type)){
-      td(T, m[1]).rush.push(+m[2]);
+      td(T, m[1]).rush.push(+m[2]); mark(td(T, m[1]), at, 'TD · ' + m[2] + ' yd run');
     }else if(/return|recovery|blocked|interception|defensive|fumble/i.test(type) || /\b(return|recovery)\b/i.test(x)){
       // v1.1: kick/punt return and fumble recovery TDs are 6 flat to the player too (league rules); D/ST still gets 6
       const rm = /^(.+?)\s+\d+\s*Yds?\s+(?:Kickoff|Punt|Fumble|Blocked|Interception|Missed Field Goal|Kick)?\s*(?:Return|Recovery)/i.exec(x);
-      if(rm) td(T, rm[1]).ret++;
-      if(!/\bown\b/i.test(type)) T.dstTd++;
+      if(rm){ td(T, rm[1]).ret++; mark(td(T, rm[1]), at, 'TD · return'); }
+      if(!/\bown\b/i.test(type)){ T.dstTd++; if(at && at >= (T.dstAt || 0)) T.dstAt = at; }
     }
     let tp;
     if((tp = /\(\s*([^()]+?)\s+pass\s+to\s+([^()]+?)\s+for\s+two-?point\s+conversion\s*\)/i.exec(x))){ td(T, tp[1]).two++; td(T, tp[2]).two++; }
@@ -1137,7 +1144,7 @@ function espnStats(P, pl, ab, oppAb, oppScore){
   const T = P && P.teams[ab]; if(!T) return null;
   if(pl.pos === 'DST'){
     const O = P.teams[oppAb] || { sk: 0, int: 0, fl: 0 };
-    return { dst: { pa: oppScore || 0, sk: O.sk || 0, int: O.int || 0, fr: O.fl || 0, td: T.dstTd || 0, sf: T.sf || 0 } };
+    return { dst: { pa: oppScore || 0, sk: O.sk || 0, int: O.int || 0, fr: O.fl || 0, td: T.dstTd || 0, sf: T.sf || 0 }, tdAt: T.dstAt || 0, tdLab: 'D/ST TD' };
   }
   const ak = findKey(T.ath, pl.name), A = ak ? T.ath[ak] : null;
   const tk = findKey(T.td, pl.name), D = tk ? T.td[tk] : { rush: [], rec: [], pass: [], two: 0, ret: 0 };
@@ -1149,7 +1156,7 @@ function espnStats(P, pl, ab, oppAb, oppScore){
   if(!A && !tk) return null;
   const a = A || {};
   return { py: a.py || 0, pint: a.pint || 0, ry: a.ry || 0, rcar: a.rcar || 0, cy: a.cy || 0, fl: a.fl || 0, two: D.two || 0, ktd: D.ret || 0,
-           ptd: fill(D.pass, a.ptdN), rtd: fill(D.rush, a.rtdN), ctd: fill(D.rec, a.ctdN) };
+           ptd: fill(D.pass, a.ptdN), rtd: fill(D.rush, a.rtdN), ctd: fill(D.rec, a.ctdN), tdAt: D.at || 0, tdLab: D.lab || '' };
 }
 
 /* ---------- ESPN scoreboard ---------- */
@@ -1382,7 +1389,8 @@ function playerLive(pl, teamId){
   const fresh = L.src === 'espn' ? !!(sum && sum.P) : !(S.cbs[S.week] && S.cbs[S.week].cached);
   if(!fresh){
     const ev0 = S.evts[key];
-    if(ev0 && now - ev0.t < 180000) L.evt = { kind: ev0.kind, lab: ev0.lab, pulse: now - ev0.t < 10000 };
+    const e0Now = ev0 && ev0.at ? now + ((typeof CH !== 'undefined' && CH && CH.skew) || 0) : now;
+    if(ev0 && e0Now - ev0.t < 180000) L.evt = { kind: ev0.kind, lab: ev0.lab, pulse: now - (ev0.seen || ev0.t) < 10000 };
     if(S.glow[key] && now - S.glow[key] < 60000) L.glow = true;
     return L;
   }
@@ -1395,14 +1403,21 @@ function playerLive(pl, teamId){
     else if(cur.p > prev.p){ const l = s.ptd[s.ptd.length - 1]; lab = 'TD' + (l != null ? ' · ' + l + ' yd pass' : ''); }
     else if(cur.k > (prev.k || 0)) lab = 'TD · return';
     else if(cur.dt > prev.dt) lab = 'D/ST TD';
-    if(lab) S.evts[key] = { kind: 'td', lab: lab, t: now };
+    if(lab && !s.tdAt) S.evts[key] = { kind: 'td', lab: lab, t: now };   // no real play time (CBS line) → old way
     else if(cur.fl > prev.fl) S.evts[key] = { kind: 'fum', lab: 'FUMBLE LOST', t: now };
     if(cur.pts > prev.pts) S.glow[key] = now;
+  }
+  // v1.13.0: ESPN gives the real time of his latest TD → the pill shows until 3 min after that play (server-corrected
+  // clock), so a TD missed while the app was in the background never gets a fresh 3 minutes. Pulse = first 10 s it shows.
+  if(s.tdAt){
+    const ex = S.evts[key];
+    if(!ex || (ex.kind === 'td' ? ex.at !== s.tdAt : s.tdAt > ex.t)) S.evts[key] = { kind: 'td', lab: s.tdLab || 'TD', t: s.tdAt, at: s.tdAt, seen: now };
   }
   cur.live = L.state === 'in' || (prev && prev.live && L.state === 'post');
   S.prev[key] = cur;
   const ev = S.evts[key];
-  if(ev && now - ev.t < 180000) L.evt = { kind: ev.kind, lab: ev.lab, pulse: now - ev.t < 10000 };
+  const evNow = ev && ev.at ? now + ((typeof CH !== 'undefined' && CH && CH.skew) || 0) : now;
+  if(ev && evNow - ev.t < 180000) L.evt = { kind: ev.kind, lab: ev.lab, pulse: now - (ev.seen || ev.t) < 10000 };
   if(S.glow[key] && now - S.glow[key] < 60000) L.glow = true;
   return L;
 }
