@@ -1,5 +1,5 @@
 {
- "at": "2026-11-15T23:56:52+00:00",
+ "at": "2026-11-16T06:09:02+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -9,8 +9,8 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "72",
-    "RB": "131",
+    "QB": "70",
+    "RB": "130",
     "WR": "216",
     "TE": "131"
    },
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 408,
-   "secs": 3.6,
+   "secs": 3.8,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 28,
-    "injury_flags": 279
+    "injury_flags": 281
    }
   },
   "espn": {
    "ok": true,
    "records": 360,
-   "secs": 0.4,
+   "secs": 0.5,
    "info": {
-    "players": 1061,
+    "players": 1062,
     "kept": 360,
     "dropped": {
      "pos": 0,
      "team": 325,
-     "no_week_proj": 376
+     "no_week_proj": 377
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 145,
-   "secs": 40.7,
+   "records": 144,
+   "secs": 27.6,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 46
+    "no_projection": 47
    }
   },
   "fp": {
@@ -93,39 +93,39 @@
  },
  "fp_unmatched_5plus": [
   "Austin Ekeler WAS",
-  "DeMario Douglas NE",
-  "C.J. Stroud HOU",
-  "Blake Corum LA",
+  "Daniel Jones IND",
   "Ashton Jeanty LV",
-  "Tyler Allgeier ARI",
-  "Zay Flowers BAL",
-  "Jordan Love GB",
-  "Travis Etienne NO",
-  "Jameson Williams DET",
-  "Chris Rodriguez Jr. JAX",
-  "Matthew Stafford LA",
-  "Mike Gesicki CIN",
-  "Malik Nabers NYG",
+  "Fernando Mendoza LV",
+  "DK Metcalf PIT",
+  "Braelon Allen NYJ",
+  "Kirk Cousins LV",
+  "C.J. Stroud HOU",
+  "Omar Cooper Jr. NYJ",
+  "Jalen Coker CAR",
+  "Emmett Johnson KC",
+  "Rachaad White WAS",
+  "Khalil Shakir BUF",
+  "Ollie Gordon II MIA",
+  "Jakobi Meyers JAX",
+  "Corey Kiner NE",
   "Cam Ward TEN",
-  "Breece Hall NYJ",
-  "Quinshon Judkins CLE",
-  "George Pickens DAL",
-  "Woody Marks HOU",
-  "Aaron Rodgers PIT",
-  "Denzel Boston CLE",
+  "Matthew Stafford LA",
+  "Cam Skattebo NYG",
+  "Jordan Love GB",
+  "Omarion Hampton LAC",
   "Jacoby Brissett ARI",
-  "Nico Collins HOU",
-  "Michael Penix Jr. ATL",
-  "Drake London ATL"
+  "Jordan Mason MIN",
+  "DeMario Douglas NE",
+  "Adonai Mitchell NYJ"
  ],
  "fp_unmatched_5plus_count": 67,
- "scorecard": "week 10: 81 pre-kickoff projections saved",
+ "scorecard": "week 10: 42 pre-kickoff projections saved",
  "consensus": {
   "used": 348,
   "fallback": 45,
   "single_source_blend": 37,
-  "out_by_injury": 88,
-  "no_source_zero": 71,
+  "out_by_injury": 89,
+  "no_source_zero": 70,
   "added_from_sites": 8,
   "added_4plus": [
    "Andres Borregales NE K 6.8",
@@ -135,8 +135,8 @@
    "Zonovan Knight ARI RB 4.6"
   ],
   "sources_per_player": {
-   "0": 155,
-   "1": 48,
+   "0": 156,
+   "1": 47,
    "2": 206,
    "3": 101,
    "4": 42
