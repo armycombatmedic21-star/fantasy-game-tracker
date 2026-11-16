@@ -1,5 +1,5 @@
 {
- "at": "2026-11-16T06:09:02+00:00",
+ "at": "2026-11-16T22:38:35+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 10,
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 408,
-   "secs": 3.8,
+   "records": 407,
+   "secs": 3.4,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,7 +54,7 @@
     "TE": 646,
     "K": 157,
     "DST": 28,
-    "injury_flags": 281
+    "injury_flags": 280
    }
   },
   "espn": {
@@ -62,19 +62,19 @@
    "records": 360,
    "secs": 0.5,
    "info": {
-    "players": 1062,
+    "players": 1061,
     "kept": 360,
     "dropped": {
      "pos": 0,
      "team": 325,
-     "no_week_proj": 377
+     "no_week_proj": 376
     }
    }
   },
   "cbs": {
    "ok": true,
    "records": 144,
-   "secs": 27.6,
+   "secs": 34.3,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,39 +92,39 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Austin Ekeler WAS",
-  "Daniel Jones IND",
-  "Ashton Jeanty LV",
-  "Fernando Mendoza LV",
-  "DK Metcalf PIT",
-  "Braelon Allen NYJ",
-  "Kirk Cousins LV",
-  "C.J. Stroud HOU",
-  "Omar Cooper Jr. NYJ",
-  "Jalen Coker CAR",
-  "Emmett Johnson KC",
-  "Rachaad White WAS",
+  "Tetairoa McMillan CAR",
   "Khalil Shakir BUF",
+  "Daniel Jones IND",
+  "Garrett Wilson NYJ",
+  "DJ Moore BUF",
+  "Jameis Winston NYG",
+  "Shedeur Sanders CLE",
+  "Jordan Love GB",
+  "Malik Nabers NYG",
+  "Mike Gesicki CIN",
+  "Justin Herbert LAC",
+  "Rhamondre Stevenson NE",
+  "Kirk Cousins LV",
+  "Braelon Allen NYJ",
+  "Jameson Williams DET",
+  "Emmett Johnson KC",
   "Ollie Gordon II MIA",
-  "Jakobi Meyers JAX",
   "Corey Kiner NE",
   "Cam Ward TEN",
-  "Matthew Stafford LA",
-  "Cam Skattebo NYG",
-  "Jordan Love GB",
-  "Omarion Hampton LAC",
+  "Tyler Allgeier ARI",
+  "Austin Ekeler WAS",
   "Jacoby Brissett ARI",
-  "Jordan Mason MIN",
-  "DeMario Douglas NE",
-  "Adonai Mitchell NYJ"
+  "Jared Goff DET",
+  "J.J. McCarthy NYG",
+  "Aaron Rodgers PIT"
  ],
- "fp_unmatched_5plus_count": 67,
+ "fp_unmatched_5plus_count": 68,
  "scorecard": "week 10: 42 pre-kickoff projections saved",
  "consensus": {
-  "used": 348,
-  "fallback": 45,
-  "single_source_blend": 37,
-  "out_by_injury": 89,
+  "used": 347,
+  "fallback": 47,
+  "single_source_blend": 39,
+  "out_by_injury": 88,
   "no_source_zero": 70,
   "added_from_sites": 8,
   "added_4plus": [
@@ -136,8 +136,8 @@
   ],
   "sources_per_player": {
    "0": 156,
-   "1": 47,
-   "2": 206,
+   "1": 48,
+   "2": 205,
    "3": 101,
    "4": 42
   },
