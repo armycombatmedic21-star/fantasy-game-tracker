@@ -858,6 +858,110 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .sthead .poh,.sthead .dph{white-space:normal;line-height:1.15;text-align:center}
 .stdet .stt.dpt .dpl{flex-direction:row;align-items:baseline}
 .stdet .stt.dpt .dpl span{display:inline;margin:0}
+/* ---- v1.16.0 Playoff Prediction Engine (admin page) ---- */
+.ppebtn{width:100%;height:46px;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(var(--acc-rgb),.55);background:rgba(var(--acc-rgb),.08);color:#fff;font-size:14.5px;font-weight:800;letter-spacing:-.1px}
+.ppebtn svg{color:var(--acc);flex:none}
+.ppebtn .pbc{font-style:normal;color:var(--acc);font-size:20px;line-height:1;margin-left:2px;margin-top:-2px}
+.ppebtn .pbl{font-style:normal;display:inline-flex;color:var(--faint)}.ppebtn .pbl .lockic svg{width:16px;height:16px;margin:0}
+.ppe .mhead{margin-bottom:10px}
+.ppsel{position:relative;display:flex;align-items:center;gap:6px;height:38px;padding:0 10px 0 6px;border-radius:999px;border:1px solid var(--hair2);font-size:12.5px;font-weight:800;color:#fff;flex:none}
+.ppsel .badge{width:24px;height:24px;border-radius:7px}
+.ppsel svg{color:var(--muted)}
+.ppsel select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;-webkit-appearance:none;appearance:none;border:0;cursor:pointer}
+.ppsub{font-size:12.5px;font-weight:700;color:var(--muted);margin:0 2px 12px;line-height:1.4}.ppsub b{color:var(--text)}
+.pphud{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.pphc{border:1px solid var(--hair2);background:var(--card);border-radius:18px;padding:12px 12px 11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.42);display:flex;flex-direction:column;gap:3px;min-height:118px;min-width:0}
+.pphc small{font-size:10.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint);display:flex;justify-content:space-between;align-items:center;gap:4px}
+.pptc{align-items:center;text-align:center;justify-content:center}.pptc small{justify-content:center}
+.pptc>b{font-size:38px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1.05;margin-top:2px}
+.pptc>b sup{font-size:17px;vertical-align:top;position:relative;top:5px;margin-left:1px}
+.pptc em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);margin-top:2px}.pptc em b{color:var(--text)}
+.ppdc{justify-content:center}
+.ppdc .dpl{display:flex;justify-content:space-between;padding:0 4px;font-size:12.5px;font-weight:700;color:var(--muted);line-height:1.6;font-variant-numeric:tabular-nums}
+.ppdc .dpl.ml{font-size:18px;font-weight:800;color:#fff;line-height:1.35}.ppdc .dpl.ml span:last-child{color:var(--acc)}
+.ppla{padding:14px 4px 10px;margin-bottom:12px}
+.ppla .lacell small{font-size:11px;white-space:nowrap}
+.ppla .lacell b{font-size:24px}
+.ppla .lacell b sup{font-size:12px}
+.ppd{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.2px;white-space:nowrap}
+.ppd.g{color:var(--green)}.ppd.r{color:var(--red)}.ppd.a{color:var(--amber)}.ppd.z{color:var(--faint)}
+.pptc .ppd{font-size:12px}
+.pptk{border:1px solid var(--hair2);background:var(--card);border-radius:18px;padding:14px 14px 10px;margin-bottom:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.42)}
+.pptk.on{border-color:rgba(255,176,32,.55)}
+.pptk .tkr{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pptk .tl{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.pptk .ts{font-size:11.5px;font-weight:700;color:var(--faint);margin-top:2px}
+.tkp{position:relative;width:86px;height:38px;border-radius:999px;border:1px solid var(--hair2);background:rgba(255,255,255,.05);flex:none}
+.tkp .kn{position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#93aec8;transition:left .2s ease}
+.tkp .tx{position:absolute;right:14px;top:0;line-height:36px;font-size:12px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+.tkp.on{background:rgba(255,176,32,.20);border-color:rgba(255,176,32,.8)}
+.tkp.on .kn{left:52px;background:var(--amber)}.tkp.on .tx{right:auto;left:14px;color:var(--amber)}
+.ppld{margin:12px 0 10px}.ppld .ldb{height:6px;border-radius:3px;background:rgba(147,174,200,.14);overflow:hidden}
+.ppld .ldb i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#4f8dff,#7fb0ff);transition:width .25s linear}
+.ppld.done .ldb i{background:rgba(147,174,200,.35)}
+.ppld .ldt{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:var(--faint);margin-top:5px}
+.ppre{display:flex;gap:10px;align-items:center;border-radius:12px;padding:10px 11px;margin-bottom:10px}
+.ppre.no{background:rgba(255,59,78,.10);border:1px solid rgba(255,59,78,.45)}
+.ppre.yes{background:rgba(61,220,132,.10);border:1px solid rgba(61,220,132,.45)}
+.ppre .rb{flex:none;font-size:12px;font-weight:800;letter-spacing:.8px;color:#fff;background:var(--red);border-radius:999px;padding:6px 10px}
+.ppre.yes .rb{background:#1fae62}
+.ppre .rt{font-size:11.5px;font-weight:700;color:var(--text);line-height:1.35}
+.ppcm{border-top:1px solid var(--hair);padding-top:4px}
+.ppcm .ch,.ppcm .cr{display:grid;grid-template-columns:1.35fr .9fr .7fr .7fr;align-items:center;padding:0 2px}
+.ppcm .ch{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--faint);height:24px;white-space:nowrap}
+.ppcm .ch span,.ppcm .cr span{text-align:right}.ppcm .ch span:first-child,.ppcm .cr span:first-child{text-align:left}
+.ppcm .ch .act{color:var(--acc)}
+.ppcm .cr{height:27px;font-size:13px;font-weight:800;color:var(--muted);border-top:1px solid rgba(147,174,200,.06)}
+.ppcm .cr span:first-child{font-size:12px;font-weight:700}
+.ppcm .cr .act{color:#fff}
+.ppsec{font-size:16px;font-weight:800;color:#fff;margin:4px 2px 9px;letter-spacing:-.2px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ppsec .sn{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:0}
+.pptg{font-style:normal;font-size:10px;font-weight:800;letter-spacing:1px;color:var(--amber);border:1px solid rgba(255,176,32,.6);border-radius:6px;padding:2px 6px}
+.ppcard{border:1px solid var(--hair);background:var(--card);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 10px 24px rgba(0,0,0,.42);margin-bottom:14px;overflow:hidden}
+.ppcard.pad{padding:12px}
+.ppfn{margin:2px 0 9px}.ppfn:last-child{margin-bottom:2px}
+.ppfn .fl{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.ppfn .fl b{color:#fff;font-weight:800;margin-right:6px}
+.ppfn .fb{height:8px;border-radius:4px;background:rgba(147,174,200,.10);overflow:hidden}
+.ppfn .fb i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,rgba(79,141,255,.55),#4f8dff)}
+.ppsh,.ppsr{display:grid;grid-template-columns:14px 26px minmax(0,1fr) 38px 40px 74px;align-items:center;gap:7px;padding:0 12px}
+.ppsh{height:36px;font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--hair)}
+.ppsh b{grid-column:1/4;font-size:13px;letter-spacing:1.8px;color:var(--acc)}
+.ppsh span{text-align:right;white-space:nowrap}
+.ppsr{min-height:44px;border-top:1px solid rgba(147,174,200,.07)}.ppsh + .ppsr{border-top:0}
+.ppsr .rk{font-size:12px;font-weight:800;color:var(--faint);text-align:center}
+.ppsr .badge{width:26px;height:26px;border-radius:7px}
+.ppsr .nm{font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ppsr .rc{font-size:13px;font-weight:800;color:#fff;text-align:right}
+.ppsr .sp{font-size:12.5px;font-weight:700;color:var(--muted);text-align:right}
+.ppsr .pptag{justify-self:end;font-size:8.5px;font-weight:800;letter-spacing:.8px;border-radius:6px;padding:3px 6px;white-space:nowrap}
+.ppsr .pptag.by{color:var(--green);border:1px solid rgba(61,220,132,.5)}.ppsr .pptag.wc{color:var(--acc);border:1px solid rgba(79,141,255,.5)}.ppsr .pptag.lb{color:var(--amber);border:1px solid rgba(255,176,32,.55)}
+.ppe .me{background:linear-gradient(90deg,rgba(var(--acc-rgb),.20),rgba(var(--acc-rgb),.05) 70%,rgba(var(--acc-rgb),.02));box-shadow:inset 3px 0 0 var(--acc)}
+.ppsr.me .rk{color:var(--acc)}
+.ppe .rh{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.ppe .ppbh{font-size:13px;font-weight:800;letter-spacing:1.6px;color:var(--acc);text-transform:uppercase;margin-bottom:9px}
+.ppbr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;align-items:stretch}
+.ppbr .pbcol{display:flex;flex-direction:column;min-width:0}
+.ppbr .pvc{flex:1;display:flex;flex-direction:column;justify-content:center}
+.ppg{border:1px solid var(--hair2);border-radius:10px;background:rgba(255,255,255,.03);margin-bottom:7px;overflow:hidden}
+.ppg .gt{display:flex;align-items:center;gap:4px;height:30px;padding:0 6px 0 4px}
+.ppg .gt + .gt{border-top:1px solid var(--hair)}
+.ppg .sd{font-size:9.5px;font-weight:800;color:var(--faint);min-width:15px;text-align:center}
+.ppg .gn{flex:1;min-width:0;padding-left:3px;font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppg .gp{font-size:11.5px;font-weight:800;color:var(--acc)}.ppg .gp.lo{color:var(--muted)}
+.ppg.wide .gt{height:36px;padding:0 10px 0 6px;gap:7px}.ppg.wide .gn{font-size:14px}.ppg.wide .gp{font-size:13px}.ppg.wide .sd{min-width:34px;font-size:10px}
+.ppg.wide .badge{width:22px;height:22px;border-radius:6px}
+.ppe .byes{font-size:10px;font-weight:700;color:var(--faint);text-align:center;margin-top:2px}
+.pptb .th,.pptb .tr{display:grid;grid-template-columns:minmax(0,1fr) 50px 40px 48px 34px;align-items:center;gap:4px;padding:0 12px}
+.pptb .th{height:32px;font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--hair)}
+.pptb .th span,.pptb .tr span{text-align:right}.pptb .th span:first-child{text-align:left}
+.pptb .tr{height:38px;font-size:13px;font-weight:800;color:#fff;border-top:1px solid rgba(147,174,200,.06)}
+.pptb .tr span:nth-child(2),.pptb .tr span:nth-child(3){color:var(--muted)}
+.pptb .pptn{display:flex;align-items:center;gap:7px;text-align:left!important;font-size:13.5px;white-space:nowrap;overflow:hidden;min-width:0}
+.pptb .pptn .badge{width:22px;height:22px;border-radius:6px;flex:none}
+@media (max-width:380px){.ppcm .ch{letter-spacing:.3px}.ppcm .ch,.ppcm .cr{grid-template-columns:1.3fr .95fr .7fr .7fr}}
+@media (max-width:370px){.pptc>b{font-size:33px}.ppla .lacell b{font-size:21px}.ppsr .nm{font-size:13.5px}.ppg .gn{font-size:12px}.ppcm .cr{font-size:12px}}
+
 </style>
 </head>
 <body>
@@ -914,6 +1018,12 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
   <div class="confirmrow"><button class="confirmyes" id="admGo">Unlock</button><button class="confirmcancel" data-close="admCode">Cancel</button></div>
 </div></div>
 
+<div class="overlay" id="ppeLock"><div class="sheet adm" role="dialog" aria-label="Locked">
+  <div class="hd"><span class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span><div><div class="eb">Restricted access</div><h2>Locked</h2></div></div>
+  <p class="ld">The Playoff Prediction Engine is an advanced feature and is only available on admin devices.</p>
+  <div class="confirmrow"><button class="confirmcancel" data-close="ppeLock">Close</button></div>
+</div></div>
+
 <div class="gate" id="gate" hidden><div class="gatein" id="gateIn"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -926,10 +1036,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.15.0';
+const APP_VERSION = '1.16.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.16.0', 'Playoff Prediction Engine (admin): new “Playoff Prediction Engine” button on Standings (between the Online card and the AFC card) opens a new page. The engine now plays the whole playoffs in each of the 20,000 seasons (Week 13 Loser Bowl as a real game, Week 14 wild card 4 vs 5, re-seeded Week 15 semis, Week 16 division final, Week 17 Super Bowl; the bracket stays in the division). The page shows title chance, draft pick, playoffs / bye / projected seed / Loser Bowl, the road to the title, projected seeds, the projected bracket with win % per game, and every team’s odds. A team drop-down (top right) shows any team without changing yours. Strategic Tank re-runs everything with that team losing its next game, shows every change, and says TANK NOW (green) or DON’T TANK (red). Also: playoff odds now use this week’s real CBS lineups (same as draft odds), the Loser Bowl is a real game in the draft odds (was 50/50), the “Most likely” line is gone from the draft pick tile (the bold row + blue % show it), and Admin turns on and off in Settings without re-typing the code once it’s been entered on that phone. Visual changes: new pill button on Standings; new page; draft tile one line shorter. Phones without the code see the button with a lock and get a “Locked” sheet.', 'New on Standings: a Playoff Prediction Engine button (admin only — other phones see a lock). Admin turns on and off in Settings without re-typing the code.'],
   ['1.15.0', 'Draft pick projections (Advanced Draft Order Prediction Engine): each simulated season now also works out the draft order (league rule 4.C: the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2, picks 3-10 go fewest wins first, division winners pick 11-12; playoffs don’t matter). It uses this week’s real CBS lineups, so a lineup change moves it live. New on screen: a 4th Home box “Draft Pick” with the most likely pick and its odds; a DRAFT # column after PLAYOFF % in Standings; in a team’s drop-down, “Proj. Draft Pick” (most likely pick in the middle with the pick above and below and their odds) replaces Differential. To fit: the Standings column headers are slightly smaller (they wrap to two lines on small Androids), the columns are a little narrower, and the drop-down arrow moved left under the team name. The Notice has a new first line. Non-admin phones see locks.', 'Advanced Draft Order Prediction Engine added. Disabled for all non-Dallas owners unless league rules are updated.'],
   ['1.14.0', 'Admin lock: a one-time Notice slides up once per phone (its Enter Code / Close buttons appear after 5 seconds). Settings has a new Admin row; the code is entered once and the phone stays unlocked. Phones without the code: no player projections (player rows and the tap-open panel), no projected team scores (Scoreboard cards and the Matchup screen), and playoff odds show a gray lock on the Home card and in the Standings column. Live scores, matchups, the win bar with its %, yards-to-next-tier and the TOUCHDOWN / RED ZONE pills stay. Phones with the code look exactly like before.', 'All advanced computer modeling, Data/Team Analysis, advanced playoff projections and advanced machine learning player/matchup projections are disabled for all non-Dallas owners unless league rules are updated.'],
   ['1.13.0', 'TOUCHDOWN pill fixed: it now shows for 3 minutes from the moment the touchdown actually happened (ESPN’s play time), not from when your phone first noticed it. Before, if the app was in the background or your phone was locked when a TD was scored, coming back gave it a fresh 3 minutes (Goff’s TD at 10:15 was still showing at 10:38). Opening the app a minute after a TD still shows the pill for the rest of the 3 minutes. Look change: the red injury letters (Q, D, O, IR, SUS) now pulse only down to 75% brightness instead of 50%, so they stay easier to read. Nothing else looks different.'],
@@ -1680,10 +1791,11 @@ function render(){
   if(S.view === 'match') html = matchView();
   else if(S.view === 'standings') html = standingsView();
   else if(S.view === 'chat') html = chatView();
+  else if(S.view === 'ppe') html = ppeView();
   else html = homeView();
   morph(v, html);
   if(S.view === 'match'){ fitPills(); lvFrames(); ijSync(); }
-  lightTabs(S.view);
+  lightTabs(S.view === 'ppe' ? 'standings' : S.view);
   paintRecBadge();
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
   if(chatHook){ try{ chatHook(); }catch(e){} }
@@ -2317,7 +2429,7 @@ function dpTile(id){
   const x = dpOf(id); if(!x) return '<div class="stt dpt"><small>Proj. Draft Pick</small><b>—</b></div>';
   const n = x.d.length, a = Math.max(0, Math.min(n - 3, x.ml - 1));
   let h = '';
-  for(let k = a; k < Math.min(n, a + 3); k++) h += '<div class="dpl' + (k === x.ml ? ' ml' : '') + '"><span>Pick ' + (k + 1) + '</span><span>' + dpPct(x.d[k]) + '</span></div>' + (k === x.ml ? '<div class="mlt">Most likely</div>' : '');
+  for(let k = a; k < Math.min(n, a + 3); k++) h += '<div class="dpl' + (k === x.ml ? ' ml' : '') + '"><span>Pick ' + (k + 1) + '</span><span>' + dpPct(x.d[k]) + '</span></div>';   // v1.16.0 (Wes): no "Most likely" row — the bold row + bigger blue % says it
   return '<div class="stt dpt"><small>Proj. Draft Pick</small>' + h + '</div>';
 }
 function poCell(id){
@@ -2385,7 +2497,7 @@ function runShuffle(){
   }, 8500);
 }
 function standingsView(){
-  let h = header('Standings') + onStrip() + keyStrip();
+  let h = header('Standings') + onStrip() + keyStrip() + ppeBtn();
   if(isCurrentWeek()) liveModel();                       // keeps this week's live points fresh on this tab too
   const st = S.standings, A = stAdjust(true), d = A && A.divs;
   if(!Array.isArray(d) || !d.length){
@@ -2422,6 +2534,166 @@ function standingsView(){
   h += '<p class="note">' + (A.live ? 'Points update live during games · ' : '') + 'Records update when the week is final · DIV = record in division games · MOVE = spots moved in the division since last week · PLAYOFF = chance to finish top 5 in the division (live) · tap a team for points</p>';
   return h;
 }
+/* ---------- v1.16.0 (Wes, Nov 17): Playoff Prediction Engine page (admin; others get a "Locked" sheet) ----------
+   Opens from the pill on Standings. Seeds, every playoff round, title odds and draft odds for any team (drop-down,
+   starts on your team, never changes your team). Strategic Tank = the same 20,000 seasons with that team losing its
+   next game; the page shows what changes and a TANK NOW / DON'T TANK call (rules agreed with Wes Nov 17):
+   1) tanking raises title odds -> tank; 2) costs <= 1 pt of title odds and gains >= 2 picks -> tank;
+   3) title odds already under 3% -> whatever gives the better pick; 4) otherwise -> don't tank. */
+const PPE = { team: null, on: false, id: 0, busy: null, prog: 0, res: {}, y: 0 };
+const PPE_IC = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>';
+function ppeBtn(){
+  return '<button class="ppebtn" id="ppeBtn" data-key="ppebtn">' + PPE_IC + '<span>Playoff Prediction Engine</span>' + (ADMIN ? '<i class="pbc" aria-hidden="true">›</i>' : '<i class="pbl">' + LOCKI + '</i>') + '</button>';
+}
+function ppeOpen(){
+  if(!ADMIN){ openOverlay($('#ppeLock')); return; }
+  PPE.y = window.scrollY || 0; PPE.team = S.team; PPE.on = false;
+  S.view = 'ppe'; try{ history.pushState({ v: 'ppe' }, ''); }catch(e){}
+  render(); window.scrollTo(0, 0); saveView(); ppeAsk();
+}
+function ppeClose(){ try{ history.back(); }catch(e){ S.view = 'standings'; render(); } }
+function ppeTeam(){ return PPE.team || S.team; }
+function ppeAsk(force){                 // ask the engine for the tank version of the selected team (latest run)
+  if(S.view !== 'ppe' || !ENG.worker || !ENG.res || !ENG.res.pp || ENG.res.snap) return;
+  const t = ppeTeam(); if(!t) return;
+  const have = PPE.res[t];
+  if(!force && have && (have.run === ENG.res.id || Date.now() - have.at < 60000)) return;
+  if(PPE.busy){ PPE.pend = true; return; }
+  PPE.busy = t; PPE.prog = 0; PPE.pend = false;
+  ENG.worker.postMessage({ type: 'tank', id: ++PPE.id, team: t });
+}
+function ppeMsg(d){
+  if(d.type === 'tankp'){ PPE.prog = d.f; const b = document.querySelector('#ppeLd i'), x = document.querySelector('#ppeLdP'); if(b) b.style.width = Math.round(d.f * 100) + '%'; if(x) x.textContent = Math.round(d.f * 100) + '%'; return; }
+  PPE.busy = null;
+  if(d.res) PPE.res[d.team] = { r: d.res, run: d.run, at: Date.now() };
+  if(S.view === 'ppe'){ render(); if(PPE.pend || d.team !== ppeTeam()) ppeAsk(); }
+}
+function ppeToggle(){ PPE.on = !PPE.on; render(); if(PPE.on && !PPE.res[ppeTeam()]) ppeAsk(true); }
+function ppeTeams(){
+  const A = stAdjust(true), out = {}, divs = [];
+  ((A && A.divs) || []).forEach(function(d){ const ids = [];
+    (d.teams || []).slice().sort(function(a, b){ return num(a.order) - num(b.order); }).forEach(function(t){ const id = String(t.id); ids.push(id);
+      out[id] = { id: id, name: trim(t.name), T: { logo: t.logo, code: teamCode(id, t.name) }, div: String(d.id || t.division || ''), rec: num(t.wins) + '-' + num(t.losses) + (num(t.ties) ? '-' + num(t.ties) : '') }; });
+    divs.push({ id: String(d.id || ''), ids: ids }); });
+  return { by: out, divs: divs };
+}
+function ppP(v, dec){
+  if(v == null) return '—'; const r = v * 100;
+  if(r <= 0) return '0%'; if(r >= 100) return '100%';
+  if(r > 99.5) return '>99%'; if(dec && r < 10) return (r < 0.1 ? '<0.1' : r.toFixed(1)) + '%';
+  if(r < 0.5) return '<1%'; return Math.round(r) + '%';
+}
+function ppDelta(cur, base, goodUp, unit){                // change vs not tanking, in percentage points (or picks)
+  if(cur == null || base == null) return '';
+  const d = unit === 'pick' ? base - cur : (cur - base) * 100;
+  if(Math.abs(d) < (unit === 'pick' ? 0.5 : 0.5)) return '<i class="ppd z">±0</i>';
+  const up = d > 0, good = goodUp == null ? null : (up === goodUp);
+  const v = unit === 'pick' ? Math.round(Math.abs(d)) : (Math.abs(d) < 10 ? (Math.round(Math.abs(d) * 10) / 10) : Math.round(Math.abs(d)));
+  return '<i class="ppd ' + (good == null ? 'a' : good ? 'g' : 'r') + '">' + (up ? '▲' : '▼') + v + '</i>';
+}
+function ppML(a){ let m = 0; (a || []).forEach(function(v, k){ if(v > a[m]) m = k; }); return m; }
+function ppEP(a){ return (a || []).reduce(function(s, v, k){ return s + v * (k + 1); }, 0); }
+function ppPhi(x){ const t = 1 / (1 + 0.3275911 * Math.abs(x) / Math.SQRT2), y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x / 2); return x >= 0 ? (1 + y) / 2 : (1 - y) / 2; }
+function ppWin(D, w, a, b){ const A = D.fx && D.fx[w] && D.fx[w][a], B = D.fx && D.fx[w] && D.fx[w][b]; if(!A || !B) return 0.5; const s = Math.sqrt(A[1] * A[1] + B[1] * B[1]) || 1; return ppPhi((A[0] - B[0]) / s); }
+function ppSeeds(D, ids){                                 // most likely finish: order by expected seed
+  const e = function(id){ const s = D.seed[id] || []; let v = 0, p = 0; s.forEach(function(x, k){ v += x * (k + 1); p += x; }); return v + (1 - p) * 7; };
+  return ids.slice().sort(function(a, b){ return e(a) - e(b); });
+}
+function ppSeedAt(D, TM, t){ const d = TM.divs.find(function(x){ return x.ids.indexOf(t) >= 0; }); return d ? ppSeeds(D, d.ids).indexOf(t) : -1; }
+function ppRec(B, T, t){
+  if(!B || !T) return null;
+  const tb = B.ti[t] * 100, tt = T.ti[t] * 100, dT = tt - tb, gain = ppEP(B.dp[t]) - ppEP(T.dp[t]);
+  const g = Math.round(gain), f1 = function(v){ return v < 10 ? v.toFixed(1) : Math.round(v); };
+  const pk = g === 1 ? '1 pick' : g + ' picks';
+  if(dT > 0.2) return { yes: true, why: 'Tanking raises title odds ' + f1(tb) + '% → ' + f1(tt) + '% (easier path)' + (g >= 1 ? ' and gains ~' + pk : '') + '.' };
+  if(dT >= -1 && gain >= 2) return { yes: true, why: 'Costs only ' + f1(Math.abs(dT)) + ' pts of title odds (' + f1(tb) + '% → ' + f1(tt) + '%) for ~' + pk + '.' };
+  if(tb < 3) return gain >= 0.5 ? { yes: true, why: 'Title odds are already low (' + f1(tb) + '%) — tanking improves the pick by ~' + pk + '.' } : { yes: false, why: 'Title odds are low (' + f1(tb) + '%), but tanking doesn’t improve the pick.' };
+  return { yes: false, why: 'Tanking ' + (g >= 1 ? 'gains ~' + pk + ' but ' : '') + 'cuts title odds ' + f1(tb) + '% → ' + f1(tt) + '% and playoffs ' + ppP(B.po[t]) + ' → ' + ppP(T.po[t]) + '.' };
+}
+function ppeView(){
+  const TM = ppeTeams(), t = ppeTeam(), me = TM.by[t];
+  const opts = TM.divs.map(function(d){ return '<optgroup label="' + esc(d.id) + '">' + d.ids.map(function(id){ return '<option value="' + esc(id) + '"' + (id === t ? ' selected' : '') + '>' + esc(TM.by[id].name) + (id === S.team ? ' (you)' : '') + '</option>'; }).join('') + '</optgroup>'; }).join('');
+  let h = '<div class="ppe">' +
+    '<div class="mhead"><button class="back" id="ppeBack">‹ Standings</button><span class="mtitle">Playoff Engine</span>' +
+    '<label class="ppsel" data-key="ppsel">' + (me ? badge(me.T) + '<span>' + esc(me.T.code) + '</span>' : '<span>Team</span>') + ICON.chev + '<select id="ppeSel" aria-label="Show team">' + opts + '</select></label></div>';
+  const B = ENG.res && ENG.res.pp;
+  if(!B || !me || !B.po || B.po[t] == null){ return h + '<div class="empty">' + (B ? 'No playoff data for this team yet.' : 'Prediction Engine is calculating…') + '</div></div>'; }
+  const TK = PPE.res[t] && PPE.res[t].r, on = PPE.on && !!TK, D = on ? TK : B, busy = PPE.busy === t || (!TK && !!ENG.res && !ENG.res.snap);
+  const dr = function(cur, base, up, unit){ return on ? ppDelta(cur, base, up, unit) : ''; };
+  const nx = B.nx || {}, opp = nx.opp && nx.opp[t] && TM.by[nx.opp[t]];
+  const divIdx = TM.divs.findIndex(function(d){ return d.ids.indexOf(t) >= 0; }), rk = divIdx >= 0 ? TM.divs[divIdx].ids.indexOf(t) + 1 : 0;
+  const ord = ['', '1st', '2nd', '3rd', '4th', '5th', '6th'];
+  h += '<div class="ppsub">' + esc(me.name) + ' · ' + esc(me.rec) + (rk ? ' · ' + esc(me.div) + ' ' + ord[rk] : '') + (nx.w ? ' · next: <b>Week ' + nx.w + (opp ? ' vs ' + esc(opp.name) : nx.w === RANK_WEEK ? ' (position night)' : '') + '</b>' : '') + '</div>';
+  // heads-up: title card + draft card
+  const dd = D.dp[t], ml = ppML(dd), n = dd.length, a0 = Math.max(0, Math.min(n - 3, ml - 1));
+  let dpr = ''; for(let k = a0; k < Math.min(n, a0 + 3); k++) dpr += '<div class="dpl' + (k === ml ? ' ml' : '') + '"><span>Pick ' + (k + 1) + '</span><span>' + dpPct(dd[k]) + '</span></div>';
+  h += '<div class="pphud" data-key="pphud"><div class="pphc pptc"><small>Title chance</small><b>' + ppP(D.ti[t], true).replace('%', '<sup>%</sup>') + '</b>' + dr(D.ti[t], B.ti[t], true) +
+    '<em>Reach Super Bowl <b>' + ppP(D.sb[t], true) + '</b></em></div>' +
+    '<div class="pphc ppdc"><small><span>Draft pick</span>' + (on ? ppDelta(ml + 1, ppML(B.dp[t]) + 1, true, 'pick') : '') + '</small>' + dpr + '</div></div>';
+  const sd = D.seed[t] || [], sm = Math.max(0, ppSeedAt(D, TM, t)), bsm = Math.max(0, ppSeedAt(B, TM, t));   // same order as the seeds list + bracket
+  const cell = function(lab, val, extra){ return '<div class="lacell"><small>' + lab + '</small><b>' + val + '</b>' + (extra || '<em>&nbsp;</em>') + '</div>'; };
+  const pc = function(v){ return ppP(v).replace('%', '<sup>%</sup>'); };
+  h += '<section class="la ppla" data-key="ppla"><div class="lagrid">' + cell('Playoffs', pc(D.po[t]), dr(D.po[t], B.po[t], true)) + '<hr>' +
+    cell('Bye', pc(D.bye[t]), dr(D.bye[t], B.bye[t], true)) + '<hr>' +
+    cell('Proj. seed', '#' + (sm + 1), on && sm !== bsm ? '<i class="ppd ' + (sm > bsm ? 'r' : 'g') + '">' + (sm > bsm ? '▼' : '▲') + Math.abs(sm - bsm) + '</i>' : '<em>' + ppP(sd[sm]) + '</em>') + '<hr>' +
+    cell('Loser Bowl', pc(D.lb[t]), dr(D.lb[t], B.lb[t], null)) + '</div></section>';
+  // Strategic Tank
+  if(!nx.w){ h += '<section class="pptk" data-key="pptk"><div class="tl">Strategic Tank</div><div class="ts">No regular-season games left to tank.</div></section>'; }
+  else {
+    const tw = 'Week ' + nx.w + (opp ? ' vs ' + esc(opp.name) : '') + ' · ' + esc(me.name) + ' loses';
+    h += '<section class="pptk' + (PPE.on ? ' on' : '') + '" data-key="pptk"><div class="tkr"><div><div class="tl">Strategic Tank</div><div class="ts">' + tw + '</div></div>' +
+      '<button class="tkp' + (PPE.on ? ' on' : '') + '" id="ppeTank" role="switch" aria-checked="' + PPE.on + '" aria-label="Strategic Tank"><span class="kn"></span><span class="tx">' + (PPE.on ? 'ON' : 'OFF') + '</span></button></div>';
+    if(busy) h += '<div class="ppld" data-key="ppld"><div class="ldb" id="ppeLd"><i style="width:' + Math.round(PPE.prog * 100) + '%"></i></div><div class="ldt"><span>Simulating 20,000 seasons…</span><span id="ppeLdP">' + Math.round(PPE.prog * 100) + '%</span></div></div>';
+    else h += '<div class="ppld done" data-key="ppld"><div class="ldb"><i style="width:100%"></i></div><div class="ldt"><span>20,000 seasons each way</span><span>' + (ENG.at ? 'Updated ' + esc(new Date(ENG.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) : '') + '</span></div></div>';
+    const rc = ppRec(B, TK, t);
+    if(rc) h += '<div class="ppre ' + (rc.yes ? 'yes' : 'no') + '" data-key="ppre"><span class="rb">' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '</span><span class="rt">' + esc(rc.why) + '</span></div>';
+    const rows = [['Playoffs', 'po', true], ['Bye (top 3)', 'bye', true], ['Title', 'ti', true], ['Most likely pick', 'pk', true], ['Loser Bowl', 'lb', null], ['Most likely seed', 'sd', false]];
+    h += '<div class="ppcm" data-key="ppcm"><div class="ch"><span></span><span class="' + (PPE.on ? '' : 'act') + '">Play to win</span><span class="' + (PPE.on ? 'act' : '') + '">Tank</span><span>Change</span></div>' + rows.map(function(r){
+      const val = function(X){ if(!X) return '…'; if(r[1] === 'pk') return '#' + (ppML(X.dp[t]) + 1); if(r[1] === 'sd') return '#' + (ppSeedAt(X, TM, t) + 1); return ppP(X[r[1]][t], r[1] === 'ti'); };
+      let ch = '';
+      if(TK){ if(r[1] === 'pk') ch = ppDelta(ppML(TK.dp[t]) + 1, ppML(B.dp[t]) + 1, true, 'pick');
+        else if(r[1] === 'sd'){ const x = ppSeedAt(TK, TM, t), y = ppSeedAt(B, TM, t); ch = x === y ? '<i class="ppd z">±0</i>' : '<i class="ppd ' + (x > y ? 'r' : 'g') + '">' + (x > y ? '▼' : '▲') + Math.abs(x - y) + '</i>'; }
+        else ch = ppDelta(TK[r[1]][t], B[r[1]][t], r[2]); }
+      return '<div class="cr"><span>' + r[0] + '</span><span class="' + (PPE.on ? '' : 'act') + '">' + val(B) + '</span><span class="' + (PPE.on ? 'act' : '') + '">' + val(TK) + '</span><span>' + ch + '</span></div>'; }).join('') + '</div></section>';
+  }
+  // road to the title
+  const road = [['Make playoffs', 'po'], ['Reach division semis', 'semi'], ['Reach division final', 'fin'], ['Reach Super Bowl', 'sb'], ['Win title', 'ti']];
+  h += '<div class="ppsec">' + esc(me.name) + '’s road to the title' + (on ? ' <i class="pptg">TANK</i>' : '') + '</div><section class="ppcard pad" data-key="pproad">' + road.map(function(r){
+    const v = D[r[1]][t]; return '<div class="ppfn"><div class="fl"><span>' + r[0] + '</span><span><b>' + ppP(v, true) + '</b>' + dr(v, B[r[1]][t], true) + '</span></div><div class="fb"><i style="width:' + Math.max(1.5, Math.min(100, v * 100)).toFixed(1) + '%"></i></div></div>'; }).join('') + '</section>';
+  // projected seeds
+  const ordered = {}; TM.divs.forEach(function(d){ ordered[d.id] = ppSeeds(D, d.ids); });
+  const prec = function(id){ const w = Math.round(D.w[id]); return w + '-' + Math.max(0, REG_END - w); };
+  h += '<div class="ppsec">Projected seeds <span class="sn">most likely finish · % = odds of that seed</span></div>';
+  TM.divs.forEach(function(d){
+    h += '<section class="ppcard" data-key="pps-' + esc(d.id) + '"><div class="ppsh"><b>' + esc(d.id) + '</b><span>Proj</span><span>Seed&nbsp;%</span><span></span></div>' + ordered[d.id].map(function(id, i){
+      const tg = i < 3 ? ['by', 'BYE'] : i < 5 ? ['wc', 'WC'] : ['lb', 'LOSER BOWL'];
+      return '<div class="ppsr' + (id === t ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' + badge(TM.by[id].T) + '<span class="nm">' + esc(TM.by[id].name) + '</span><span class="rc">' + prec(id) + '</span><span class="sp">' + ppP((D.seed[id] || [])[i]) + '</span><span class="pptag ' + tg[0] + '">' + tg[1] + '</span></div>'; }).join('') + '</section>';
+  });
+  // projected bracket (most likely seeds; % = chance to win that game, best lineups)
+  const gm = function(w, a, sa, b, sb, wide){ const p = ppWin(D, w, a, b), cd = function(id){ return wide ? esc(TM.by[id].name) : esc(TM.by[id].T.code); };
+    return '<div class="ppg' + (wide ? ' wide' : '') + '"><div class="gt' + (a === t ? ' me' : '') + '"><span class="sd">' + sa + '</span>' + (wide ? badge(TM.by[a].T) : '') + '<span class="gn">' + cd(a) + '</span><span class="gp' + (p >= 0.5 ? '' : ' lo') + '">' + Math.round(p * 100) + '%</span></div>' +
+      '<div class="gt' + (b === t ? ' me' : '') + '"><span class="sd">' + sb + '</span>' + (wide ? badge(TM.by[b].T) : '') + '<span class="gn">' + cd(b) + '</span><span class="gp' + (p < 0.5 ? '' : ' lo') + '">' + (100 - Math.round(p * 100)) + '%</span></div></div>'; };
+  const win = function(w, a, b){ return ppWin(D, w, a, b) >= 0.5 ? a : b; };
+  h += '<div class="ppsec">Projected bracket <span class="sn">most likely seeds · % = chance to win the game</span></div>';
+  const dvs = TM.divs.filter(function(d){ return ordered[d.id].length >= 5; });
+  if(dvs.length === 2 && ordered[dvs[0].id][5] && ordered[dvs[1].id][5]){ const x = ordered[dvs[0].id][5], y = ordered[dvs[1].id][5];
+    h += '<section class="ppcard pad" data-key="pplb"><div class="rh">Week 13 · Loser Bowl · winner = pick #1 · playoff teams sit out</div>' + gm(13, x, esc(dvs[0].id) + ' 6', y, esc(dvs[1].id) + ' 6', true) + '</section>'; }
+  const champ = {}, sdOf = function(s, id){ return '#' + (s.indexOf(id) + 1); };
+  dvs.forEach(function(d){ const s = ordered[d.id], wc = win(14, s[3], s[4]), a = win(15, s[0], wc), b = win(15, s[1], s[2]); champ[d.id] = win(16, a, b);
+    h += '<section class="ppcard pad" data-key="ppb-' + esc(d.id) + '"><div class="ppbh">' + esc(d.id) + ' division playoffs</div><div class="ppbr">' +
+      '<div class="pbcol"><div class="rh">Wk 14 · Wild card</div>' + gm(14, s[3], '#4', s[4], '#5') + '<div class="byes">Byes: #1 #2 #3</div></div>' +
+      '<div class="pbcol"><div class="rh">Wk 15 · Semis</div>' + gm(15, s[0], '#1', wc, sdOf(s, wc)) + gm(15, s[1], '#2', s[2], '#3') + '</div>' +
+      '<div class="pbcol"><div class="rh">Wk 16 · Final</div><div class="pvc">' + gm(16, a, sdOf(s, a), b, sdOf(s, b)) + '</div></div></div></section>'; });
+  if(dvs.length === 2){ const x = champ[dvs[0].id], y = champ[dvs[1].id];
+    h += '<section class="ppcard pad" data-key="ppsb"><div class="rh">Week 17 · Super Bowl</div>' + gm(17, x, esc(dvs[0].id), y, esc(dvs[1].id), true) + '</section>'; }
+  // all teams
+  const all = Object.keys(TM.by).filter(function(id){ return D.po[id] != null; }).sort(function(a, b){ return (D.ti[b] - D.ti[a]) || (D.po[b] - D.po[a]); });
+  h += '<div class="ppsec">All teams <span class="sn">20,000 simulated seasons' + (on ? ' · with the tank' : '') + '</span></div><section class="ppcard pptb" data-key="pptb"><div class="th"><span>Team</span><span>Playoff</span><span>Bye</span><span>Title</span><span>Pick</span></div>' +
+    all.map(function(id){ return '<div class="tr' + (id === t ? ' me' : '') + '"><span class="pptn">' + badge(TM.by[id].T) + esc(TM.by[id].name) + '</span><span>' + ppP(D.po[id]) + '</span><span>' + ppP(D.bye[id]) + '</span><span>' + ppP(D.ti[id], true) + '</span><span>#' + (ppML(D.dp[id]) + 1) + '</span></div>'; }).join('') + '</section>';
+  h += '<p class="note">This week: real CBS lineups · later weeks: our model, best healthy lineups · playoffs: best lineups (no tanking) · Loser Bowl winner = pick #1</p></div>';
+  return h;
+}
+$('#view').addEventListener('change', function(e){ if(e.target && e.target.id === 'ppeSel'){ PPE.team = e.target.value; render(); ppeAsk(); } });
 function chatView(){
   return header('Chat') + onStrip() + keyStrip();
 }
@@ -2501,6 +2773,7 @@ window.addEventListener('popstate', function(){
     if(top.dataset.locked === '1'){ try{ history.pushState({ overlay: overlayStack.length }, ''); }catch(e){} return; }   // can't skip choosing a team
     popping = true; closeOverlay(top, true); popping = false; return;
   }
+  if(S.view === 'ppe'){ S.view = 'standings'; render(); window.scrollTo(0, PPE.y || 0); saveView(); return; }   // v1.16.0: back from the page -> Standings
   if(S.view !== 'home'){ S.view = 'home'; render(); window.scrollTo(0, 0); }
 });
 const VIEW_MAX_AGE = 4 * 3600000, OFFWEEK_MAX = 10 * 60000;
@@ -2708,7 +2981,7 @@ function admTry(){
   if(ADMIN){ admSet(false); closeOverlay(admCode); toast('Advanced features off'); return; }
   const v = (admInput.value || '').trim(); if(!v) return;
   admHash(v).then(function(h){
-    if(h === ADM_KEY){ try{ admInput.blur(); }catch(e){} put('adm-seen', 1); closeOverlay(admCode); admSet(true); toast('Advanced features on'); return; }
+    if(h === ADM_KEY){ try{ admInput.blur(); }catch(e){} put('adm-seen', 1); put('adm-ok', ADM_KEY); closeOverlay(admCode); admSet(true); toast('Advanced features on'); return; }
     admInput.classList.remove('bad'); void admInput.offsetWidth; admInput.classList.add('bad');
     admHint.className = 'hint bad'; admHint.textContent = 'Incorrect code'; admInput.value = '';
   }, function(){ admHint.className = 'hint bad'; admHint.textContent = 'Couldn’t check the code on this browser'; });
@@ -2716,7 +2989,11 @@ function admTry(){
 $('#admGo').addEventListener('click', admTry);
 admInput.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); admTry(); } });
 admInput.addEventListener('input', function(){ if(admHint.classList.contains('bad')){ admHint.className = 'hint'; admHint.textContent = 'This device will stay unlocked.'; admInput.classList.remove('bad'); } });
-$('#admBtn').addEventListener('click', function(){ closeOverlay($('#setOverlay')); setTimeout(openAdmCode, 260); });
+// v1.16.0 (Wes, Nov 17): once the right code has been entered on this device, Admin toggles On/Off with no code
+if(ADMIN && getLocal('adm-ok') !== ADM_KEY) put('adm-ok', ADM_KEY);
+$('#admBtn').addEventListener('click', function(){
+  if(ADMIN || getLocal('adm-ok') === ADM_KEY){ const on = !ADMIN; admSet(on); $('#admVal').textContent = on ? 'On' : 'Off'; toast(on ? 'Advanced features on' : 'Advanced features off'); return; }
+  closeOverlay($('#setOverlay')); setTimeout(openAdmCode, 260); });
 // one-time notice: shows once per phone (after the home-screen gate and team pick); buttons appear after 5 s
 function admNoticeCheck(){
   if(ADMIN || getLocal('adm-seen') || !S.team) return;
@@ -2745,6 +3022,9 @@ $('#view').addEventListener('click', function(e){
   const pn = t.closest('[data-pin]'); if(pn){ togglePin(pn.dataset.pin); return; }
   const mc = t.closest('.mc'); if(mc){ S.curKey = mc.dataset.key; S.open = null; setView('match'); saveView(); return; }
   if(t.closest('#back')){ setView('home'); return; }
+  if(t.closest('#ppeBtn')){ ppeOpen(); return; }
+  if(t.closest('#ppeBack')){ ppeClose(); return; }
+  if(t.closest('#ppeTank')){ ppeToggle(); return; }
   if(t.closest('#prev')){ go(-1); return; }
   if(t.closest('#next')){ go(1); return; }
   const dt = t.closest('.detail');
@@ -2764,6 +3044,8 @@ $('#tabBar').addEventListener('click', function(e){
     S.curKey = mine ? mine.key : (X && X.list[0] ? X.list[0].key : null); S.open = null;
   }
   if(v === 'standings' && Date.now() - S.stAt > 120000) loadStandings();
+  if(S.view === 'ppe'){ S.view = 'standings'; try{ history.replaceState({ v: 'standings' }, ''); }catch(e){}   // v1.16.0: the page sits on top of Standings
+    if(v === 'standings'){ render(); window.scrollTo(0, PPE.y || 0); saveView(); return; } }
   if(v === S.view){ render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
   setView(v);
 });
@@ -3448,22 +3730,115 @@ function engineWorker(){
     if(draft){ const d = {}; ids.forEach(function(id){ d[id] = dp[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); }); return { po: out, dp: d }; }
     return out;
   }
+  // v1.16.0 (Wes, Nov 17): Playoff Prediction Engine. ONE pass plays the rest of the season AND the playoffs in every
+  // simulated season: this week (real CBS lineups) + future weeks (Week 12 by standings), seeds 1-6 per division,
+  // Week 13 Loser Bowl (AFC 6th vs NFC 6th, a real game, winner = pick 1; the 10 playoff teams sit out), Week 14 wild
+  // card 4 vs 5, Week 15 re-seeded semis (1 vs the wild-card winner, 2 vs 3), Week 16 division final, Week 17 Super
+  // Bowl (AFC vs NFC). The bracket never crosses divisions before the Super Bowl. Playoff games use each team's best
+  // healthy lineup (no tanking in the playoffs, Wes). Draft order = league rule 4.C with the real Loser Bowl.
+  // tank = team id -> that team LOSES its next regular-season game (and scores 1 less than the opponent if it would
+  // have won). Same random numbers with and without a tank, so the difference is the tank, not luck.
+  const PO_WEEKS = [13, 14, 15, 16, 17];
+  function seasonSim(msg, wk, tank, prog){
+    const S = msg.season; if(!S) return null;
+    const ids = Object.keys(S.teams), n = ids.length, R = RNG('season|' + msg.week + '|live|draft');
+    const nextW = S.countCur && wk ? msg.week : (S.future[0] ? S.future[0].w : 0);
+    const tankW = tank ? nextW : 0;
+    const z = function(){ const o = {}; ids.forEach(function(id){ o[id] = 0; }); return o; };
+    const cnt = z(), bye = z(), lbc = z(), lbw = z(), semi = z(), fin = z(), sbc = z(), ti = z(), wsum = z();
+    const seed = {}, dp = {}; ids.forEach(function(id){ seed[id] = [0, 0, 0, 0, 0, 0]; dp[id] = new Array(n).fill(0); });
+    const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
+    const pw = {}; PO_WEEKS.forEach(function(w){ pw[w] = {}; ids.forEach(function(id){ pw[w][id] = futureTeam(msg.teams[id] || { roster: [] }, w); }); });
+    const W = {}, DW = {}, PF = {}, PAg = {};
+    const rank = function(a, b){ return (W[b] - W[a]) || (DW[b] - DW[a]) || (PF[b] - PF[a]) || (PAg[b] - PAg[a]); };
+    const apply = function(a, b, sa, sb, x){ W[a] += x; W[b] += 1 - x; PF[a] += sa; PF[b] += sb; PAg[a] += sb; PAg[b] += sa; if(S.teams[a].div === S.teams[b].div){ DW[a] += x; DW[b] += 1 - x; } };
+    // best-lineup game (1 = A wins); always draws the same random numbers so tank / no-tank runs stay in step
+    const play = function(A, B){ const sa = Math.round(A.m + A.s * R.n()), sb = Math.round(B.m + B.s * R.n()), ba = A.bm + A.bs * R.n(), bb = B.bm + B.bs * R.n(), u = R.u();
+      return sa > sb ? 1 : sa < sb ? 0 : ba > bb ? 1 : ba < bb ? 0 : u < 0.5 ? 1 : 0; };
+    // next-week opponents (for the page): this week's pairs, or the next week's schedule (Week 12 = by standings -> unknown)
+    const nx = { w: nextW, opp: {} };
+    const nxp = nextW === msg.week ? S.curPairs : ((S.future[0] && Array.isArray(S.future[0].pairs)) ? S.future[0].pairs : []);
+    nxp.forEach(function(pr){ nx.opp[pr[0]] = pr[1]; nx.opp[pr[1]] = pr[0]; });
+    const dks = []; ids.forEach(function(id){ if(dks.indexOf(S.teams[id].div) < 0) dks.push(S.teams[id].div); }); dks.sort();
+    for(let i = 0; i < N; i++){
+      ids.forEach(function(id){ const t = S.teams[id]; W[id] = t.w + 0.5 * t.t; DW[id] = t.dw + 0.5 * t.dt; PF[id] = t.pf; PAg[id] = t.pa; });
+      if(wk && S.countCur) S.curPairs.forEach(function(pr){ const ta = wk.tot[pr[0]], tb = wk.tot[pr[1]]; if(!ta || !tb) return;
+        let x = wk.win[pr[0]][i], sa = ta[i], sb = tb[i];
+        if(tankW === msg.week){ if(pr[0] === tank){ x = 0; if(sa >= sb) sa = sb - 1; } else if(pr[1] === tank){ x = 1; if(sb >= sa) sb = sa - 1; } }
+        apply(pr[0], pr[1], sa, sb, x); });
+      S.future.forEach(function(F){
+        let pairs = F.pairs;
+        if(pairs === 'rank'){
+          const dv = {}; ids.forEach(function(id){ (dv[S.teams[id].div] || (dv[S.teams[id].div] = [])).push(id); });
+          const ks = Object.keys(dv).sort(); pairs = [];
+          if(ks.length === 2){ const a = dv[ks[0]].sort(rank), b = dv[ks[1]].sort(rank); for(let k = 0; k < Math.min(a.length, b.length); k++) pairs.push([a[k], b[k]]); }
+          else pairs = null;
+        }
+        if(!pairs){ const sh = ids.slice(); for(let k = sh.length - 1; k > 0; k--){ const j = Math.floor(R.u() * (k + 1)); const t = sh[k]; sh[k] = sh[j]; sh[j] = t; } pairs = []; for(let k = 0; k + 1 < sh.length; k += 2) pairs.push([sh[k], sh[k + 1]]); }
+        pairs.forEach(function(pr){ const A = fut[F.w][pr[0]], B = fut[F.w][pr[1]]; if(!A || !B) return;
+          let sa = Math.round(A.m + A.s * R.n()), sb = Math.round(B.m + B.s * R.n()); const ba = A.bm + A.bs * R.n(), bb = B.bm + B.bs * R.n(), u = R.u();
+          let x = sa > sb ? 1 : sa < sb ? 0 : (ba > bb ? 1 : ba < bb ? 0 : u < 0.5 ? 1 : 0);
+          if(F.w === tankW){ if(pr[0] === tank){ x = 0; if(sa >= sb) sa = sb - 1; } else if(pr[1] === tank){ x = 1; if(sb >= sa) sb = sa - 1; } }
+          apply(pr[0], pr[1], sa, sb, x); });
+      });
+      const divs = {}, pos = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); wsum[id] += W[id]; });
+      dks.forEach(function(d){ divs[d].sort(rank); divs[d].forEach(function(id, k){ pos[id] = k; if(k < 6) seed[id][k]++; if(k < 5) cnt[id]++; if(k < 3) bye[id]++; }); });
+      // Week 13: Loser Bowl (6th vs 6th)
+      let lbWin = null; const six = dks.map(function(d){ return divs[d][5]; }).filter(Boolean);
+      if(six.length === 2){ lbc[six[0]]++; lbc[six[1]]++; lbWin = play(pw[13][six[0]], pw[13][six[1]]) ? six[0] : six[1]; lbw[lbWin]++; }
+      // Weeks 14-16: division playoffs (re-seeded), Week 17: Super Bowl
+      const champs = [];
+      dks.forEach(function(d){ const s = divs[d]; if(s.length < 5) return;
+        const wc = play(pw[14][s[3]], pw[14][s[4]]) ? s[3] : s[4];
+        semi[s[0]]++; semi[s[1]]++; semi[s[2]]++; semi[wc]++;
+        const a = play(pw[15][s[0]], pw[15][wc]) ? s[0] : wc, b = play(pw[15][s[1]], pw[15][s[2]]) ? s[1] : s[2];
+        fin[a]++; fin[b]++;
+        const c = play(pw[16][a], pw[16][b]) ? a : b; sbc[c]++; champs.push(c); });
+      if(champs.length === 2) ti[play(pw[17][champs[0]], pw[17][champs[1]]) ? champs[0] : champs[1]]++;
+      // draft (rule 4.C): Loser Bowl winner 1, loser 2; picks 3-10 fewest wins first; division winners 11-12
+      const lb = [], dw = [], mid = [];
+      dks.forEach(function(d){ divs[d].forEach(function(id, k){ (k === 0 ? dw : k === 5 ? lb : mid).push(id); }); });
+      const worse = function(a, b){ return (W[a] - W[b]) || (S.teams[a].div === S.teams[b].div ? pos[b] - pos[a] : PF[a] - PF[b]); };
+      let order = [];
+      if(lb.length === 2 && lbWin) order.push(lbWin, lb[0] === lbWin ? lb[1] : lb[0]); else mid.push.apply(mid, lb);
+      order = order.concat(mid.sort(worse), dw.sort(worse));
+      order.forEach(function(id, k){ dp[id][k]++; });
+      if(prog && (i + 1) % 1000 === 0) prog((i + 1) / N);
+    }
+    const f = function(o){ const r = {}; ids.forEach(function(id){ r[id] = Math.round(o[id] / N * 10000) / 10000; }); return r; };
+    const sd = {}, d = {}, fx = {};
+    ids.forEach(function(id){ sd[id] = seed[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); d[id] = dp[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); });
+    PO_WEEKS.forEach(function(w){ fx[w] = {}; ids.forEach(function(id){ const t = pw[w][id]; fx[w][id] = [Math.round(t.m * 10) / 10, Math.round(t.s * 10) / 10]; }); });
+    const wa = {}; ids.forEach(function(id){ wa[id] = Math.round(wsum[id] / N * 100) / 100; });
+    return { po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW };
+  }
+  let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
   self.onmessage = function(e){
     const msg = e.data;
     if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
       const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
       const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
+    if(msg.type === 'tank'){   // v1.16.0: Strategic Tank — re-run the latest season pass with this team losing its next game
+      try{
+        if(!LAST || !LAST.msg.season){ self.postMessage({ type: 'tank', id: msg.id, team: msg.team, res: null }); return; }
+        const r = seasonSim(LAST.msg, LAST.live, msg.team, function(f){ self.postMessage({ type: 'tankp', id: msg.id, f: f }); });
+        self.postMessage({ type: 'tank', id: msg.id, team: msg.team, run: LAST.id, res: r });
+      }catch(err){ self.postMessage({ type: 'tank', id: msg.id, team: msg.team, res: null, err: String(err && err.message || err) }); }
+      return;
+    }
     if(msg.type !== 'run') return;
     try{
       Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });
       const live = runWeek(msg, true);
-      let po = null, po0 = null, dp = null;
-      if(msg.season){ const om = optMsg(msg); po = playoff(msg, runWeek(om, true)); po0 = playoff(msg, runWeek(om, false));
-        // v1.15.0: draft picks use this week's REAL CBS lineups (live), so a lineup change (even a tank) moves them;
-        // playoff odds keep every team's best lineup (Wes, Nov 10)
-        const dr = playoff(msg, live, true); dp = dr ? dr.dp : null; }
-      const keep = {}; Object.keys(cache).forEach(function(k){ keep[k] = 1; });
-      self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0, dp: dp });
+      let po = null, po0 = null, dp = null, pp = null;
+      if(msg.season){
+        // v1.16.0 (Wes, Nov 16-17): playoff odds, draft odds and the Playoff Prediction Engine all come from ONE pass on
+        // this week's REAL CBS lineups (a benched lineup / tank moves them). Was: playoff odds on best lineups (v1.5.3).
+        pp = seasonSim(msg, live, null); if(pp){ po = pp.po; dp = pp.dp; }
+        po0 = playoff(msg, runWeek(msg, false));   // same lineups before kickoff -> the weekly change line
+        LAST = { msg: msg, live: live, id: msg.id };
+      }
+      self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0, dp: dp, pp: pp });
     }catch(err){ self.postMessage({ type: 'error', id: msg.id, err: String(err && err.message || err) }); }
   };
 }
@@ -3477,8 +3852,10 @@ function engineStart(){
   try{ ENG.worker = new Worker(URL.createObjectURL(new Blob(['(' + engineWorker.toString() + ')()'], { type: 'text/javascript' }))); }
   catch(e){ ENG.err = 'worker'; return; }
   ENG.worker.onmessage = function(e){
-    const d = e.data; ENG.busy = false;
-    if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); saveEngSnap(false); render(); }
+    const d = e.data;
+    if(d.type === 'tankp' || d.type === 'tank'){ ppeMsg(d); return; }   // v1.16.0 Strategic Tank (doesn't touch the run queue)
+    ENG.busy = false;
+    if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); saveEngSnap(false); render(); if(S.view === 'ppe') ppeAsk(); }
     else if(d.type === 'error') ENG.err = d.err;
     engineTick();
   };
@@ -3510,7 +3887,7 @@ let engSnapAt = 0, engSnapPending = null;
 function saveEngSnap(now){
   const R = ENG.res;
   if(!R || R.snap || !S.proj || !S.curWeek || !engineReady()) return;
-  engSnapPending = { week: S.curWeek, gen: S.proj.raw.generated, m: R.m, p: R.p, po: R.po, po0: R.po0, dp: R.dp };
+  engSnapPending = { week: S.curWeek, gen: S.proj.raw.generated, m: R.m, p: R.p, po: R.po, po0: R.po0, dp: R.dp, pp: R.pp || null };
   if(!now && Date.now() - engSnapAt < 20000) return;                 // at most every 20 s while games run (and on close)
   engSnapAt = Date.now(); const v = engSnapPending; engSnapPending = null; v.at = Date.now();
   try{ put('eng', v); }catch(e){}
@@ -3519,7 +3896,7 @@ function useEngSnap(){
   if(ENG.res || !S.proj || !S.curWeek) return;
   const v = getLocal('eng');
   if(!v || v.week !== S.curWeek || v.gen !== S.proj.raw.generated || !snapOk(v) || !v.m) return;
-  ENG.res = { type: 'done', snap: true, m: v.m, p: v.p || {}, po: v.po || null, po0: v.po0 || null, dp: v.dp || null };
+  ENG.res = { type: 'done', snap: true, m: v.m, p: v.p || {}, po: v.po || null, po0: v.po0 || null, dp: v.dp || null, pp: v.pp || null };
 }
 // open: projections saved on the phone (same file the network would give; replaced as soon as a newer one loads)
 (function(){ const j = getLocal('proj'); if(j && Array.isArray(j.players) && j.season === SEASON && j.generated){ setProj(j); useEngSnap(); } })();
@@ -3882,7 +4259,7 @@ var chatHook = function(){ placePane(); paintBadge(); };
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; } };
+window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; }, PPE: PPE, isAdmin: function(){ return ADMIN; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){
@@ -3892,6 +4269,7 @@ try{ history.replaceState({}, ''); }catch(e){}
     if(away < OFFWEEK_MAX){ S.week = lv.w; setTimeout(function(){ loadWeek(true); }, 0); }
     else setTimeout(function(){ toast('Back to Current Week \u00B7 Week ' + S.curWeek); }, 600);
   }
+  if(lv.v === 'ppe') lv.v = 'standings';   // v1.16.0
   if(['match', 'standings', 'chat'].indexOf(lv.v) >= 0){ S.view = lv.v; S.curKey = away >= OFFWEEK_MAX ? null : (lv.k || null); try{ history.pushState({ v: lv.v }, ''); }catch(e){} if(lv.v === 'standings') loadStandings(); }   // v1.7.0: 10+ min away -> your own game
   if(S.view === 'match' && away >= OFFWEEK_MAX) setTimeout(function(){ window.scrollTo(0, 0); }, 0);
 })();
