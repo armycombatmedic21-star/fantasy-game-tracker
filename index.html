@@ -1036,10 +1036,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.16.0';
+const APP_VERSION = '1.16.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.16.1', 'Fix: playoff odds, draft odds and the Playoff Prediction Engine assume every team plays its best healthy lineup this week again (like before v1.16.0). v1.16.0 used the lineups currently set in CBS, and early in the week (bye-week players still in lineups) that made some games lopsided — Dallas showed 99% to make the playoffs instead of about 91%. Use Strategic Tank to see a team throwing a game. Scoreboard and Matchup win % still use the real CBS lineups. No visual changes.', 'Fix: more accurate odds early in the week. No visual changes.'],
   ['1.16.0', 'Playoff Prediction Engine (admin): new “Playoff Prediction Engine” button on Standings (between the Online card and the AFC card) opens a new page. The engine now plays the whole playoffs in each of the 20,000 seasons (Week 13 Loser Bowl as a real game, Week 14 wild card 4 vs 5, re-seeded Week 15 semis, Week 16 division final, Week 17 Super Bowl; the bracket stays in the division). The page shows title chance, draft pick, playoffs / bye / projected seed / Loser Bowl, the road to the title, projected seeds, the projected bracket with win % per game, and every team’s odds. A team drop-down (top right) shows any team without changing yours. Strategic Tank re-runs everything with that team losing its next game, shows every change, and says TANK NOW (green) or DON’T TANK (red). Also: playoff odds now use this week’s real CBS lineups (same as draft odds), the Loser Bowl is a real game in the draft odds (was 50/50), the “Most likely” line is gone from the draft pick tile (the bold row + blue % show it), and Admin turns on and off in Settings without re-typing the code once it’s been entered on that phone. Visual changes: new pill button on Standings; new page; draft tile one line shorter. Phones without the code see the button with a lock and get a “Locked” sheet.', 'New on Standings: a Playoff Prediction Engine button (admin only — other phones see a lock). Admin turns on and off in Settings without re-typing the code.'],
   ['1.15.0', 'Draft pick projections (Advanced Draft Order Prediction Engine): each simulated season now also works out the draft order (league rule 4.C: the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2, picks 3-10 go fewest wins first, division winners pick 11-12; playoffs don’t matter). It uses this week’s real CBS lineups, so a lineup change moves it live. New on screen: a 4th Home box “Draft Pick” with the most likely pick and its odds; a DRAFT # column after PLAYOFF % in Standings; in a team’s drop-down, “Proj. Draft Pick” (most likely pick in the middle with the pick above and below and their odds) replaces Differential. To fit: the Standings column headers are slightly smaller (they wrap to two lines on small Androids), the columns are a little narrower, and the drop-down arrow moved left under the team name. The Notice has a new first line. Non-admin phones see locks.', 'Advanced Draft Order Prediction Engine added. Disabled for all non-Dallas owners unless league rules are updated.'],
   ['1.14.0', 'Admin lock: a one-time Notice slides up once per phone (its Enter Code / Close buttons appear after 5 seconds). Settings has a new Admin row; the code is entered once and the phone stays unlocked. Phones without the code: no player projections (player rows and the tap-open panel), no projected team scores (Scoreboard cards and the Matchup screen), and playoff odds show a gray lock on the Home card and in the Standings column. Live scores, matchups, the win bar with its %, yards-to-next-tier and the TOUCHDOWN / RED ZONE pills stay. Phones with the code look exactly like before.', 'All advanced computer modeling, Data/Team Analysis, advanced playoff projections and advanced machine learning player/matchup projections are disabled for all non-Dallas owners unless league rules are updated.'],
@@ -3832,11 +3833,14 @@ function engineWorker(){
       const live = runWeek(msg, true);
       let po = null, po0 = null, dp = null, pp = null;
       if(msg.season){
-        // v1.16.0 (Wes, Nov 16-17): playoff odds, draft odds and the Playoff Prediction Engine all come from ONE pass on
-        // this week's REAL CBS lineups (a benched lineup / tank moves them). Was: playoff odds on best lineups (v1.5.3).
-        pp = seasonSim(msg, live, null); if(pp){ po = pp.po; dp = pp.dp; }
-        po0 = playoff(msg, runWeek(msg, false));   // same lineups before kickoff -> the weekly change line
-        LAST = { msg: msg, live: live, id: msg.id };
+        // v1.16.1 (Wes, Nov 17): playoff odds, draft odds and the Playoff Prediction Engine come from ONE pass with every
+        // team's BEST healthy lineup this week (v1.5.3 rule; players already playing stay where CBS has them). v1.16.0 used
+        // the lineups set in CBS, and early in the week (bye players still in lineups) that gave Dallas 99% instead of ~91%.
+        // A tank is shown with the page's Strategic Tank switch instead. Scoreboard / Matchup win % keep the real lineups.
+        const om = optMsg(msg), best = runWeek(om, true);
+        pp = seasonSim(msg, best, null); if(pp){ po = pp.po; dp = pp.dp; }
+        po0 = playoff(msg, runWeek(om, false));   // same best lineups before kickoff -> the weekly change line
+        LAST = { msg: msg, live: best, id: msg.id };
       }
       self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0, dp: dp, pp: pp });
     }catch(err){ self.postMessage({ type: 'error', id: msg.id, err: String(err && err.message || err) }); }

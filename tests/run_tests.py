@@ -894,7 +894,8 @@ with sync_playwright() as pw:
         ctx.close()
     br.close()
 F.build_live = _orig_live
-check('draft: tank lineup moves Dallas to an earlier pick', _exp['tank'] < _exp['normal'] - 0.5, _exp)
+# v1.16.1: odds use every team's best lineup this week, so benching starters in CBS doesn't move them (Strategic Tank does)
+check('draft: benched CBS lineup does not move draft odds (best lineups, v1.16.1)', abs(_exp['tank'] - _exp['normal']) < 0.05, _exp)
 srv.shutdown()
 # version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
 import re as _re2
