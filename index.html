@@ -1078,10 +1078,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.19.0';
+const APP_VERSION = '1.20.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.20.0', 'Draft order fixed to the league rule (commissioner Dale, Nov 17): the two 1st-place teams pick 11–12, the two 2nd-place teams pick 9–10, the 3rd–5th place teams pick 3–8 by record, the Loser Bowl decides 1–2. Ties: same division = division record then points; different divisions = points. Before, 2nd-place teams were mixed into picks 3–10 by record. Draft odds, tank calls and the TANK pills update. No visual changes.', 'Small fixes.'],
   ['1.19.0', 'Playoff Prediction Engine: (1) the projected bracket now comes from the simulation — each spot shows the team that gets there most often in the 20,000 seasons, and each team’s % is its odds to reach the next round (with ▲/▼ when Strategic Tank is on). Before, every game just advanced the team with the higher projection, even by a tenth of a point (that put Green Bay in the Super Bowl while Indianapolis gets there far more often). (2) Turning Strategic Tank ON now also opens the full breakdown under the recommendation: this week’s game, standings and bye, the playoff path round by round, the draft, the ripple effect on every other team (who gets knocked out of a bye or the playoffs, who moves up) and which rule made the call. Picking another team in the drop-down turns the tank switch off. Visual changes: bracket % meaning changed and small ▲/▼ next to them when the tank is on; the breakdown panel under the recommendation while the tank is on.', 'Small fixes.'],
   ['1.18.0', 'Playoff Prediction Engine: new team drop-down (top right). Each team shows its logo, its name (YOU tag on your team) and a TANK pill: green = tanking is recommended for that team this week, red with an X = not, gray = still working it out. The team you’re looking at is highlighted green. To fill the pills the engine now runs Strategic Tank for every team in the background (your selected team first). Visual changes: the iPhone/Android pick-list is replaced by this drop-down; the arrow on the team chip flips when it’s open.', 'Small fixes.'],
   ['1.17.0', 'Matchup: new Current | Optimal switch under each team (admin), like FantasyPros. It always starts on Current. Optimal puts that team’s best healthy lineup in (by our projections; players whose game has started stay where CBS has them; Out / IR / bye players never start): the bench player moves up into the starter row, the starter moves down to the bench, and the projected score and win % update. Playoff Prediction Engine: draft changes now use the AVERAGE pick (the most likely pick can jump between groups of picks, e.g. Pittsburgh 9 → 4 while the average only moves 7.6 → 6.0); new “Avg. pick” row; the recommendation text says “picks on average”. New rule first: a “free tank” (title, playoff and bye odds each drop less than half a point and the average pick improves) = TANK NOW. Visual changes: the Current | Optimal switch under each team name on the Matchup card; the draft card’s change now reads like “▲1.6 avg”; one more row in the Tank table.', 'Small fixes.'],
@@ -2753,7 +2754,7 @@ function ppWhy(B, T, t, TM, nx, opp, rc){
   // 4) draft
   const e0 = ppEP(B.dp[t]), e1 = ppEP(T.dp[t]), w4 = [];
   w4.push('Average pick <b>' + e0.toFixed(1) + ' → ' + e1.toFixed(1) + '</b>' + (e0 - e1 >= 0.05 ? ' (' + (e0 - e1).toFixed(1) + ' spots earlier)' : ' (no change)') + ' · most likely pick #' + (ppML(B.dp[t]) + 1) + ' → #' + (ppML(T.dp[t]) + 1) + '.');
-  w4.push(T.lbw[t] > 0.005 || B.lbw[t] > 0.005 ? 'Chance at the #1 pick (win the Loser Bowl): ' + P(B.lbw[t]) + ' → <b>' + P(T.lbw[t]) + '</b>.' : 'Picks 3–10 go by fewest wins, so one more loss moves the pick earlier — division winners pick 11–12.');
+  w4.push(T.lbw[t] > 0.005 || B.lbw[t] > 0.005 ? 'Chance at the #1 pick (win the Loser Bowl): ' + P(B.lbw[t]) + ' → <b>' + P(T.lbw[t]) + '</b>.' : 'Draft: 1st place picks 11–12, 2nd place 9–10, 3rd–5th place 3–8 by record (worst first), 6th place plays the Loser Bowl for 1–2 — so a loss only helps the pick if it drops you to 3rd or lower, or earlier inside your group.');
   // 5) ripple effect on the rest of the league
   const rip = [];
   Object.keys(TM.by).forEach(function(id){ if(id === t) return;
@@ -3854,6 +3855,7 @@ function engineWorker(){
   }
   function optMsg(msg){ const t = {}; Object.keys(msg.teams).forEach(function(id){ t[id] = optTeam(msg.teams[id]); }); return Object.assign({}, msg, { teams: t }); }
   // v1.15.0 (Wes, Nov 16): draft = true -> also tally each team's draft pick in every simulated season (league rule 4.C):
+  // (v1.20.0: this draft branch is no longer used — draft odds come from seasonSim with the league's real rule)
   // the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2 (50/50, no Week 13 projections), picks 3-10 =
   // the other non-division-winners, fewest wins first (same division: lower in the standings first; different
   // divisions: fewer points first), division winners pick 11-12 (better record = 12). Playoffs don't matter.
@@ -3974,13 +3976,15 @@ function engineWorker(){
         fin[a]++; fin[b]++;
         const c = play(pw[16][a], pw[16][b]) ? a : b; sbc[c]++; champs.push(c); });
       if(champs.length === 2) ti[play(pw[17][champs[0]], pw[17][champs[1]]) ? champs[0] : champs[1]]++;
-      // draft (rule 4.C): Loser Bowl winner 1, loser 2; picks 3-10 fewest wins first; division winners 11-12
-      const lb = [], dw = [], mid = [];
-      dks.forEach(function(d){ divs[d].forEach(function(id, k){ (k === 0 ? dw : k === 5 ? lb : mid).push(id); }); });
+      // draft (commissioner Dale, Nov 17): Loser Bowl winner 1, loser 2; picks 3-8 = the 3rd-5th place teams, fewest wins
+      // first; picks 9-10 = the two 2nd-place teams; 11-12 = the two 1st-place teams (worse record first in each pair).
+      // Ties: same division -> lower in the division standings first (division record, then points); different -> fewer points.
+      const lb = [], dw = [], d2 = [], mid = [];
+      dks.forEach(function(d){ divs[d].forEach(function(id, k){ (k === 0 ? dw : k === 1 ? d2 : k === 5 ? lb : mid).push(id); }); });
       const worse = function(a, b){ return (W[a] - W[b]) || (S.teams[a].div === S.teams[b].div ? pos[b] - pos[a] : PF[a] - PF[b]); };
       let order = [];
       if(lb.length === 2 && lbWin) order.push(lbWin, lb[0] === lbWin ? lb[1] : lb[0]); else mid.push.apply(mid, lb);
-      order = order.concat(mid.sort(worse), dw.sort(worse));
+      order = order.concat(mid.sort(worse), d2.sort(worse), dw.sort(worse));
       order.forEach(function(id, k){ dp[id][k]++; });
       if(prog && (i + 1) % 1000 === 0) prog((i + 1) / N);
     }
