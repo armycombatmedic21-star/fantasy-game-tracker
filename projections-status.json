@@ -1,5 +1,5 @@
 {
- "at": "2026-11-17T12:54:16+00:00",
+ "at": "2026-11-17T21:26:35+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -11,8 +11,8 @@
    "total_available": {
     "QB": "78",
     "RB": "142",
-    "WR": "231",
-    "TE": "138"
+    "WR": "232",
+    "TE": "139"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 403,
-   "secs": 3.6,
+   "records": 418,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -59,26 +59,26 @@
   },
   "espn": {
    "ok": true,
-   "records": 345,
-   "secs": 0.4,
+   "records": 344,
+   "secs": 0.6,
    "info": {
     "players": 1061,
-    "kept": 345,
+    "kept": 344,
     "dropped": {
      "pos": 0,
      "team": 324,
-     "no_week_proj": 392
+     "no_week_proj": 393
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 135,
-   "secs": 33.6,
+   "records": 134,
+   "secs": 48.4,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 56
+    "no_projection": 57
    }
   },
   "fp": {
@@ -92,48 +92,48 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Omarion Hampton LAC",
-  "DK Metcalf PIT",
-  "Courtland Sutton DEN",
-  "Jared Goff DET",
-  "Jameis Winston NYG",
-  "Travis Etienne NO",
-  "Tony Pollard TEN",
-  "Mike Gesicki CIN",
-  "Saquon Barkley PHI",
-  "Carson Beck ARI",
-  "Kirk Cousins MIN",
+  "Jordan Mason MIN",
   "Geno Smith NYJ",
-  "David Montgomery HOU",
-  "Rashee Rice KC",
-  "Braelon Allen NYJ",
-  "Josh Downs KC",
   "Ladd McConkey LAC",
-  "Zay Flowers BAL",
-  "Baker Mayfield TB",
-  "Adonai Mitchell NYJ",
-  "Ashton Jeanty LV",
-  "Tetairoa McMillan CAR",
-  "Khalil Shakir BUF",
+  "Jaylen Warren PIT",
+  "Jalen Coker CAR",
+  "Aaron Rodgers PIT",
+  "Rome Odunze CHI",
+  "Jameis Winston NYG",
+  "Malik Nabers NYG",
+  "Tank Dell HOU",
+  "David Montgomery HOU",
+  "Jared Goff DET",
   "Emmett Johnson KC",
-  "Jonathan Taylor IND"
+  "Breece Hall NYJ",
+  "Kyle Monangai CHI",
+  "Ryan Flournoy DAL",
+  "Bryce Young CAR",
+  "Saquon Barkley PHI",
+  "Stefon Diggs WAS",
+  "Jacory Croskey-Merritt WAS",
+  "Chase Brown CIN",
+  "Ollie Gordon II MIA",
+  "Jameson Williams DET",
+  "Travis Etienne NO",
+  "Braelon Allen NYJ"
  ],
- "fp_unmatched_5plus_count": 65,
+ "fp_unmatched_5plus_count": 64,
  "scorecard": "week 11: 532 pre-kickoff projections saved",
  "consensus": {
-  "used": 332,
-  "fallback": 52,
-  "single_source_blend": 41,
-  "out_by_injury": 71,
-  "no_source_zero": 75,
+  "used": 334,
+  "fallback": 55,
+  "single_source_blend": 44,
+  "out_by_injury": 70,
+  "no_source_zero": 71,
   "added_from_sites": 2,
   "added_4plus": [],
   "sources_per_player": {
-   "0": 124,
-   "1": 71,
-   "2": 201,
-   "3": 93,
-   "4": 41
+   "0": 121,
+   "1": 70,
+   "2": 204,
+   "3": 95,
+   "4": 40
   },
   "min_sources": 2
  },
