@@ -864,6 +864,21 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .fp2 .optg button{height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.2px;color:var(--faint);white-space:nowrap}
 .fp2 .optg button.on{background:rgba(var(--acc-rgb),.22);color:#fff;box-shadow:inset 0 0 0 1px rgba(var(--acc-rgb),.6)}
 @media (max-width:370px){.fp2 .optg button{padding:0 8px;font-size:10.5px}}
+/* ---- v1.19.0 Playoff Engine: Why? breakdown ---- */
+.ppwhyb{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;height:36px;margin:0 0 10px;border-radius:12px;border:1px solid var(--hair2);background:rgba(255,255,255,.03);color:var(--acc);font-size:13px;font-weight:800}
+.ppwhyb svg{transition:transform .2s ease}.ppwhyb.open svg{transform:rotate(180deg)}
+.ppwhy{border:1px solid var(--hair);border-radius:14px;background:rgba(6,11,22,.45);padding:4px 12px 10px;margin-bottom:12px}
+.pwsec{padding:9px 0 7px;border-top:1px solid rgba(147,174,200,.08)}.pwsec:first-child{border-top:0}
+.pwsec h4{margin:0 0 5px;font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--acc)}
+.pwsec ul{margin:0;padding-left:16px}.pwsec li{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.45;margin:3px 0}
+.pwsec li b,.pwsec p b{color:#fff;font-weight:800}
+.pwsec .pwn{margin:0 0 4px;font-size:12px;font-weight:600;color:var(--muted);line-height:1.45}
+.pwsec.rip li .dn{color:#ff7d89;font-weight:800}.pwsec.rip li .up{color:var(--green);font-weight:800}.pwsec.rip li .nt{color:var(--muted);font-weight:700}
+.pwsec.vd .pwn{color:var(--text)}
+.ppg .gp .ppd.sm{font-size:9.5px;margin-left:3px}
+.ppg .gt .gp{white-space:nowrap;flex:none}
+.ppg:not(.wide) .gn{flex:1 0 26px;text-overflow:clip}
+@media (max-width:400px){.ppg:not(.wide) .gt{padding:0 4px 0 2px;gap:2px}.ppg:not(.wide) .sd{min-width:13px;font-size:8.5px}.ppg:not(.wide) .gn{font-size:12px;padding-left:1px}.ppg:not(.wide) .gp{font-size:10.5px}.ppg:not(.wide) .gp .ppd.sm{font-size:8.5px;margin-left:1px}.ppbr{gap:5px}}
 /* ---- v1.16.0 Playoff Prediction Engine (admin page) ---- */
 .ppebtn{width:100%;height:46px;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(var(--acc-rgb),.55);background:rgba(var(--acc-rgb),.08);color:#fff;font-size:14.5px;font-weight:800;letter-spacing:-.1px}
 .ppebtn svg{color:var(--acc);flex:none}
@@ -1063,10 +1078,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.18.0';
+const APP_VERSION = '1.19.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.19.0', 'Playoff Prediction Engine: (1) the projected bracket now comes from the simulation — each spot shows the team that gets there most often in the 20,000 seasons, and each team’s % is its odds to reach the next round (with ▲/▼ when Strategic Tank is on). Before, every game just advanced the team with the higher projection, even by a tenth of a point (that put Green Bay in the Super Bowl while Indianapolis gets there far more often). (2) Turning Strategic Tank ON now also opens the full breakdown under the recommendation: this week’s game, standings and bye, the playoff path round by round, the draft, the ripple effect on every other team (who gets knocked out of a bye or the playoffs, who moves up) and which rule made the call. Picking another team in the drop-down turns the tank switch off. Visual changes: bracket % meaning changed and small ▲/▼ next to them when the tank is on; the breakdown panel under the recommendation while the tank is on.', 'Small fixes.'],
   ['1.18.0', 'Playoff Prediction Engine: new team drop-down (top right). Each team shows its logo, its name (YOU tag on your team) and a TANK pill: green = tanking is recommended for that team this week, red with an X = not, gray = still working it out. The team you’re looking at is highlighted green. To fill the pills the engine now runs Strategic Tank for every team in the background (your selected team first). Visual changes: the iPhone/Android pick-list is replaced by this drop-down; the arrow on the team chip flips when it’s open.', 'Small fixes.'],
   ['1.17.0', 'Matchup: new Current | Optimal switch under each team (admin), like FantasyPros. It always starts on Current. Optimal puts that team’s best healthy lineup in (by our projections; players whose game has started stay where CBS has them; Out / IR / bye players never start): the bench player moves up into the starter row, the starter moves down to the bench, and the projected score and win % update. Playoff Prediction Engine: draft changes now use the AVERAGE pick (the most likely pick can jump between groups of picks, e.g. Pittsburgh 9 → 4 while the average only moves 7.6 → 6.0); new “Avg. pick” row; the recommendation text says “picks on average”. New rule first: a “free tank” (title, playoff and bye odds each drop less than half a point and the average pick improves) = TANK NOW. Visual changes: the Current | Optimal switch under each team name on the Matchup card; the draft card’s change now reads like “▲1.6 avg”; one more row in the Tank table.', 'Small fixes.'],
   ['1.16.1', 'Fix: playoff odds, draft odds and the Playoff Prediction Engine assume every team plays its best healthy lineup this week again (like before v1.16.0). v1.16.0 used the lineups currently set in CBS, and early in the week (bye-week players still in lineups) that made some games lopsided — Dallas showed 99% to make the playoffs instead of about 91%. Use Strategic Tank to see a team throwing a game. Scoreboard and Matchup win % still use the real CBS lineups. No visual changes.', 'Fix: more accurate odds early in the week. No visual changes.'],
@@ -2710,6 +2726,50 @@ function ppRec(B, T, t){
   if(tb < 3) return gain >= 0.5 ? { yes: true, why: 'Title odds are already low (' + f1(tb) + '%) — tanking improves the pick by ~' + pk + '.' } : { yes: false, why: 'Title odds are low (' + f1(tb) + '%), but tanking doesn’t improve the pick.' };
   return { yes: false, why: 'Tanking ' + (g >= 0.5 ? 'gains ~' + pk + ' but ' : '') + 'cuts title odds ' + f1(tb) + '% → ' + f1(tt) + '% and playoffs ' + ppP(B.po[t]) + ' → ' + ppP(T.po[t]) + '.' };
 }
+// v1.19.0 (Wes, Nov 17): "Why?" — the full story of a tank, in plain words, built from the two simulations (play to
+// win vs tank): this week's game, standings / seed / bye, the playoff path and round odds, the draft, the RIPPLE on every
+// other team (who gets pushed out of a bye or out of the playoffs, who moves up), and which rule made the call.
+function ppWhy(B, T, t, TM, nx, opp, rc){
+  const nm = function(id){ return esc(TM.by[id].name); }, me = nm(t), P = function(v){ return ppP(v); }, P1 = function(v){ return ppP(v, true); };
+  const sAt = function(D){ return ppSeedAt(D, TM, t); }, ord = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+  const li = function(x){ return '<li>' + x + '</li>'; }, sec = function(title, items){ return items.length ? '<div class="pwsec"><h4>' + title + '</h4><ul>' + items.map(li).join('') + '</ul></div>' : ''; };
+  const div = TM.divs.find(function(d){ return d.ids.indexOf(t) >= 0; }), dv = div ? esc(div.id) : '';
+  // 1) this week
+  const w1 = [], pw = B.nxw ? B.nxw[t] : null;
+  w1.push((opp ? 'Week ' + nx.w + ' vs ' + esc(opp.name) : 'Week ' + nx.w) + ': playing to win, ' + me + ' wins this game ' + (pw != null ? '<b>' + P(pw) + '</b>' : '—') + ' of the time. Tanking makes it a sure loss' + (pw != null ? ' — it only changes the outcome in the ' + P(pw) + ' of seasons where ' + me + ' would have won anyway' : '') + '.');
+  if(opp && T.nxw) w1.push(esc(opp.name) + ' gets the win: their playoff odds go ' + P(B.po[nx.opp[t]]) + ' → <b>' + P(T.po[nx.opp[t]]) + '</b>, bye ' + P(B.bye[nx.opp[t]]) + ' → <b>' + P(T.bye[nx.opp[t]]) + '</b>.');
+  // 2) standings
+  const s0 = sAt(B), s1 = sAt(T), w2 = [];
+  w2.push('Most likely finish: <b>' + dv + ' ' + ord[s0] + '</b> → <b>' + dv + ' ' + ord[s1] + '</b>' + (s1 > s0 ? ' (drops ' + (s1 - s0) + ')' : s1 < s0 ? ' (moves up ' + (s0 - s1) + ')' : ' (same spot)') + '. Projected wins ' + B.w[t].toFixed(1) + ' → ' + T.w[t].toFixed(1) + '.');
+  w2.push('Playoffs ' + P(B.po[t]) + ' → <b>' + P(T.po[t]) + '</b> · Bye ' + P(B.bye[t]) + ' → <b>' + P(T.bye[t]) + '</b>' + (B.bye[t] - T.bye[t] >= 0.25 ? ' — a bye means skipping the Week 14 wild card, one fewer game to survive' : '') + '.');
+  if(T.lb[t] - B.lb[t] >= 0.02) w2.push('Risk of falling to 6th (out of the playoffs, into the Week 13 Loser Bowl): ' + P(B.lb[t]) + ' → <b>' + P(T.lb[t]) + '</b>.');
+  // 3) playoff path
+  const path = function(D, k){ const sq = ppSeeds(D, div ? div.ids : []); if(k < 0) return '';
+    if(k <= 2) return 'bye in Week 14, then the semis vs ' + (k === 0 ? 'the wild-card winner' : nm(sq[k === 1 ? 2 : 1]));
+    if(k <= 4) return 'Week 14 wild card vs ' + nm(sq[k === 3 ? 4 : 3]) + ', then the #1 seed (' + nm(sq[0]) + ')';
+    return 'out of the playoffs — Loser Bowl vs the other division’s 6th'; };
+  const w3 = ['Playing to win: ' + path(B, s0) + '.', 'Tanking: ' + path(T, s1) + '.'];
+  w3.push('Round by round: semis ' + P(B.semi[t]) + ' → ' + P(T.semi[t]) + ' · division final ' + P(B.fin[t]) + ' → ' + P(T.fin[t]) + ' · Super Bowl ' + P1(B.sb[t]) + ' → ' + P1(T.sb[t]) + ' · <b>title ' + P1(B.ti[t]) + ' → ' + P1(T.ti[t]) + '</b>.');
+  // 4) draft
+  const e0 = ppEP(B.dp[t]), e1 = ppEP(T.dp[t]), w4 = [];
+  w4.push('Average pick <b>' + e0.toFixed(1) + ' → ' + e1.toFixed(1) + '</b>' + (e0 - e1 >= 0.05 ? ' (' + (e0 - e1).toFixed(1) + ' spots earlier)' : ' (no change)') + ' · most likely pick #' + (ppML(B.dp[t]) + 1) + ' → #' + (ppML(T.dp[t]) + 1) + '.');
+  w4.push(T.lbw[t] > 0.005 || B.lbw[t] > 0.005 ? 'Chance at the #1 pick (win the Loser Bowl): ' + P(B.lbw[t]) + ' → <b>' + P(T.lbw[t]) + '</b>.' : 'Picks 3–10 go by fewest wins, so one more loss moves the pick earlier — division winners pick 11–12.');
+  // 5) ripple effect on the rest of the league
+  const rip = [];
+  Object.keys(TM.by).forEach(function(id){ if(id === t) return;
+    const dpo = (T.po[id] - B.po[id]) * 100, dby = (T.bye[id] - B.bye[id]) * 100, dti = (T.ti[id] - B.ti[id]) * 100, dpk = ppEP(B.dp[id]) - ppEP(T.dp[id]);
+    const parts = [], big = Math.max(Math.abs(dpo), Math.abs(dby), Math.abs(dti) * 3, Math.abs(dpk) * 8);
+    if(Math.abs(dby) >= 2) parts.push((dby < 0 ? '<span class="dn">bye ' : '<span class="up">bye ') + P(B.bye[id]) + ' → ' + P(T.bye[id]) + '</span>');
+    if(Math.abs(dpo) >= 2) parts.push((dpo < 0 ? '<span class="dn">playoffs ' : '<span class="up">playoffs ') + P(B.po[id]) + ' → ' + P(T.po[id]) + '</span>');
+    if(Math.abs(dti) >= 0.5) parts.push((dti < 0 ? '<span class="dn">title ' : '<span class="up">title ') + P1(B.ti[id]) + ' → ' + P1(T.ti[id]) + '</span>');
+    if(Math.abs(dpk) >= 0.3) parts.push('<span class="nt">avg pick ' + ppEP(B.dp[id]).toFixed(1) + ' → ' + ppEP(T.dp[id]).toFixed(1) + '</span>');
+    if(parts.length) rip.push({ big: big, h: '<li><b>' + nm(id) + '</b> ' + parts.join(' · ') + '</li>' }); });
+  rip.sort(function(a, b){ return b.big - a.big; });
+  const ripH = rip.length ? '<div class="pwsec rip"><h4>Ripple effect on the league</h4><p class="pwn">What ' + me + ' losing does to everyone else (same 20,000 seasons):</p><ul>' + rip.slice(0, 8).map(function(x){ return x.h; }).join('') + '</ul></div>' : '<div class="pwsec rip"><h4>Ripple effect on the league</h4><p class="pwn">No other team’s odds move by 2 points or more.</p></div>';
+  // 6) verdict
+  const v = '<div class="pwsec vd"><h4>The call</h4><p class="pwn"><b>' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '.</b> ' + esc(rc.why) + ' Rules, in order: a free tank (no real cost) → tank; tanking raises title odds → tank; costs ≤1 pt of title odds for ≥2 picks → tank; title odds under 3% → take the better pick; otherwise → don’t.</p></div>';
+  return '<div class="ppwhy" data-key="ppwhy">' + sec('This week', w1) + sec('Standings', w2) + sec('Playoff path', w3) + sec('Draft', w4) + ripH + v + '</div>';
+}
 function ppeView(){
   const TM = ppeTeams(), t = ppeTeam(), me = TM.by[t];
   const B = ENG.res && ENG.res.pp;
@@ -2752,7 +2812,8 @@ function ppeView(){
     if(busy) h += '<div class="ppld" data-key="ppld"><div class="ldb" id="ppeLd"><i style="width:' + Math.round(PPE.prog * 100) + '%"></i></div><div class="ldt"><span>Simulating 20,000 seasons…</span><span id="ppeLdP">' + Math.round(PPE.prog * 100) + '%</span></div></div>';
     else h += '<div class="ppld done" data-key="ppld"><div class="ldb"><i style="width:100%"></i></div><div class="ldt"><span>20,000 seasons each way</span><span>' + (ENG.at ? 'Updated ' + esc(new Date(ENG.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) : '') + '</span></div></div>';
     const rc = ppRec(B, TK, t);
-    if(rc) h += '<div class="ppre ' + (rc.yes ? 'yes' : 'no') + '" data-key="ppre"><span class="rb">' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '</span><span class="rt">' + esc(rc.why) + '</span></div>';
+    if(rc) h += '<div class="ppre ' + (rc.yes ? 'yes' : 'no') + '" data-key="ppre"><span class="rb">' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '</span><span class="rt">' + esc(rc.why) + '</span></div>' +
+      (on ? ppWhy(B, TK, t, TM, nx, opp, rc) : '');   // v1.19.0 (Wes): the full breakdown only while Strategic Tank is ON
     const rows = [['Playoffs', 'po', true], ['Bye (top 3)', 'bye', true], ['Title', 'ti', true], ['Avg. pick', 'ap', true], ['Most likely pick', 'pk', true], ['Loser Bowl', 'lb', null], ['Most likely seed', 'sd', false]];
     h += '<div class="ppcm" data-key="ppcm"><div class="ch"><span></span><span class="' + (PPE.on ? '' : 'act') + '">Play to win</span><span class="' + (PPE.on ? 'act' : '') + '">Tank</span><span>Change</span></div>' + rows.map(function(r){
       const val = function(X){ if(!X) return '…'; if(r[1] === 'ap') return ppEP(X.dp[t]).toFixed(1); if(r[1] === 'pk') return '#' + (ppML(X.dp[t]) + 1); if(r[1] === 'sd') return '#' + (ppSeedAt(X, TM, t) + 1); return ppP(X[r[1]][t], r[1] === 'ti'); };
@@ -2775,23 +2836,29 @@ function ppeView(){
       const tg = i < 3 ? ['by', 'BYE'] : i < 5 ? ['wc', 'WC'] : ['lb', 'LOSER BOWL'];
       return '<div class="ppsr' + (id === t ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' + badge(TM.by[id].T) + '<span class="nm">' + esc(TM.by[id].name) + '</span><span class="rc">' + prec(id) + '</span><span class="sp">' + ppP((D.seed[id] || [])[i]) + '</span><span class="pptag ' + tg[0] + '">' + tg[1] + '</span></div>'; }).join('') + '</section>';
   });
-  // projected bracket (most likely seeds; % = chance to win that game, best lineups)
-  const gm = function(w, a, sa, b, sb, wide){ const p = ppWin(D, w, a, b), cd = function(id){ return wide ? esc(TM.by[id].name) : esc(TM.by[id].T.code); };
-    return '<div class="ppg' + (wide ? ' wide' : '') + '"><div class="gt' + (a === t ? ' me' : '') + '"><span class="sd">' + sa + '</span>' + (wide ? badge(TM.by[a].T) : '') + '<span class="gn">' + cd(a) + '</span><span class="gp' + (p >= 0.5 ? '' : ' lo') + '">' + Math.round(p * 100) + '%</span></div>' +
-      '<div class="gt' + (b === t ? ' me' : '') + '"><span class="sd">' + sb + '</span>' + (wide ? badge(TM.by[b].T) : '') + '<span class="gn">' + cd(b) + '</span><span class="gp' + (p < 0.5 ? '' : ' lo') + '">' + (100 - Math.round(p * 100)) + '%</span></div></div>'; };
-  const win = function(w, a, b){ return ppWin(D, w, a, b) >= 0.5 ? a : b; };
-  h += '<div class="ppsec">Projected bracket <span class="sn">most likely seeds · % = chance to win the game</span></div>';
+  // v1.19.0 (Wes, Nov 17): bracket from the SIMULATION, not "the higher projection always wins": each slot shows the team
+  // that gets there most often in the 20,000 seasons, and each team's % = its odds to reach the NEXT round (so a tank
+  // moves them; ▲/▼ = change vs playing to win). Was: favorite-wins-every-game path + head-to-head % (Green Bay in the
+  // Super Bowl on a 0.6-pt edge while Indy reached it far more often).
+  const adv = function(id, k, wide){ const v = D[k][id], b0 = B[k][id], dv = (v - b0) * 100;   // narrow boxes: arrow only (names stay readable)
+    const d = !on || Math.abs(dv) < 0.5 ? '' : wide ? ppDelta(v, b0, true).replace('class="ppd', 'class="ppd sm') : '<i class="ppd sm ' + (dv > 0 ? 'g' : 'r') + '">' + (dv > 0 ? '▲' : '▼') + '</i>';
+    return '<span class="gp">' + ppP(v) + d + '</span>'; };
+  const gm = function(a, sa, ka, b, sb, kb, wide){ const cd = function(id){ return wide ? esc(TM.by[id].name) : esc(TM.by[id].T.code); };
+    const ln = function(id, sd, k){ return '<div class="gt' + (id === t ? ' me' : '') + '"><span class="sd">' + sd + '</span>' + (wide ? badge(TM.by[id].T) : '') + '<span class="gn">' + cd(id) + '</span>' + adv(id, k, wide) + '</div>'; };
+    return '<div class="ppg' + (wide ? ' wide' : '') + '">' + ln(a, sa, ka) + ln(b, sb, kb) + '</div>'; };
+  const best = function(ids, k){ return ids.slice().sort(function(x, y){ return D[k][y] - D[k][x]; })[0]; };
+  h += '<div class="ppsec">Projected bracket <span class="sn">% = odds to reach the next round · 20,000 seasons</span></div>';
   const dvs = TM.divs.filter(function(d){ return ordered[d.id].length >= 5; });
   if(dvs.length === 2 && ordered[dvs[0].id][5] && ordered[dvs[1].id][5]){ const x = ordered[dvs[0].id][5], y = ordered[dvs[1].id][5];
-    h += '<section class="ppcard pad" data-key="pplb"><div class="rh">Week 13 · Loser Bowl · winner = pick #1 · playoff teams sit out</div>' + gm(13, x, esc(dvs[0].id) + ' 6', y, esc(dvs[1].id) + ' 6', true) + '</section>'; }
-  const champ = {}, sdOf = function(s, id){ return '#' + (s.indexOf(id) + 1); };
-  dvs.forEach(function(d){ const s = ordered[d.id], wc = win(14, s[3], s[4]), a = win(15, s[0], wc), b = win(15, s[1], s[2]); champ[d.id] = win(16, a, b);
+    h += '<section class="ppcard pad" data-key="pplb"><div class="rh">Week 13 · Loser Bowl · % = odds to win it (pick #1) · playoff teams sit out</div>' + gm(x, esc(dvs[0].id) + ' 6', 'lbw', y, esc(dvs[1].id) + ' 6', 'lbw', true) + '</section>'; }
+  const champ = {}, sdOf = function(sq, id){ const k = sq.indexOf(id); return k >= 0 ? '#' + (k + 1) : ''; };
+  dvs.forEach(function(d){ const sq = ordered[d.id], wc = best([sq[3], sq[4]], 'semi'), fa = best([sq[0], wc], 'fin'), fb = best([sq[1], sq[2]], 'fin'); champ[d.id] = best([fa, fb], 'sb');
     h += '<section class="ppcard pad" data-key="ppb-' + esc(d.id) + '"><div class="ppbh">' + esc(d.id) + ' division playoffs</div><div class="ppbr">' +
-      '<div class="pbcol"><div class="rh">Wk 14 · Wild card</div>' + gm(14, s[3], '#4', s[4], '#5') + '<div class="byes">Byes: #1 #2 #3</div></div>' +
-      '<div class="pbcol"><div class="rh">Wk 15 · Semis</div>' + gm(15, s[0], '#1', wc, sdOf(s, wc)) + gm(15, s[1], '#2', s[2], '#3') + '</div>' +
-      '<div class="pbcol"><div class="rh">Wk 16 · Final</div><div class="pvc">' + gm(16, a, sdOf(s, a), b, sdOf(s, b)) + '</div></div></div></section>'; });
+      '<div class="pbcol"><div class="rh">Wk 14 · Wild card</div>' + gm(sq[3], '#4', 'semi', sq[4], '#5', 'semi') + '<div class="byes">Byes: #1 #2 #3</div></div>' +
+      '<div class="pbcol"><div class="rh">Wk 15 · Semis</div>' + gm(sq[0], '#1', 'fin', wc, sdOf(sq, wc), 'fin') + gm(sq[1], '#2', 'fin', sq[2], '#3', 'fin') + '</div>' +
+      '<div class="pbcol"><div class="rh">Wk 16 · Final</div><div class="pvc">' + gm(fa, sdOf(sq, fa), 'sb', fb, sdOf(sq, fb), 'sb') + '</div></div></div></section>'; });
   if(dvs.length === 2){ const x = champ[dvs[0].id], y = champ[dvs[1].id];
-    h += '<section class="ppcard pad" data-key="ppsb"><div class="rh">Week 17 · Super Bowl</div>' + gm(17, x, esc(dvs[0].id), y, esc(dvs[1].id), true) + '</section>'; }
+    h += '<section class="ppcard pad" data-key="ppsb"><div class="rh">Week 17 · Super Bowl · % = odds to win the title</div>' + gm(x, esc(dvs[0].id), 'ti', y, esc(dvs[1].id), 'ti', true) + '</section>'; }
   // all teams
   const all = Object.keys(TM.by).filter(function(id){ return D.po[id] != null; }).sort(function(a, b){ return (D.ti[b] - D.ti[a]) || (D.po[b] - D.po[a]); });
   h += '<div class="ppsec">All teams <span class="sn">20,000 simulated seasons' + (on ? ' · with the tank' : '') + '</span></div><section class="ppcard pptb" data-key="pptb"><div class="th"><span>Team</span><span>Playoff</span><span>Bye</span><span>Title</span><span>Pick</span></div>' +
@@ -3134,7 +3201,7 @@ $('#view').addEventListener('click', function(e){
   if(t.closest('#ppeTank')){ ppeToggle(); return; }
   if(t.closest('#ppeSelBtn')){ PPE.dd = !PPE.dd; render(); return; }
   if(t.closest('#ppeDdBg')){ PPE.dd = false; render(); return; }
-  const pt = t.closest('[data-pt]'); if(pt){ PPE.team = pt.dataset.pt; PPE.dd = false; render(); ppeAsk(); return; }
+  const pt = t.closest('[data-pt]'); if(pt){ if(pt.dataset.pt !== ppeTeam()) PPE.on = false; PPE.team = pt.dataset.pt; PPE.dd = false; render(); ppeAsk(); return; }   // new team -> tank switch off
   if(t.closest('#prev')){ go(-1); return; }
   if(t.closest('#next')){ go(1); return; }
   const dt = t.closest('.detail');
@@ -3855,7 +3922,7 @@ function engineWorker(){
     const nextW = S.countCur && wk ? msg.week : (S.future[0] ? S.future[0].w : 0);
     const tankW = tank ? nextW : 0;
     const z = function(){ const o = {}; ids.forEach(function(id){ o[id] = 0; }); return o; };
-    const cnt = z(), bye = z(), lbc = z(), lbw = z(), semi = z(), fin = z(), sbc = z(), ti = z(), wsum = z();
+    const cnt = z(), bye = z(), lbc = z(), lbw = z(), semi = z(), fin = z(), sbc = z(), ti = z(), wsum = z(), nxw = z();
     const seed = {}, dp = {}; ids.forEach(function(id){ seed[id] = [0, 0, 0, 0, 0, 0]; dp[id] = new Array(n).fill(0); });
     const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
     const pw = {}; PO_WEEKS.forEach(function(w){ pw[w] = {}; ids.forEach(function(id){ pw[w][id] = futureTeam(msg.teams[id] || { roster: [] }, w); }); });
@@ -3875,6 +3942,7 @@ function engineWorker(){
       if(wk && S.countCur) S.curPairs.forEach(function(pr){ const ta = wk.tot[pr[0]], tb = wk.tot[pr[1]]; if(!ta || !tb) return;
         let x = wk.win[pr[0]][i], sa = ta[i], sb = tb[i];
         if(tankW === msg.week){ if(pr[0] === tank){ x = 0; if(sa >= sb) sa = sb - 1; } else if(pr[1] === tank){ x = 1; if(sb >= sa) sb = sa - 1; } }
+        if(nextW === msg.week){ nxw[pr[0]] += x; nxw[pr[1]] += 1 - x; }
         apply(pr[0], pr[1], sa, sb, x); });
       S.future.forEach(function(F){
         let pairs = F.pairs;
@@ -3889,6 +3957,7 @@ function engineWorker(){
           let sa = Math.round(A.m + A.s * R.n()), sb = Math.round(B.m + B.s * R.n()); const ba = A.bm + A.bs * R.n(), bb = B.bm + B.bs * R.n(), u = R.u();
           let x = sa > sb ? 1 : sa < sb ? 0 : (ba > bb ? 1 : ba < bb ? 0 : u < 0.5 ? 1 : 0);
           if(F.w === tankW){ if(pr[0] === tank){ x = 0; if(sa >= sb) sa = sb - 1; } else if(pr[1] === tank){ x = 1; if(sb >= sa) sb = sa - 1; } }
+          if(F.w === nextW){ nxw[pr[0]] += x; nxw[pr[1]] += 1 - x; }
           apply(pr[0], pr[1], sa, sb, x); });
       });
       const divs = {}, pos = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); wsum[id] += W[id]; });
@@ -3920,7 +3989,7 @@ function engineWorker(){
     ids.forEach(function(id){ sd[id] = seed[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); d[id] = dp[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); });
     PO_WEEKS.forEach(function(w){ fx[w] = {}; ids.forEach(function(id){ const t = pw[w][id]; fx[w][id] = [Math.round(t.m * 10) / 10, Math.round(t.s * 10) / 10]; }); });
     const wa = {}; ids.forEach(function(id){ wa[id] = Math.round(wsum[id] / N * 100) / 100; });
-    return { po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW };
+    return { po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), nxw: f(nxw), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW };
   }
   let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
   self.onmessage = function(e){
