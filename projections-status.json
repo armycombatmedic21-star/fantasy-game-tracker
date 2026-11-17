@@ -1,18 +1,18 @@
 {
- "at": "2026-11-16T22:38:35+00:00",
+ "at": "2026-11-17T07:43:49+00:00",
  "ok": true,
  "runner": "github-actions",
- "week": 10,
+ "week": 11,
  "fp_fetch": {
   "code": 0,
   "info": {
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "70",
-    "RB": "130",
-    "WR": "216",
-    "TE": "131"
+    "QB": "78",
+    "RB": "142",
+    "WR": "230",
+    "TE": "139"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -30,7 +30,7 @@
     "scrimage_yards_100",
     "scrimage_yards_200"
    ],
-   "api_week": 10,
+   "api_week": 11,
    "by_pos": {
     "QB": 10,
     "RB": 10,
@@ -45,40 +45,40 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 407,
-   "secs": 3.4,
+   "records": 404,
+   "secs": 3.5,
    "info": {
     "QB": 355,
     "RB": 752,
     "WR": 1365,
     "TE": 646,
     "K": 157,
-    "DST": 28,
-    "injury_flags": 280
+    "DST": 26,
+    "injury_flags": 283
    }
   },
   "espn": {
    "ok": true,
-   "records": 360,
-   "secs": 0.5,
+   "records": 345,
+   "secs": 1.0,
    "info": {
     "players": 1061,
-    "kept": 360,
+    "kept": 345,
     "dropped": {
      "pos": 0,
-     "team": 325,
-     "no_week_proj": 376
+     "team": 323,
+     "no_week_proj": 393
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 144,
-   "secs": 34.3,
+   "records": 135,
+   "secs": 38.1,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 47
+    "no_projection": 56
    }
   },
   "fp": {
@@ -87,65 +87,59 @@
   }
  },
  "checks": {
-  "players": 644,
+  "players": 653,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Tetairoa McMillan CAR",
-  "Khalil Shakir BUF",
-  "Daniel Jones IND",
-  "Garrett Wilson NYJ",
-  "DJ Moore BUF",
-  "Jameis Winston NYG",
-  "Shedeur Sanders CLE",
-  "Jordan Love GB",
-  "Malik Nabers NYG",
-  "Mike Gesicki CIN",
-  "Justin Herbert LAC",
-  "Rhamondre Stevenson NE",
-  "Kirk Cousins LV",
-  "Braelon Allen NYJ",
-  "Jameson Williams DET",
+  "Jordyn Tyson NO",
+  "Jonathan Taylor IND",
+  "Carson Beck ARI",
   "Emmett Johnson KC",
-  "Ollie Gordon II MIA",
-  "Corey Kiner NE",
-  "Cam Ward TEN",
-  "Tyler Allgeier ARI",
-  "Austin Ekeler WAS",
-  "Jacoby Brissett ARI",
-  "Jared Goff DET",
+  "Geno Smith NYJ",
+  "Baker Mayfield TB",
+  "Jaylen Warren PIT",
+  "Deebo Samuel Sr. SF",
+  "David Montgomery HOU",
+  "Cam Skattebo NYG",
+  "Chase Brown CIN",
+  "Bryce Young CAR",
+  "Wan'Dale Robinson TEN",
+  "Jakobi Meyers JAX",
+  "Joe Milton III PHI",
   "J.J. McCarthy NYG",
-  "Aaron Rodgers PIT"
+  "DeVonta Smith PHI",
+  "Khalil Shakir BUF",
+  "Jaylen Waddle DEN",
+  "Cam Ward TEN",
+  "Adonai Mitchell NYJ",
+  "Jameis Winston NYG",
+  "Ollie Gordon II MIA",
+  "Rachaad White WAS",
+  "Jameson Williams DET"
  ],
- "fp_unmatched_5plus_count": 68,
- "scorecard": "week 10: 42 pre-kickoff projections saved",
+ "fp_unmatched_5plus_count": 64,
+ "scorecard": "week 11: 532 pre-kickoff projections saved",
  "consensus": {
-  "used": 347,
-  "fallback": 47,
-  "single_source_blend": 39,
-  "out_by_injury": 88,
-  "no_source_zero": 70,
-  "added_from_sites": 8,
-  "added_4plus": [
-   "Andres Borregales NE K 6.8",
-   "Carson Beck ARI QB 9.6",
-   "Kyle McCord MIA QB 10.7",
-   "Nate Carter KC RB 5.3",
-   "Zonovan Knight ARI RB 4.6"
-  ],
+  "used": 332,
+  "fallback": 52,
+  "single_source_blend": 41,
+  "out_by_injury": 71,
+  "no_source_zero": 75,
+  "added_from_sites": 2,
+  "added_4plus": [],
   "sources_per_player": {
-   "0": 156,
-   "1": 48,
-   "2": 205,
-   "3": 101,
-   "4": 42
+   "0": 123,
+   "1": 72,
+   "2": 201,
+   "3": 93,
+   "4": 41
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 644,
+ "players": 653,
  "spread_k": 1.35,
  "spread_rho": 0.06,
  "no_games_yet": 0
