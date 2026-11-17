@@ -833,6 +833,31 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .pside.io .pnm .nmx,.pside.io .pnm small,.pside.io .nfl{opacity:.72}   /* Out / IR / Suspended: dimmed like finished players; the letter stays bright */
 .ijb .ijh{color:#ff6b72;font-weight:800;letter-spacing:.6px}
 .ijb .dsub span{white-space:normal;overflow:visible;text-overflow:clip}
+
+/* v1.15.0 (Wes, Nov 16): draft pick — Home 4th box, Standings DRAFT # column, drop-down tile (replaces Differential) */
+.lagrid{grid-template-columns:1fr 1px 1fr 1px 1fr 1px 1fr}
+.lacell.dpc em{color:var(--muted)}
+.sthead,.strow{grid-template-columns:16px 28px minmax(0,1fr) 33px 30px 26px 44px 34px;gap:4px;padding:0 10px}
+.sthead .poh{grid-column:auto;justify-self:center;text-align:center}
+.sthead .dph{justify-self:center;text-align:center;white-space:nowrap}
+@media (min-width:381px){ .sthead span{font-size:8.5px;letter-spacing:.4px} }
+.strow .stchev{left:96px;margin-left:-7px}
+.stdp{justify-self:center;font-size:14px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
+.stdp.na{color:var(--faint);font-size:12px}
+.stdp.lk .lockic svg{width:17px;height:17px}
+.stdet .stt.dpt{align-items:stretch}
+.stdet .stt.dpt small{text-align:center}
+.stdet .stt.dpt .dpl{display:flex;justify-content:space-between;gap:4px;padding:0 4px;font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1.5}
+.stdet .stt.dpt .dpl.ml{font-size:14px;font-weight:800;color:#fff}
+.stdet .stt.dpt .dpl.ml span:last-child{color:var(--acc)}
+.stdet .stt.dpt .mlt{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--acc);text-transform:uppercase;text-align:center;margin:-2px 0 1px}
+.stdet .stt.dpt .dplk{display:flex;justify-content:center;padding:8px 0 4px}
+.stdet .stt.dpt .dplk .lockic svg{width:30px;height:30px}
+.stdet .stt.dpt > b{text-align:center}
+@media (max-width:380px){ .sthead,.strow{grid-template-columns:14px 26px minmax(0,1fr) 30px 28px 22px 38px 28px;gap:4px;padding:0 8px} .strow .stchev{left:88px} }
+.sthead .poh,.sthead .dph{white-space:normal;line-height:1.15;text-align:center}
+.stdet .stt.dpt .dpl{flex-direction:row;align-items:baseline}
+.stdet .stt.dpt .dpl span{display:inline;margin:0}
 </style>
 </head>
 <body>
@@ -877,7 +902,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 <div class="overlay" id="admNotice" data-locked="1"><div class="sheet adm" role="dialog" aria-label="Notice">
   <div class="hd"><span class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span><div><div class="eb">Restricted access</div><h2>Notice</h2></div></div>
   <p class="ld">The following has been disabled for all non&#8209;Dallas owners:</p>
-  <div class="lst"><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg></span><span class="tx">All advanced computer modeling</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="tx">Data/Team Analysis</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg></span><span class="tx">Advanced playoff projections</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="7" r="2"/><circle cx="5" cy="17" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="19" cy="17" r="2"/><path d="M7 7.8 10.2 11M7 16.2l3.2-3.2M13.8 11 17 7.8M13.8 13l3.2 3.2"/></svg></span><span class="tx">Advanced machine learning player/matchup projections</span><span class="off">OFF</span></div></div>
+  <div class="lst"><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 4.5 5.5 4v4"/><path d="M3.6 14.2c.3-.7 1-1.1 1.7-1 .9.1 1.4 1 1 1.8L3.6 18h3"/></svg></span><span class="tx">Advanced Draft Order Prediction Engine</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg></span><span class="tx">All advanced computer modeling</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="tx">Data/Team Analysis</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg></span><span class="tx">Advanced playoff projections</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="7" r="2"/><circle cx="5" cy="17" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="19" cy="17" r="2"/><path d="M7 7.8 10.2 11M7 16.2l3.2-3.2M13.8 11 17 7.8M13.8 13l3.2 3.2"/></svg></span><span class="tx">Advanced machine learning player/matchup projections</span><span class="off">OFF</span></div></div>
   <p class="ft">These advanced features have a high potential for abuse and will stay disabled unless league rules are updated.</p>
   <div class="confirmrow admbtns" id="admNoticeBtns"><button class="confirmyes" id="admEnter">Enter Code</button><button class="confirmcancel" id="admClose">Close</button></div>
 </div></div>
@@ -901,10 +926,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.14.0';
+const APP_VERSION = '1.15.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.15.0', 'Draft pick projections (Advanced Draft Order Prediction Engine): each simulated season now also works out the draft order (league rule 4.C: the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2, picks 3-10 go fewest wins first, division winners pick 11-12; playoffs don’t matter). It uses this week’s real CBS lineups, so a lineup change moves it live. New on screen: a 4th Home box “Draft Pick” with the most likely pick and its odds; a DRAFT # column after PLAYOFF % in Standings; in a team’s drop-down, “Proj. Draft Pick” (most likely pick in the middle with the pick above and below and their odds) replaces Differential. To fit: the Standings column headers are slightly smaller (they wrap to two lines on small Androids), the columns are a little narrower, and the drop-down arrow moved left under the team name. The Notice has a new first line. Non-admin phones see locks.', 'Advanced Draft Order Prediction Engine added. Disabled for all non-Dallas owners unless league rules are updated.'],
   ['1.14.0', 'Admin lock: a one-time Notice slides up once per phone (its Enter Code / Close buttons appear after 5 seconds). Settings has a new Admin row; the code is entered once and the phone stays unlocked. Phones without the code: no player projections (player rows and the tap-open panel), no projected team scores (Scoreboard cards and the Matchup screen), and playoff odds show a gray lock on the Home card and in the Standings column. Live scores, matchups, the win bar with its %, yards-to-next-tier and the TOUCHDOWN / RED ZONE pills stay. Phones with the code look exactly like before.', 'All advanced computer modeling, Data/Team Analysis, advanced playoff projections and advanced machine learning player/matchup projections are disabled for all non-Dallas owners unless league rules are updated.'],
   ['1.13.0', 'TOUCHDOWN pill fixed: it now shows for 3 minutes from the moment the touchdown actually happened (ESPN’s play time), not from when your phone first noticed it. Before, if the app was in the background or your phone was locked when a TD was scored, coming back gave it a fresh 3 minutes (Goff’s TD at 10:15 was still showing at 10:38). Opening the app a minute after a TD still shows the pill for the rest of the 3 minutes. Look change: the red injury letters (Q, D, O, IR, SUS) now pulse only down to 75% brightness instead of 50%, so they stay easier to read. Nothing else looks different.'],
   ['1.12.0', 'New home-screen icon: a gold football with a blue live pulse line through it, and FANTASY in white italic letters with a blue underline across the top (replaces the old blue “GT”). The app’s name is unchanged. The app now uses a real install file (manifest) with proper PNG icons, so Android Chrome can install it as a real app, which should remove the little Chrome logo from the icon. To see the new icon: iPhone — delete the old icon, then in Safari tap Share → Add to Home Screen. Android — remove the old icon, then in Chrome tap ⋮ → Install app. Your saved team and settings are not affected. Nothing inside the app looks different.'],
@@ -1787,6 +1813,8 @@ function homeView(){
       '<div class="lacell"><small>Division</small><b>' + (d ? ordSup(d.rank) : '–') + '</b><em>' + esc(d ? d.div : '') + '</em></div><hr>' +
       '<div class="lacell"><small>League</small><b>' + (lr ? ordSup(lr.rank) : '–') + '</b><em>of ' + (lr ? lr.of : 12) + '</em></div><hr>' +
       (!ADMIN ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? 'top 5 in div' : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
+      // v1.15.0 (Wes): 4th box — most likely draft pick and its odds
+      (function(){ const x = engineReady() ? dpOf(S.team) : null; return '<hr><div class="lacell dpc"><small>Draft Pick</small><b>' + (!ADMIN ? LOCKI : x ? (x.ml + 1) : '–') + '</b><em>' + (ADMIN && x ? '(' + dpPct(x.d[x.ml]) + ')' : '&nbsp;') + '</em></div>'; })() +
       '</div></section>';
   }
   if(!LM){ return h + '<div class="empty">Getting this week’s lineups…</div>'; }
@@ -2274,6 +2302,24 @@ function paintRecBadge(){
 }
 function fmtN(v){ v = num(v); const r = Math.round(v * 10) / 10; return (r % 1 ? r.toFixed(1) : String(r)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 // playoff odds per team, straight from the Prediction Engine (20,000 seasons, live scores, top 5 per division)
+// v1.15.0: draft pick odds per team from the engine ({ d: [p1..p12], ml: index of the most likely pick })
+function dpOf(id){
+  const d = ENG.res && ENG.res.dp ? ENG.res.dp[id] : null; if(!d || !d.length) return null;
+  let ml = 0; d.forEach(function(v, k){ if(v > d[ml]) ml = k; }); return { d: d, ml: ml };
+}
+function dpPct(v){ const r = v * 100; return r >= 99.5 && r < 100 ? '>99%' : r > 0 && r < 0.5 ? '<1%' : Math.round(r) + '%'; }
+function dpCell(id){
+  if(!ADMIN) return '<span class="stdp lk" aria-label="Locked">' + LOCKI + '</span>';
+  const x = dpOf(id); return x ? '<span class="stdp" aria-label="Projected draft pick ' + (x.ml + 1) + '">' + (x.ml + 1) + '</span>' : '<span class="stdp na">—</span>';
+}
+function dpTile(id){
+  if(!ADMIN) return '<div class="stt dpt"><small>Proj. Draft Pick</small><div class="dplk">' + LOCKI + '</div></div>';
+  const x = dpOf(id); if(!x) return '<div class="stt dpt"><small>Proj. Draft Pick</small><b>—</b></div>';
+  const n = x.d.length, a = Math.max(0, Math.min(n - 3, x.ml - 1));
+  let h = '';
+  for(let k = a; k < Math.min(n, a + 3); k++) h += '<div class="dpl' + (k === x.ml ? ' ml' : '') + '"><span>Pick ' + (k + 1) + '</span><span>' + dpPct(x.d[k]) + '</span></div>' + (k === x.ml ? '<div class="mlt">Most likely</div>' : '');
+  return '<div class="stt dpt"><small>Proj. Draft Pick</small>' + h + '</div>';
+}
 function poCell(id){
   if(!ADMIN) return '<span class="stpo lk" aria-label="Locked">' + LOCKI + '</span>';
   const po = ENG.res && ENG.res.po ? ENG.res.po[id] : null;
@@ -2348,7 +2394,7 @@ function standingsView(){
   if(S.recBanner) h += '<div class="recban' + (S.recBanner.anim || S.recBanner.wait ? ' later' : '') + '" data-key="recban"><span class="rbi"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="rbt"><b>Records updated</b><small>Week ' + esc(S.recBanner.w) + ' is final · standings are up to date</small></span></div>';
   d.forEach(function(div){
     const teams = (div.teams || []).slice().sort(function(a, b){ return num(a.order) - num(b.order); });
-    h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>DIV</span><span class="mvh">MOVE</span><span class="poh">PLAYOFF %</span></div>';
+    h += '<section class="stcard" data-key="div-' + esc(div.id) + '"><div class="sthead"><b>' + esc(div.id || (teams[0] && teams[0].division) || '') + '</b><span>W-L</span><span>DIV</span><span class="mvh">MOVE</span><span class="poh">PLAYOFF %</span><span class="dph">DRAFT #</span></div>';
     teams.forEach(function(t, i){
       const id = String(t.id), me = id === S.team, open = !!S.stOpen[id];
       const T = { logo: t.logo, code: teamCode(id, t.name) };
@@ -2358,7 +2404,7 @@ function standingsView(){
       const mvh = mv == null ? '<span class="stmv na">—</span>' : mv === 0 ? '<span class="stmv eq" aria-label="No change"><i></i></span>' :
         '<span class="stmv ' + mvc + '" aria-label="' + (mv > 0 ? 'Up ' : 'Down ') + Math.abs(mv) + '"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (mv > 0 ? 'M5 1.5 9 7.5H1z' : 'M5 8.5 1 2.5h8z') + '"/></svg>' + Math.abs(mv) + '</span>';
       h += '<button class="strow' + (me ? ' me' : '') + (i >= 5 ? ' out5' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl' + (wl.length > 3 ? ' x' : '') + '">' + esc(wl) + '</span><span class="stdv' + (num(t.division_ties) ? ' x' : '') + '">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
+        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl' + (wl.length > 3 ? ' x' : '') + '">' + esc(wl) + '</span><span class="stdv' + (num(t.division_ties) ? ' x' : '') + '">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + dpCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
       if(open){
         const g = num(t._g), pf = num(t.points_scored), pa = num(t.points_against), live = t._live != null;
         const pfd = num(t._pfDone), pad = num(t._paDone);
@@ -2368,7 +2414,7 @@ function standingsView(){
         h += '<div class="stdet" data-std="' + esc(id) + '" data-key="std-' + esc(id) + '"><div class="stc">' +
           '<div class="stt"><small>Scored</small><b>' + fmtN(pf) + '</b><em>' + avg(pfd) + '</em></div>' +
           '<div class="stt"><small>Against</small><b>' + fmtN(pa) + '</b><em>' + avg(pad) + '</em></div>' +
-          '<div class="stt ' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : '') + '"><small>Differential</small><b>' + (diff > 0 ? '+' : '') + fmtN(diff) + '</b><em>season</em></div></div></div>';
+          dpTile(id) + '</div></div>';   // v1.15.0 (Wes): draft pick tile replaces Differential
       }
     });
     h += '</section>';
@@ -2636,7 +2682,7 @@ $('#newsBtn').addEventListener('click', function(){
   closeOverlay($('#setOverlay')); setTimeout(function(){ openOverlay($('#newsOverlay')); }, 260);
 });
 /* v1.14.0 admin: Settings → Admin, the one-time notice, the code sheet */
-const ADV_NEWS = /playoff odds|projection|prediction engine|win %/i;
+const ADV_NEWS = /playoff odds|projection|prediction engine|win %|draft/i;
 const admNotice = $('#admNotice'), admCode = $('#admCode'), admInput = $('#admInput'), admHint = $('#admHint');
 let admNoticeTimer = 0;
 function admHash(t){
@@ -3348,10 +3394,15 @@ function engineWorker(){
     return { starters: st, bench: bench };
   }
   function optMsg(msg){ const t = {}; Object.keys(msg.teams).forEach(function(id){ t[id] = optTeam(msg.teams[id]); }); return Object.assign({}, msg, { teams: t }); }
-  function playoff(msg, wk){
+  // v1.15.0 (Wes, Nov 16): draft = true -> also tally each team's draft pick in every simulated season (league rule 4.C):
+  // the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2 (50/50, no Week 13 projections), picks 3-10 =
+  // the other non-division-winners, fewest wins first (same division: lower in the standings first; different
+  // divisions: fewer points first), division winners pick 11-12 (better record = 12). Playoffs don't matter.
+  function playoff(msg, wk, draft){
     const S = msg.season; if(!S) return null;
-    const ids = Object.keys(S.teams), R = RNG('season|' + msg.week + '|' + (wk ? 'live' : 'pre'));
+    const ids = Object.keys(S.teams), R = RNG('season|' + msg.week + '|' + (wk ? 'live' : 'pre') + (draft ? '|draft' : ''));
     const cnt = {}; ids.forEach(function(id){ cnt[id] = 0; });
+    const dp = {}; if(draft) ids.forEach(function(id){ dp[id] = new Array(ids.length).fill(0); });
     const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
     const W = {}, DW = {}, PF = {}, PAg = {};
     // league tiebreakers (CBS): win %, division record, total points, head to head, points against.
@@ -3376,12 +3427,26 @@ function engineWorker(){
           game(pr[0], pr[1], Math.round(A.m + A.s * R.n()), Math.round(B.m + B.s * R.n()), A.bm + A.bs * R.n(), B.bm + B.bs * R.n()); });
       });
       const divs = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); });
+      const pos = {};
       Object.keys(divs).forEach(function(d){
         divs[d].sort(rank);
+        divs[d].forEach(function(id, k){ pos[id] = k; });
         divs[d].slice(0, 5).forEach(function(id){ cnt[id]++; });
       });
+      if(draft){
+        const dks = Object.keys(divs), lb = [], dw = [], mid = [];
+        dks.forEach(function(d){ divs[d].forEach(function(id, k){ (k === 0 ? dw : k === 5 ? lb : mid).push(id); }); });
+        // worst first: fewer wins; same division -> lower spot; different divisions -> fewer points
+        const worse = function(a, b){ return (W[a] - W[b]) || (S.teams[a].div === S.teams[b].div ? pos[b] - pos[a] : PF[a] - PF[b]); };
+        let order = [];
+        if(lb.length === 2){ const x = R.u() < 0.5 ? 0 : 1; order.push(lb[x], lb[1 - x]); } else mid.push.apply(mid, lb);
+        order = order.concat(mid.sort(worse), dw.sort(worse));
+        order.forEach(function(id, k){ dp[id][k]++; });
+      }
     }
-    const out = {}; ids.forEach(function(id){ out[id] = cnt[id] / N; }); return out;
+    const out = {}; ids.forEach(function(id){ out[id] = cnt[id] / N; });
+    if(draft){ const d = {}; ids.forEach(function(id){ d[id] = dp[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); }); return { po: out, dp: d }; }
+    return out;
   }
   self.onmessage = function(e){
     const msg = e.data;
@@ -3392,10 +3457,13 @@ function engineWorker(){
     try{
       Object.keys(cache).forEach(function(k){ if(k.indexOf('live|') === 0 && !msg.keep[k]) delete cache[k]; });
       const live = runWeek(msg, true);
-      let po = null, po0 = null;
-      if(msg.season){ const om = optMsg(msg); po = playoff(msg, runWeek(om, true)); po0 = playoff(msg, runWeek(om, false)); }
+      let po = null, po0 = null, dp = null;
+      if(msg.season){ const om = optMsg(msg); po = playoff(msg, runWeek(om, true)); po0 = playoff(msg, runWeek(om, false));
+        // v1.15.0: draft picks use this week's REAL CBS lineups (live), so a lineup change (even a tank) moves them;
+        // playoff odds keep every team's best lineup (Wes, Nov 10)
+        const dr = playoff(msg, live, true); dp = dr ? dr.dp : null; }
       const keep = {}; Object.keys(cache).forEach(function(k){ keep[k] = 1; });
-      self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0 });
+      self.postMessage({ type: 'done', id: msg.id, m: live.m, p: live.p, po: po, po0: po0, dp: dp });
     }catch(err){ self.postMessage({ type: 'error', id: msg.id, err: String(err && err.message || err) }); }
   };
 }
@@ -3442,7 +3510,7 @@ let engSnapAt = 0, engSnapPending = null;
 function saveEngSnap(now){
   const R = ENG.res;
   if(!R || R.snap || !S.proj || !S.curWeek || !engineReady()) return;
-  engSnapPending = { week: S.curWeek, gen: S.proj.raw.generated, m: R.m, p: R.p, po: R.po, po0: R.po0 };
+  engSnapPending = { week: S.curWeek, gen: S.proj.raw.generated, m: R.m, p: R.p, po: R.po, po0: R.po0, dp: R.dp };
   if(!now && Date.now() - engSnapAt < 20000) return;                 // at most every 20 s while games run (and on close)
   engSnapAt = Date.now(); const v = engSnapPending; engSnapPending = null; v.at = Date.now();
   try{ put('eng', v); }catch(e){}
@@ -3451,7 +3519,7 @@ function useEngSnap(){
   if(ENG.res || !S.proj || !S.curWeek) return;
   const v = getLocal('eng');
   if(!v || v.week !== S.curWeek || v.gen !== S.proj.raw.generated || !snapOk(v) || !v.m) return;
-  ENG.res = { type: 'done', snap: true, m: v.m, p: v.p || {}, po: v.po || null, po0: v.po0 || null };
+  ENG.res = { type: 'done', snap: true, m: v.m, p: v.p || {}, po: v.po || null, po0: v.po0 || null, dp: v.dp || null };
 }
 // open: projections saved on the phone (same file the network would give; replaced as soon as a newer one loads)
 (function(){ const j = getLocal('proj'); if(j && Array.isArray(j.players) && j.season === SEASON && j.generated){ setProj(j); useEngSnap(); } })();

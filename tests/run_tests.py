@@ -355,7 +355,7 @@ with sync_playwright() as pw:
         page.click('.strow.me')
         page.wait_for_timeout(250)
         det = page.inner_text('.stdet').lower() if page.locator('.stdet').count() else ''
-        check(f'[{tag}] tap a team: Scored / Against / Differential', 'scored' in det and 'against' in det and 'differential' in det, det)
+        check(f'[{tag}] tap a team: Scored / Against / Proj. Draft Pick (v1.15.0 replaced Differential)', 'scored' in det and 'against' in det and 'draft pick' in det, det)
         check(f'[{tag}] every team has an arrow', page.locator('.strow .stchev').count() == 12)
         check(f'[{tag}] PLAYOFF % for every team', page.locator('.strow .stpo').count() == 12 and page.locator('.strow .stpo.na').count() == 0)
         check(f'[{tag}] MOVE column for every team (GB gone)', page.locator('.strow .stmv').count() == 12 and 'MOVE' in page.inner_text('.sthead') and 'GB' not in page.inner_text('.sthead'))
@@ -747,12 +747,14 @@ with sync_playwright() as pw:
         wait_engine(page)
         check(f'[{tag}] non-admin: no projected scores on cards', page.evaluate("document.querySelectorAll('.trow .sc small').length") == 0)
         check(f'[{tag}] non-admin: Home playoff odds locked', page.evaluate("[...document.querySelectorAll('.lacell')].some(c => /Playoff/.test(c.textContent) && c.querySelector('.lockic') && !/%/.test(c.textContent))"))
+        check(f'[{tag}] non-admin: Home Draft Pick locked', page.evaluate("!!document.querySelector('.lacell.dpc .lockic')"))
         check(f'[{tag}] non-admin: win % still shows', page.evaluate("/%/.test((document.querySelector('.mc.mine') || {}).textContent || '')"))
         page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(1500)
         check(f'[{tag}] non-admin: no projections on Matchup', page.evaluate("document.querySelectorAll('.fp .pj, .ppt small.pj').length") == 0)
         page.click('.prow[data-row="0"]'); page.wait_for_timeout(700)
         check(f'[{tag}] non-admin: tap-open has no PROJECTED', 'PROJECTED' not in page.evaluate("(document.querySelector('.detail') || {}).innerText || ''"))
         page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(1500)
+        check(f'[{tag}] non-admin: Draft # locked', page.evaluate("document.querySelectorAll('.stdp.lk').length") == 12)
         check(f'[{tag}] non-admin: Standings odds locked', page.evaluate("document.querySelectorAll('.stpo.lk').length") == 12 and page.evaluate("document.querySelectorAll('.stpo b').length") == 0)
         page.reload(); page.wait_for_timeout(2500)
         check(f'[{tag}] non-admin: notice does not come back', not page.evaluate("document.querySelector('#admNotice').classList.contains('show')"))
@@ -771,6 +773,51 @@ with sync_playwright() as pw:
         check(f'[{tag}] non-admin: no page errors', not errs, errs)
         ctx.close()
     br.close()
+
+# ---- v1.15.0: draft pick odds (admin) ----
+with sync_playwright() as pw:
+    br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True)
+    ctx.route('**/*', route); ctx.add_init_script(ADM_INIT)
+    ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
+    page = ctx.new_page(); errs = []
+    page.on('pageerror', lambda e: errs.append(str(e)))
+    page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_fresh(page)
+    dp = page.evaluate("window.__fgt.ENG.res.dp")
+    check('draft: odds for all 12 teams', bool(dp) and len(dp) == 12 and all(len(v) == 12 for v in dp.values()), dp and len(dp))
+    if dp:
+        check('draft: each team sums to 100%', all(abs(sum(v) - 1) < 0.002 for v in dp.values()))
+        check('draft: each pick sums to 100%', all(abs(sum(dp[t][k] for t in dp) - 1) < 0.002 for k in range(12)))
+    check('draft: Home 4th box shows a pick and %', page.evaluate("/^\\d+$/.test(document.querySelector('.lacell.dpc b').textContent) && /%/.test(document.querySelector('.lacell.dpc em').textContent)"))
+    page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(1500)
+    check('draft: Draft # column has 12 picks', page.evaluate("[...document.querySelectorAll('.stdp')].filter(e => /^\\d+$/.test(e.textContent)).length") == 12)
+    page.click('.strow[data-st="11"]'); page.wait_for_timeout(800)
+    check('draft: drop-down shows 3 picks + most likely', page.evaluate("document.querySelectorAll('.stt.dpt .dpl').length") == 3 and page.evaluate("!!document.querySelector('.stt.dpt .dpl.ml + .mlt')"))
+    check('draft: Differential tile gone', 'Differential' not in page.evaluate("document.querySelector('.stdet').innerText"))
+    check('draft: no page errors', not errs, errs)
+    ctx.close(); br.close()
+# draft picks follow the real lineup: Dallas benching its unplayed starters (tank) moves its pick earlier
+_orig_live = F.build_live
+def _tank():
+    d = _orig_live()
+    for t in d['live_scoring']['teams']:
+        if t['id'] == '11':
+            for q in t['players']:
+                if q['fullname'] in ('Woody Marks', 'Matthew Golden', 'Harold Fannin Jr.', 'Will Reichard'): q['status'] = 'Reserve'; q['roster_pos'] = 'BN'
+    return d
+_exp = {}
+with sync_playwright() as pw:
+    br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    for mode in ('normal', 'tank'):
+        F.build_live = _orig_live if mode == 'normal' else _tank
+        ctx = br.new_context(viewport={'width': 393, 'height': 852}); ctx.route('**/*', route); ctx.add_init_script(ADM_INIT)
+        ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
+        page = ctx.new_page(); page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_fresh(page)
+        _exp[mode] = page.evaluate("window.__fgt.ENG.res.dp['11'].reduce((a, v, k) => a + v * (k + 1), 0)")
+        ctx.close()
+    br.close()
+F.build_live = _orig_live
+check('draft: tank lineup moves Dallas to an earlier pick', _exp['tank'] < _exp['normal'] - 0.5, _exp)
 srv.shutdown()
 # version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
 import re as _re2
