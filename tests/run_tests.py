@@ -102,6 +102,9 @@ def wait_fresh(page, ms=15000):   # v1.7.0: a fresh engine run (not the copy sav
         page.wait_for_timeout(250)
     return False
 
+# v1.14.0: the app hides projections / playoff odds unless the phone has the admin code. Most checks run as admin;
+# the non-admin block at the end checks the locked view.
+ADM_INIT = "localStorage.setItem('fgt-adm', JSON.stringify('98e8bf72b79761fc524508f1f7fb7b544081abbf34206beb60dd9077a0f3aa91')); localStorage.setItem('fgt-adm-seen', '1');"
 shots = '--shots' in sys.argv
 with sync_playwright() as pw:
     br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
@@ -109,6 +112,7 @@ with sync_playwright() as pw:
         ctx = br.new_context(viewport={'width': W, 'height': H}, device_scale_factor=2, is_mobile=True, has_touch=True,
                              user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' if tag == 'iphone' else 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Mobile Safari/537.36')
         ctx.route('**/*', route)
+        ctx.add_init_script(ADM_INIT)
         page = ctx.new_page()
         errs = []
         page.on('pageerror', lambda e: errs.append(str(e)))
@@ -439,6 +443,7 @@ with sync_playwright() as pw:
     ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True,
                          user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')
     ctx.route('**/*', route)
+    ctx.add_init_script(ADM_INIT)
     page = ctx.new_page()
     errs = []
     page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e) + ' ' + str(getattr(e, 'stack', '') or '')[:400]))
@@ -544,6 +549,7 @@ with sync_playwright() as pw:
     ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True,
                          user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')
     ctx.route('**/*', route)
+    ctx.add_init_script(ADM_INIT)
     page = ctx.new_page()
     errs = []
     page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e) + ' ' + str(getattr(e, 'stack', '') or '')[:400]))
@@ -608,6 +614,7 @@ with sync_playwright() as pw:
     ctx = br.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=2, is_mobile=True, has_touch=True,
                          user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1')
     ctx.route('**/*', route)
+    ctx.add_init_script(ADM_INIT)
     page = ctx.new_page()
     errs = []
     page.on('pageerror', lambda e: errs.append('pageerror: ' + str(e) + ' ' + str(getattr(e, 'stack', '') or '')[:400]))
@@ -694,6 +701,7 @@ with sync_playwright() as pw:
     # logo cache helper (sw.js): a CBS logo that can't be copied is still there offline, from the phone's cache
     ctx = br.new_context(viewport={'width': 393, 'height': 852}, service_workers='allow')
     ctx.route('**/*', route)
+    ctx.add_init_script(ADM_INIT)
     ctx.add_init_script("window.__fgtSW = 1;")
     page = ctx.new_page()
     errs = []
@@ -719,6 +727,49 @@ with sync_playwright() as pw:
     check(f'[{tag}] cache helper: no page errors', not errs, errs)
     state['net'] = 'ok'
     ctx.close()
+    br.close()
+
+# ---- v1.14.0: non-admin phone (no code): one-time notice, no projections, playoff odds locked ----
+with sync_playwright() as pw:
+    br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    for (W, H, tag) in [(393, 852, 'iphone'), (360, 780, 'android')]:
+        ctx = br.new_context(viewport={'width': W, 'height': H}, device_scale_factor=2, is_mobile=True, has_touch=True)
+        ctx.route('**/*', route)
+        ctx.add_init_script("if(!sessionStorage.getItem('fx')){ sessionStorage.setItem('fx', '1'); localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1'); }")
+        page = ctx.new_page(); errs = []
+        page.on('pageerror', lambda e: errs.append(str(e)))
+        page.goto(f'http://127.0.0.1:{PORT}/index.html'); page.wait_for_timeout(2500)
+        check(f'[{tag}] non-admin: notice shows once', page.evaluate("document.querySelector('#admNotice').classList.contains('show')"))
+        check(f'[{tag}] non-admin: notice buttons hidden for 5 s', page.evaluate("getComputedStyle(document.querySelector('#admNoticeBtns')).visibility") == 'hidden')
+        page.wait_for_timeout(4200)
+        check(f'[{tag}] non-admin: notice buttons appear', page.evaluate("getComputedStyle(document.querySelector('#admNoticeBtns')).visibility") == 'visible')
+        page.click('#admClose'); page.wait_for_timeout(700)
+        wait_engine(page)
+        check(f'[{tag}] non-admin: no projected scores on cards', page.evaluate("document.querySelectorAll('.trow .sc small').length") == 0)
+        check(f'[{tag}] non-admin: Home playoff odds locked', page.evaluate("[...document.querySelectorAll('.lacell')].some(c => /Playoff/.test(c.textContent) && c.querySelector('.lockic') && !/%/.test(c.textContent))"))
+        check(f'[{tag}] non-admin: win % still shows', page.evaluate("/%/.test((document.querySelector('.mc.mine') || {}).textContent || '')"))
+        page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(1500)
+        check(f'[{tag}] non-admin: no projections on Matchup', page.evaluate("document.querySelectorAll('.fp .pj, .ppt small.pj').length") == 0)
+        page.click('.prow[data-row="0"]'); page.wait_for_timeout(700)
+        check(f'[{tag}] non-admin: tap-open has no PROJECTED', 'PROJECTED' not in page.evaluate("(document.querySelector('.detail') || {}).innerText || ''"))
+        page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(1500)
+        check(f'[{tag}] non-admin: Standings odds locked', page.evaluate("document.querySelectorAll('.stpo.lk').length") == 12 and page.evaluate("document.querySelectorAll('.stpo b').length") == 0)
+        page.reload(); page.wait_for_timeout(2500)
+        check(f'[{tag}] non-admin: notice does not come back', not page.evaluate("document.querySelector('#admNotice').classList.contains('show')"))
+        page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(400)
+        page.click('.gear'); page.wait_for_timeout(600); page.click('#admBtn'); page.wait_for_timeout(900)
+        page.fill('#admInput', '11112222'); page.click('#admGo'); page.wait_for_timeout(500)
+        check(f'[{tag}] wrong code refused', page.evaluate("document.querySelector('#admHint').textContent") == 'Incorrect code' and not page.evaluate("localStorage.getItem('fgt-adm')"))
+        code = os.environ.get('FGT_ADM_CODE')   # the real code is never written in this public repo
+        if code:
+            page.fill('#admInput', code); page.click('#admGo'); page.wait_for_timeout(1200)
+            check(f'[{tag}] right code unlocks', page.evaluate("document.querySelectorAll('.trow .sc small').length") > 0 and page.evaluate("document.querySelectorAll('.lockic').length") == 0)
+            page.reload(); page.wait_for_timeout(2500)
+            check(f'[{tag}] admin remembered after reload', page.evaluate("document.querySelectorAll('.trow .sc small').length") > 0)
+            check(f'[{tag}] admin code never in the page', code not in page.content())
+        else: print(f'SKIP [{tag}] right-code checks (set FGT_ADM_CODE)')
+        check(f'[{tag}] non-admin: no page errors', not errs, errs)
+        ctx.close()
     br.close()
 srv.shutdown()
 # version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
