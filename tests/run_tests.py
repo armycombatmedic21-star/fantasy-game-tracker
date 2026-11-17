@@ -896,6 +896,50 @@ with sync_playwright() as pw:
 F.build_live = _orig_live
 # v1.16.1: odds use every team's best lineup this week, so benching starters in CBS doesn't move them (Strategic Tank does)
 check('draft: benched CBS lineup does not move draft odds (best lineups, v1.16.1)', abs(_exp['tank'] - _exp['normal']) < 0.05, _exp)
+
+# ---- v1.17.0: Matchup Current / Optimal toggle (admin) + average pick on the Playoff Engine page ----
+with sync_playwright() as pw:
+    br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    F.build_live = _tank            # Dallas has 4 healthy starters benched -> Optimal must put them back
+    for (W, H, tag) in [(393, 852, 'iphone'), (360, 780, 'android')]:
+        ctx = br.new_context(viewport={'width': W, 'height': H}, device_scale_factor=2, is_mobile=True, has_touch=True)
+        ctx.route('**/*', route); ctx.add_init_script(ADM_INIT)
+        ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
+        page = ctx.new_page(); errs = []
+        page.on('pageerror', lambda e: errs.append(str(e)))
+        page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_fresh(page)
+        page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(1500)
+        check(f'[{tag}] opt: a Current | Optimal switch under each team', page.evaluate("document.querySelectorAll('.fp2 .optg').length") == 2)
+        check(f'[{tag}] opt: starts on Current', page.evaluate("[...document.querySelectorAll('.fp2 .optg')].every(g => g.querySelector('button.on').textContent === 'Current')"))
+        check(f'[{tag}] opt: switch fits inside the card', page.evaluate("[...document.querySelectorAll('.fp2 .optg')].every(g => { const r = g.getBoundingClientRect(), h = document.querySelector('#hero').getBoundingClientRect(); return r.left >= h.left && r.right <= h.right; })"))
+        before = page.evaluate("({ names: [...document.querySelectorAll('#mrows .plist:first-child .prow .pside:not(.r) .pnm')].map(e => e.textContent).join('|'), pj: (document.querySelector('.fp .pj span') || {}).textContent, wp: (document.querySelector('#hero .wp, #hero .wpr') || document.querySelector('#hero')).innerText })")
+        page.click('.fp2 .nm:not(.r) .optg button[data-v="1"]'); page.wait_for_timeout(1200)
+        after = page.evaluate("({ names: [...document.querySelectorAll('#mrows .plist:first-child .prow .pside:not(.r) .pnm')].map(e => e.textContent).join('|'), pj: (document.querySelector('.fp .pj span') || {}).textContent, wp: (document.querySelector('#hero .wp, #hero .wpr') || document.querySelector('#hero')).innerText })")
+        check(f'[{tag}] opt: Optimal swaps the benched starters back in', before['names'] != after['names'] and 'Marks' in after['names'], (before['names'], after['names']))
+        check(f'[{tag}] opt: Optimal raises the projected score', after['pj'] and before['pj'] and float(after['pj']) > float(before['pj']) + 3, (before['pj'], after['pj']))
+        check(f'[{tag}] opt: win % changes', before['wp'] != after['wp'])
+        check(f'[{tag}] opt: benched starter moves to the bench list', page.evaluate("[...document.querySelectorAll('.benchlist:not(.irlist) .pside:not(.r) .pnm')].length") >= 1)
+        page.click('.fp2 .nm:not(.r) .optg button[data-v="0"]'); page.wait_for_timeout(600)
+        back = page.evaluate("[...document.querySelectorAll('#mrows .plist:first-child .prow .pside:not(.r) .pnm')].map(e => e.textContent).join('|')")
+        check(f'[{tag}] opt: Current puts the real lineup back', back == before['names'])
+        page.click('.fp2 .nm:not(.r) .optg button[data-v="1"]'); page.wait_for_timeout(500)
+        page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(500); page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(900)
+        check(f'[{tag}] opt: back on Current after leaving the screen', page.evaluate("[...document.querySelectorAll('.fp2 .optg')].every(g => g.querySelector('button.on').textContent === 'Current')"))
+        page.click('.tabbtn[data-tab="standings"]'); page.wait_for_timeout(1200); page.click('#ppeBtn')
+        t0 = time.time()
+        while time.time() - t0 < 25 and not page.evaluate("!!document.querySelector('.ppre')"): page.wait_for_timeout(250)
+        check(f'[{tag}] ppe: Avg. pick row in the tank table', page.evaluate("[...document.querySelectorAll('.ppcm .cr span:first-child')].some(e => e.textContent === 'Avg. pick')"))
+        check(f'[{tag}] opt: no page errors', not errs, errs)
+        ctx.close()
+    F.build_live = _orig_live
+    # non-admin: no switch
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}); ctx.route('**/*', route)
+    ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1'); localStorage.setItem('fgt-adm-seen', '1');")
+    page = ctx.new_page(); page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_engine(page)
+    page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(1200)
+    check('opt non-admin: no Current | Optimal switch', page.evaluate("document.querySelectorAll('.optg').length") == 0)
+    ctx.close(); br.close()
+
 srv.shutdown()
 # version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
 import re as _re2

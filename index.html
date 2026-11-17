@@ -858,6 +858,12 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .sthead .poh,.sthead .dph{white-space:normal;line-height:1.15;text-align:center}
 .stdet .stt.dpt .dpl{flex-direction:row;align-items:baseline}
 .stdet .stt.dpt .dpl span{display:inline;margin:0}
+/* ---- v1.17.0 Matchup Current / Optimal toggle (admin) ---- */
+.fp2 .optg{display:inline-flex;align-self:flex-start;margin-top:7px;padding:2px;border-radius:999px;border:1px solid var(--hair2);background:rgba(255,255,255,.035)}
+.fp2 .optg.r{align-self:flex-end}
+.fp2 .optg button{height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.2px;color:var(--faint);white-space:nowrap}
+.fp2 .optg button.on{background:rgba(var(--acc-rgb),.22);color:#fff;box-shadow:inset 0 0 0 1px rgba(var(--acc-rgb),.6)}
+@media (max-width:370px){.fp2 .optg button{padding:0 8px;font-size:10.5px}}
 /* ---- v1.16.0 Playoff Prediction Engine (admin page) ---- */
 .ppebtn{width:100%;height:46px;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(var(--acc-rgb),.55);background:rgba(var(--acc-rgb),.08);color:#fff;font-size:14.5px;font-weight:800;letter-spacing:-.1px}
 .ppebtn svg{color:var(--acc);flex:none}
@@ -1036,10 +1042,11 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.16.1';
+const APP_VERSION = '1.17.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.17.0', 'Matchup: new Current | Optimal switch under each team (admin), like FantasyPros. It always starts on Current. Optimal puts that team’s best healthy lineup in (by our projections; players whose game has started stay where CBS has them; Out / IR / bye players never start): the bench player moves up into the starter row, the starter moves down to the bench, and the projected score and win % update. Playoff Prediction Engine: draft changes now use the AVERAGE pick (the most likely pick can jump between groups of picks, e.g. Pittsburgh 9 → 4 while the average only moves 7.6 → 6.0); new “Avg. pick” row; the recommendation text says “picks on average”. New rule first: a “free tank” (title, playoff and bye odds each drop less than half a point and the average pick improves) = TANK NOW. Visual changes: the Current | Optimal switch under each team name on the Matchup card; the draft card’s change now reads like “▲1.6 avg”; one more row in the Tank table.', 'Small fixes.'],
   ['1.16.1', 'Fix: playoff odds, draft odds and the Playoff Prediction Engine assume every team plays its best healthy lineup this week again (like before v1.16.0). v1.16.0 used the lineups currently set in CBS, and early in the week (bye-week players still in lineups) that made some games lopsided — Dallas showed 99% to make the playoffs instead of about 91%. Use Strategic Tank to see a team throwing a game. Scoreboard and Matchup win % still use the real CBS lineups. No visual changes.', 'Fix: more accurate odds early in the week. No visual changes.'],
   ['1.16.0', 'Playoff Prediction Engine (admin): new “Playoff Prediction Engine” button on Standings (between the Online card and the AFC card) opens a new page. The engine now plays the whole playoffs in each of the 20,000 seasons (Week 13 Loser Bowl as a real game, Week 14 wild card 4 vs 5, re-seeded Week 15 semis, Week 16 division final, Week 17 Super Bowl; the bracket stays in the division). The page shows title chance, draft pick, playoffs / bye / projected seed / Loser Bowl, the road to the title, projected seeds, the projected bracket with win % per game, and every team’s odds. A team drop-down (top right) shows any team without changing yours. Strategic Tank re-runs everything with that team losing its next game, shows every change, and says TANK NOW (green) or DON’T TANK (red). Also: playoff odds now use this week’s real CBS lineups (same as draft odds), the Loser Bowl is a real game in the draft odds (was 50/50), the “Most likely” line is gone from the draft pick tile (the bold row + blue % show it), and Admin turns on and off in Settings without re-typing the code once it’s been entered on that phone. Visual changes: new pill button on Standings; new page; draft tile one line shorter. Phones without the code see the button with a lock and get a “Locked” sheet.', 'New on Standings: a Playoff Prediction Engine button (admin only — other phones see a lock). Admin turns on and off in Settings without re-typing the code.'],
   ['1.15.0', 'Draft pick projections (Advanced Draft Order Prediction Engine): each simulated season now also works out the draft order (league rule 4.C: the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2, picks 3-10 go fewest wins first, division winners pick 11-12; playoffs don’t matter). It uses this week’s real CBS lineups, so a lineup change moves it live. New on screen: a 4th Home box “Draft Pick” with the most likely pick and its odds; a DRAFT # column after PLAYOFF % in Standings; in a team’s drop-down, “Proj. Draft Pick” (most likely pick in the middle with the pick above and below and their odds) replaces Differential. To fit: the Standings column headers are slightly smaller (they wrap to two lines on small Androids), the columns are a little narrower, and the drop-down arrow moved left under the team name. The Notice has a new first line. Non-admin phones see locks.', 'Advanced Draft Order Prediction Engine added. Disabled for all non-Dallas owners unless league rules are updated.'],
@@ -1786,7 +1793,7 @@ let lastView = null;
 function render(){
   if(holdRender > Date.now() || (press && press.active) || swipe.active){ renderQueued = true; return; }
   renderQueued = false;
-  if(S.view !== lastView){ if(S.view === 'standings'){ S.stOpen = {}; recOnEnter(); } else S.recBanner = null; lastView = S.view; }
+  if(S.view !== lastView){ if(S.view === 'standings'){ S.stOpen = {}; recOnEnter(); } else S.recBanner = null; if(S.view !== 'match') OPT.v = null; lastView = S.view; }
   const v = $('#view');
   let html;
   if(S.view === 'match') html = matchView();
@@ -2164,6 +2171,54 @@ function prow(a, La, b, Lb, i, slot, bench, mkey){
     '<span class="ctr"><span class="chip' + (ir ? ' irchip' : bench ? '' : ' ' + slot) + '">' + lab + '</span><span class="chev">' + ICON.rowchev + '</span></span>' + (ir && !b ? emp(true) : side(b, Lb, true)) + '</button>' +
     (o ? '<div class="detail" data-key="d' + i + '">' + dcol(a, La) + dcol(b, Lb) + '</div>' : '');
 }
+/* v1.17.0 (Wes, Nov 17): Matchup "Current | Optimal" toggle under each team (FantasyPros-style, admin only).
+   Always starts on Current. Optimal = that team's best healthy lineup by our projections (same rule as the engine's
+   playoff odds): players whose game has started stay where CBS has them; Out / IR / bye / no projection never start.
+   The rows swap (bench player up, starter down), and the projected totals + win % come from a one-game engine run. */
+const OPT = { v: null, res: {}, busy: false, want: null, id: 0 };
+function optOn(id){ return !!(OPT.v && OPT.v.ids[id]); }
+function optSide(T, L){
+  if(!T) return { T: T, L: L, n: 0 };
+  const lrows = L ? L.rows : [], lock = function(q){ return q.mode === 'live' || (q.mode === 'final' && !q.bye); };
+  const fixed = T.lineup.map(function(p, i){ return p && lock(engState(p, lrows[i])) ? { p: p, L: lrows[i] } : null; });
+  const pool = [], rest = [];
+  T.lineup.forEach(function(p, i){ if(p && !fixed[i]) pool.push({ p: p, L: lrows[i] }); });
+  T.bench.forEach(function(p, k){ if(p && !p.ir) pool.push({ p: p, L: L && L.bench[k] }); });
+  pool.forEach(function(x){
+    const q = engState(x.p, x.L), r = projFor(x.p);
+    if(lock(q) || q.bye || q.out || !r || r.bye || !(r.pp > 0) || !(r.m > 0)) rest.push(x); else { x.m = r.m; x.use = 1; }
+  });
+  const use = pool.filter(function(x){ return x.use; }).sort(function(a, b){ return b.m - a.m; });
+  const out = fixed.slice(), n = Math.max(out.length, SLOTS.length);
+  const fit = function(pos){
+    for(let i = 0; i < n; i++) if(!out[i] && SLOTS[i] === pos) return i;
+    if(pos === 'RB' || pos === 'WR'){ const f = SLOTS.indexOf('FLEX'); if(f >= 0 && !out[f]) return f; }
+    return -1; };
+  use.forEach(function(x){ const i = fit(x.p.pos); if(i >= 0) out[i] = x; else rest.push(x); });
+  const newL = []; for(let i = 0; i < n; i++) newL.push(out[i] || null);
+  const bench = [], bL = [], down = rest.map(function(x){ return x.p; });
+  T.bench.forEach(function(p, k){ if(p.ir || down.indexOf(p) >= 0){ bench.push(p); bL.push(L && L.bench[k]); } });   // CBS bench order first
+  rest.forEach(function(x){ if(T.bench.indexOf(x.p) < 0){ bench.push(x.p); bL.push(x.L); } });                       // then starters moved down
+  const moved = newL.filter(function(x, i){ return x && x.p !== T.lineup[i]; }).length;
+  let bp = 0; bL.forEach(function(Lb, k){ if(Lb && !bench[k].ir && Lb.pts) bp += Lb.pts; });
+  return { T: Object.assign({}, T, { lineup: newL.map(function(x){ return x ? x.p : null; }), bench: bench }),
+           L: L ? Object.assign({}, L, { rows: newL.map(function(x){ return x ? x.L : null; }), bench: bL, bpts: Math.round(bp * 10) / 10 }) : L, n: moved };
+}
+function optTeamMsg(T, L){
+  return { starters: T.lineup.map(function(p, i){ return p ? engState(p, L && L.rows[i]) : null; }).filter(Boolean),
+           bench: T.bench.filter(function(p){ return !p.ir; }).map(function(p){ const i = T.bench.indexOf(p); return engState(p, L && L.bench[i]); }) };
+}
+function optSig(key, h, a){ return key + '|' + (optOn(h) ? 1 : 0) + (optOn(a) ? 1 : 0) + '|' + (ENG.res && ENG.res.id || 0); }
+function optAsk(){
+  const w = OPT.want; if(!w || OPT.busy || !ENG.worker || OPT.res[w.sig]) return;
+  OPT.busy = true; OPT.want = null;
+  ENG.worker.postMessage({ type: 'one', id: ++OPT.id, sig: w.sig, week: w.week, key: w.key, a: w.a, b: w.b, teams: w.teams });
+}
+function optToggle(id, on){ if(!OPT.v) return; OPT.v.ids[id] = !!on; render(); }
+function optSeg(id, r){
+  const on = optOn(id);
+  return '<span class="optg' + (r ? ' r' : '') + '" role="group" aria-label="Lineup"><button class="' + (on ? '' : 'on') + '" data-opt="' + esc(id) + '" data-v="0" aria-pressed="' + !on + '">Current</button><button class="' + (on ? 'on' : '') + '" data-opt="' + esc(id) + '" data-v="1" aria-pressed="' + on + '">Optimal</button></span>';
+}
 function matchList(){ const LM = liveModel(); if(!LM) return null; return { LM: LM, list: orderedMatchups(LM.model).all }; }
 function matchView(){
   const X = matchList();
@@ -2175,13 +2230,26 @@ function matchView(){
   let idx = X.list.findIndex(function(x){ return x.key === S.curKey; });
   if(idx < 0){ idx = 0; S.curKey = X.list[0].key; }
   const mt = X.list[idx], LM = X.LM;
-  const A = mt.away && mt.away.id === S.team ? mt.away : mt.home, B = A === mt.home ? mt.away : mt.home;
-  const la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
+  let A = mt.away && mt.away.id === S.team ? mt.away : mt.home, B = A === mt.home ? mt.away : mt.home;
+  let la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
+  // v1.17.0: Current / Optimal (starts on Current for every game; admin, this week, game not final)
+  if(!OPT.v || OPT.v.k !== mt.key) OPT.v = { k: mt.key, ids: {} };
+  const canOpt = ADMIN && isCurrentWeek() && !!B && !!(ENG.res && ENG.res.m && ENG.res.m[mt.key]);
+  if(canOpt && optOn(A.id)){ const o = optSide(A, la); A = o.T; la = o.L; }
+  if(canOpt && optOn(B.id)){ const o = optSide(B, lb); B = o.T; lb = o.L; }
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
   // v1.6.1: "Live" only once a starter's game has kicked off or finished (a starter on a bye / with no game used to make it say Live early)
   const played = (la ? la.rows : []).concat(lb ? lb.rows : []).filter(function(L){ return L && (L.state === 'in' || L.state === 'post'); }).length;
   const status = left === 0 && played ? 'Final' : (played ? 'Live · ' + left + ' players left' : 'Not started');
-  const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home, dw = isDivWeek(LM.model);
+  let E = isCurrentWeek() ? engMatch(mt.key) : null;
+  const HM = mt.home, flip = !!(E && HM && A.id !== HM.id), dw = isDivWeek(LM.model);
+  if(E && canOpt && (optOn(A.id) || optOn(B.id))){   // one-game run with the lineups on screen (home team first, like the engine)
+    const sig = optSig(mt.key, HM.id, mt.away && mt.away.id), R = OPT.res[sig];
+    if(R) E = R.m;
+    else { const hT = HM.id === A.id ? [A, la] : [B, lb], aT = HM.id === A.id ? [B, lb] : [A, la], tm = {};
+      tm[HM.id] = optTeamMsg(hT[0], hT[1]); tm[aT[0].id] = optTeamMsg(aT[0], aT[1]);
+      OPT.want = { sig: sig, week: LM.model.week, key: mt.key, a: HM.id, b: aT[0].id, teams: tm }; setTimeout(optAsk, 0); E = null; }
+  }
   const fw = status === 'Final' && B ? finalWa(la, lb) : null;
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null, note = engNote();
   const fl = function(t, r){ return '<span class="fplogo' + (r ? ' r' : '') + '">' + (t ? img(t.logo, t.code) : '') + '</span>'; };
@@ -2192,7 +2260,7 @@ function matchView(){
   h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
     (E && ADMIN && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
-    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small></div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small></div></div>' +
+    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : '') + '</div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : '') + '</div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x, j){ return HASM && j === 0 ? '<i class="star' + (x === mt ? ' on' : '') + '">' + ICON.star + '</i>' : '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
@@ -2586,10 +2654,10 @@ function ppP(v, dec){
 }
 function ppDelta(cur, base, goodUp, unit){                // change vs not tanking, in percentage points (or picks)
   if(cur == null || base == null) return '';
-  const d = unit === 'pick' ? base - cur : (cur - base) * 100;
-  if(Math.abs(d) < (unit === 'pick' ? 0.5 : 0.5)) return '<i class="ppd z">±0</i>';
+  const d = unit === 'pick' || unit === 'apick' ? base - cur : (cur - base) * 100;
+  if(Math.abs(d) < (unit === 'apick' ? 0.05 : 0.5)) return '<i class="ppd z">±0</i>';
   const up = d > 0, good = goodUp == null ? null : (up === goodUp);
-  const v = unit === 'pick' ? Math.round(Math.abs(d)) : (Math.abs(d) < 10 ? (Math.round(Math.abs(d) * 10) / 10) : Math.round(Math.abs(d)));
+  const v = unit === 'pick' ? Math.round(Math.abs(d)) : unit === 'apick' ? Math.abs(d).toFixed(1) : (Math.abs(d) < 10 ? (Math.round(Math.abs(d) * 10) / 10) : Math.round(Math.abs(d)));
   return '<i class="ppd ' + (good == null ? 'a' : good ? 'g' : 'r') + '">' + (up ? '▲' : '▼') + v + '</i>';
 }
 function ppML(a){ let m = 0; (a || []).forEach(function(v, k){ if(v > a[m]) m = k; }); return m; }
@@ -2604,12 +2672,17 @@ function ppSeedAt(D, TM, t){ const d = TM.divs.find(function(x){ return x.ids.in
 function ppRec(B, T, t){
   if(!B || !T) return null;
   const tb = B.ti[t] * 100, tt = T.ti[t] * 100, dT = tt - tb, gain = ppEP(B.dp[t]) - ppEP(T.dp[t]);
-  const g = Math.round(gain), f1 = function(v){ return v < 10 ? v.toFixed(1) : Math.round(v); };
-  const pk = g === 1 ? '1 pick' : g + ' picks';
-  if(dT > 0.2) return { yes: true, why: 'Tanking raises title odds ' + f1(tb) + '% → ' + f1(tt) + '% (easier path)' + (g >= 1 ? ' and gains ~' + pk : '') + '.' };
+  const g = Math.round(gain * 10) / 10, f1 = function(v){ return v < 10 ? v.toFixed(1) : Math.round(v); };
+  const pk = g.toFixed(1) + ' picks on average';   // v1.17.0: average pick (the most likely pick can jump between clusters)
+  // v1.17.0 (Wes, Nov 17): rule 0 "free tank" — tanking costs essentially nothing (title, playoffs and bye each drop
+  // < 0.5 pts) and the average pick improves at all -> TANK NOW (e.g. Indy at 9-1: pick 12 -> 11 for free)
+  const drop = function(k){ return (B[k][t] - T[k][t]) * 100; };
+  if(drop('ti') < 0.5 && drop('po') < 0.5 && drop('bye') < 0.5 && gain >= 0.05) return { yes: true, why: 'Free: no real cost to title, playoff or bye odds, and the average pick improves ' + ppEP(B.dp[t]).toFixed(1) + ' → ' + ppEP(T.dp[t]).toFixed(1) + '.' };
+  if(Math.abs(dT) < 0.05 && gain < 0.05) return { yes: false, why: 'Tanking changes nothing — same title odds, playoffs and pick.' };
+  if(dT > 0.2) return { yes: true, why: 'Tanking raises title odds ' + f1(tb) + '% → ' + f1(tt) + '% (easier path)' + (g >= 0.5 ? ' and gains ~' + pk : '') + '.' };
   if(dT >= -1 && gain >= 2) return { yes: true, why: 'Costs only ' + f1(Math.abs(dT)) + ' pts of title odds (' + f1(tb) + '% → ' + f1(tt) + '%) for ~' + pk + '.' };
   if(tb < 3) return gain >= 0.5 ? { yes: true, why: 'Title odds are already low (' + f1(tb) + '%) — tanking improves the pick by ~' + pk + '.' } : { yes: false, why: 'Title odds are low (' + f1(tb) + '%), but tanking doesn’t improve the pick.' };
-  return { yes: false, why: 'Tanking ' + (g >= 1 ? 'gains ~' + pk + ' but ' : '') + 'cuts title odds ' + f1(tb) + '% → ' + f1(tt) + '% and playoffs ' + ppP(B.po[t]) + ' → ' + ppP(T.po[t]) + '.' };
+  return { yes: false, why: 'Tanking ' + (g >= 0.5 ? 'gains ~' + pk + ' but ' : '') + 'cuts title odds ' + f1(tb) + '% → ' + f1(tt) + '% and playoffs ' + ppP(B.po[t]) + ' → ' + ppP(T.po[t]) + '.' };
 }
 function ppeView(){
   const TM = ppeTeams(), t = ppeTeam(), me = TM.by[t];
@@ -2630,7 +2703,7 @@ function ppeView(){
   let dpr = ''; for(let k = a0; k < Math.min(n, a0 + 3); k++) dpr += '<div class="dpl' + (k === ml ? ' ml' : '') + '"><span>Pick ' + (k + 1) + '</span><span>' + dpPct(dd[k]) + '</span></div>';
   h += '<div class="pphud" data-key="pphud"><div class="pphc pptc"><small>Title chance</small><b>' + ppP(D.ti[t], true).replace('%', '<sup>%</sup>') + '</b>' + dr(D.ti[t], B.ti[t], true) +
     '<em>Reach Super Bowl <b>' + ppP(D.sb[t], true) + '</b></em></div>' +
-    '<div class="pphc ppdc"><small><span>Draft pick</span>' + (on ? ppDelta(ml + 1, ppML(B.dp[t]) + 1, true, 'pick') : '') + '</small>' + dpr + '</div></div>';
+    '<div class="pphc ppdc"><small><span>Draft pick</span>' + (on ? ppDelta(ppEP(D.dp[t]), ppEP(B.dp[t]), true, 'apick').replace('</i>', ' avg</i>') : '') + '</small>' + dpr + '</div></div>';   // v1.17.0: change = average pick
   const sd = D.seed[t] || [], sm = Math.max(0, ppSeedAt(D, TM, t)), bsm = Math.max(0, ppSeedAt(B, TM, t));   // same order as the seeds list + bracket
   const cell = function(lab, val, extra){ return '<div class="lacell"><small>' + lab + '</small><b>' + val + '</b>' + (extra || '<em>&nbsp;</em>') + '</div>'; };
   const pc = function(v){ return ppP(v).replace('%', '<sup>%</sup>'); };
@@ -2648,11 +2721,11 @@ function ppeView(){
     else h += '<div class="ppld done" data-key="ppld"><div class="ldb"><i style="width:100%"></i></div><div class="ldt"><span>20,000 seasons each way</span><span>' + (ENG.at ? 'Updated ' + esc(new Date(ENG.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) : '') + '</span></div></div>';
     const rc = ppRec(B, TK, t);
     if(rc) h += '<div class="ppre ' + (rc.yes ? 'yes' : 'no') + '" data-key="ppre"><span class="rb">' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '</span><span class="rt">' + esc(rc.why) + '</span></div>';
-    const rows = [['Playoffs', 'po', true], ['Bye (top 3)', 'bye', true], ['Title', 'ti', true], ['Most likely pick', 'pk', true], ['Loser Bowl', 'lb', null], ['Most likely seed', 'sd', false]];
+    const rows = [['Playoffs', 'po', true], ['Bye (top 3)', 'bye', true], ['Title', 'ti', true], ['Avg. pick', 'ap', true], ['Most likely pick', 'pk', true], ['Loser Bowl', 'lb', null], ['Most likely seed', 'sd', false]];
     h += '<div class="ppcm" data-key="ppcm"><div class="ch"><span></span><span class="' + (PPE.on ? '' : 'act') + '">Play to win</span><span class="' + (PPE.on ? 'act' : '') + '">Tank</span><span>Change</span></div>' + rows.map(function(r){
-      const val = function(X){ if(!X) return '…'; if(r[1] === 'pk') return '#' + (ppML(X.dp[t]) + 1); if(r[1] === 'sd') return '#' + (ppSeedAt(X, TM, t) + 1); return ppP(X[r[1]][t], r[1] === 'ti'); };
+      const val = function(X){ if(!X) return '…'; if(r[1] === 'ap') return ppEP(X.dp[t]).toFixed(1); if(r[1] === 'pk') return '#' + (ppML(X.dp[t]) + 1); if(r[1] === 'sd') return '#' + (ppSeedAt(X, TM, t) + 1); return ppP(X[r[1]][t], r[1] === 'ti'); };
       let ch = '';
-      if(TK){ if(r[1] === 'pk') ch = ppDelta(ppML(TK.dp[t]) + 1, ppML(B.dp[t]) + 1, true, 'pick');
+      if(TK){ if(r[1] === 'ap') ch = ppDelta(ppEP(TK.dp[t]), ppEP(B.dp[t]), true, 'apick'); else if(r[1] === 'pk') ch = ppDelta(ppML(TK.dp[t]) + 1, ppML(B.dp[t]) + 1, true, 'pick');
         else if(r[1] === 'sd'){ const x = ppSeedAt(TK, TM, t), y = ppSeedAt(B, TM, t); ch = x === y ? '<i class="ppd z">±0</i>' : '<i class="ppd ' + (x > y ? 'r' : 'g') + '">' + (x > y ? '▼' : '▲') + Math.abs(x - y) + '</i>'; }
         else ch = ppDelta(TK[r[1]][t], B[r[1]][t], r[2]); }
       return '<div class="cr"><span>' + r[0] + '</span><span class="' + (PPE.on ? '' : 'act') + '">' + val(B) + '</span><span class="' + (PPE.on ? 'act' : '') + '">' + val(TK) + '</span><span>' + ch + '</span></div>'; }).join('') + '</div></section>';
@@ -3024,6 +3097,7 @@ $('#view').addEventListener('click', function(e){
   const mc = t.closest('.mc'); if(mc){ S.curKey = mc.dataset.key; S.open = null; setView('match'); saveView(); return; }
   if(t.closest('#back')){ setView('home'); return; }
   if(t.closest('#ppeBtn')){ ppeOpen(); return; }
+  const og = t.closest('[data-opt]'); if(og){ optToggle(og.dataset.opt, og.dataset.v === '1'); return; }
   if(t.closest('#ppeBack')){ ppeClose(); return; }
   if(t.closest('#ppeTank')){ ppeToggle(); return; }
   if(t.closest('#prev')){ go(-1); return; }
@@ -3819,6 +3893,12 @@ function engineWorker(){
     if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
       const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
       const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
+    if(msg.type === 'one'){   // v1.17.0: Matchup Current / Optimal toggle — one game with the lineups the screen shows
+      try{ const r = runWeek({ week: msg.week, matchups: [{ key: msg.key, a: msg.a, b: msg.b }], teams: msg.teams }, true);
+        self.postMessage({ type: 'one', id: msg.id, sig: msg.sig, m: r.m[msg.key] || null, p: r.p }); }
+      catch(err){ self.postMessage({ type: 'one', id: msg.id, sig: msg.sig, m: null, err: String(err && err.message || err) }); }
+      return;
+    }
     if(msg.type === 'tank'){   // v1.16.0: Strategic Tank — re-run the latest season pass with this team losing its next game
       try{
         if(!LAST || !LAST.msg.season){ self.postMessage({ type: 'tank', id: msg.id, team: msg.team, res: null }); return; }
@@ -3857,7 +3937,8 @@ function engineStart(){
   catch(e){ ENG.err = 'worker'; return; }
   ENG.worker.onmessage = function(e){
     const d = e.data;
-    if(d.type === 'tankp' || d.type === 'tank'){ ppeMsg(d); return; }   // v1.16.0 Strategic Tank (doesn't touch the run queue)
+    if(d.type === 'tankp' || d.type === 'tank'){ ppeMsg(d); return; }
+    if(d.type === 'one'){ OPT.busy = false; if(d.m) OPT.res[d.sig] = { m: d.m, p: d.p || {} }; if(S.view === 'match') render(); optAsk(); return; }   // v1.17.0   // v1.16.0 Strategic Tank (doesn't touch the run queue)
     ENG.busy = false;
     if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); saveEngSnap(false); render(); if(S.view === 'ppe') ppeAsk(); }
     else if(d.type === 'error') ENG.err = d.err;
