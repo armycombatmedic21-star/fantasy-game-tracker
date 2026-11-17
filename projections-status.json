@@ -1,5 +1,5 @@
 {
- "at": "2026-11-17T07:43:49+00:00",
+ "at": "2026-11-17T12:54:16+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -11,8 +11,8 @@
    "total_available": {
     "QB": "78",
     "RB": "142",
-    "WR": "230",
-    "TE": "139"
+    "WR": "231",
+    "TE": "138"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 404,
-   "secs": 3.5,
+   "records": 403,
+   "secs": 3.6,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -60,21 +60,21 @@
   "espn": {
    "ok": true,
    "records": 345,
-   "secs": 1.0,
+   "secs": 0.4,
    "info": {
     "players": 1061,
     "kept": 345,
     "dropped": {
      "pos": 0,
-     "team": 323,
-     "no_week_proj": 393
+     "team": 324,
+     "no_week_proj": 392
     }
    }
   },
   "cbs": {
    "ok": true,
    "records": 135,
-   "secs": 38.1,
+   "secs": 33.6,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Jordyn Tyson NO",
-  "Jonathan Taylor IND",
-  "Carson Beck ARI",
-  "Emmett Johnson KC",
-  "Geno Smith NYJ",
-  "Baker Mayfield TB",
-  "Jaylen Warren PIT",
-  "Deebo Samuel Sr. SF",
-  "David Montgomery HOU",
-  "Cam Skattebo NYG",
-  "Chase Brown CIN",
-  "Bryce Young CAR",
-  "Wan'Dale Robinson TEN",
-  "Jakobi Meyers JAX",
-  "Joe Milton III PHI",
-  "J.J. McCarthy NYG",
-  "DeVonta Smith PHI",
-  "Khalil Shakir BUF",
-  "Jaylen Waddle DEN",
-  "Cam Ward TEN",
-  "Adonai Mitchell NYJ",
+  "Omarion Hampton LAC",
+  "DK Metcalf PIT",
+  "Courtland Sutton DEN",
+  "Jared Goff DET",
   "Jameis Winston NYG",
-  "Ollie Gordon II MIA",
-  "Rachaad White WAS",
-  "Jameson Williams DET"
+  "Travis Etienne NO",
+  "Tony Pollard TEN",
+  "Mike Gesicki CIN",
+  "Saquon Barkley PHI",
+  "Carson Beck ARI",
+  "Kirk Cousins MIN",
+  "Geno Smith NYJ",
+  "David Montgomery HOU",
+  "Rashee Rice KC",
+  "Braelon Allen NYJ",
+  "Josh Downs KC",
+  "Ladd McConkey LAC",
+  "Zay Flowers BAL",
+  "Baker Mayfield TB",
+  "Adonai Mitchell NYJ",
+  "Ashton Jeanty LV",
+  "Tetairoa McMillan CAR",
+  "Khalil Shakir BUF",
+  "Emmett Johnson KC",
+  "Jonathan Taylor IND"
  ],
- "fp_unmatched_5plus_count": 64,
+ "fp_unmatched_5plus_count": 65,
  "scorecard": "week 11: 532 pre-kickoff projections saved",
  "consensus": {
   "used": 332,
@@ -129,8 +129,8 @@
   "added_from_sites": 2,
   "added_4plus": [],
   "sources_per_player": {
-   "0": 123,
-   "1": 72,
+   "0": 124,
+   "1": 71,
    "2": 201,
    "3": 93,
    "4": 41
