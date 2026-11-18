@@ -1,5 +1,5 @@
 {
- "at": "2026-11-17T21:26:35+00:00",
+ "at": "2026-11-18T20:59:06+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -9,9 +9,9 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "78",
-    "RB": "142",
-    "WR": "232",
+    "QB": "77",
+    "RB": "140",
+    "WR": "231",
     "TE": "139"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 418,
-   "secs": 3.3,
+   "records": 414,
+   "secs": 3.2,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 283
+    "injury_flags": 249
    }
   },
   "espn": {
    "ok": true,
-   "records": 344,
-   "secs": 0.6,
+   "records": 342,
+   "secs": 0.5,
    "info": {
     "players": 1061,
-    "kept": 344,
+    "kept": 342,
     "dropped": {
      "pos": 0,
-     "team": 324,
+     "team": 326,
      "no_week_proj": 393
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 134,
-   "secs": 48.4,
+   "records": 133,
+   "secs": 72.4,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 57
+    "no_projection": 58
    }
   },
   "fp": {
@@ -92,48 +92,48 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Jordan Mason MIN",
-  "Geno Smith NYJ",
-  "Ladd McConkey LAC",
-  "Jaylen Warren PIT",
-  "Jalen Coker CAR",
-  "Aaron Rodgers PIT",
-  "Rome Odunze CHI",
-  "Jameis Winston NYG",
-  "Malik Nabers NYG",
-  "Tank Dell HOU",
-  "David Montgomery HOU",
-  "Jared Goff DET",
+  "Chris Olave NO",
   "Emmett Johnson KC",
-  "Breece Hall NYJ",
-  "Kyle Monangai CHI",
-  "Ryan Flournoy DAL",
-  "Bryce Young CAR",
-  "Saquon Barkley PHI",
-  "Stefon Diggs WAS",
-  "Jacory Croskey-Merritt WAS",
-  "Chase Brown CIN",
+  "Mike Evans SF",
+  "Rome Odunze CHI",
+  "J.J. McCarthy NYG",
+  "Courtland Sutton DEN",
   "Ollie Gordon II MIA",
+  "Justin Herbert LAC",
+  "Geno Smith NYJ",
+  "Emeka Egbuka TB",
+  "Kirk Cousins MIN",
+  "DK Metcalf PIT",
+  "Chase Brown CIN",
+  "Bucky Irving TB",
+  "Tyler Shough NO",
   "Jameson Williams DET",
-  "Travis Etienne NO",
-  "Braelon Allen NYJ"
+  "Aaron Rodgers PIT",
+  "Jacory Croskey-Merritt WAS",
+  "Joe Milton III PHI",
+  "Rashee Rice KC",
+  "DeVonta Smith PHI",
+  "Carnell Tate TEN",
+  "David Montgomery HOU",
+  "Jalon Daniels TB",
+  "Josh Downs KC"
  ],
  "fp_unmatched_5plus_count": 64,
  "scorecard": "week 11: 532 pre-kickoff projections saved",
  "consensus": {
-  "used": 334,
-  "fallback": 55,
-  "single_source_blend": 44,
-  "out_by_injury": 70,
-  "no_source_zero": 71,
+  "used": 335,
+  "fallback": 70,
+  "single_source_blend": 56,
+  "out_by_injury": 50,
+  "no_source_zero": 75,
   "added_from_sites": 2,
   "added_4plus": [],
   "sources_per_player": {
-   "0": 121,
-   "1": 70,
-   "2": 204,
+   "0": 122,
+   "1": 72,
+   "2": 202,
    "3": 95,
-   "4": 40
+   "4": 39
   },
   "min_sources": 2
  },
