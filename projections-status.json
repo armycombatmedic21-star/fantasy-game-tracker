@@ -1,5 +1,5 @@
 {
- "at": "2026-11-19T02:50:22+00:00",
+ "at": "2026-11-19T21:04:49+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 414,
-   "secs": 3.5,
+   "records": 416,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -59,26 +59,26 @@
   },
   "espn": {
    "ok": true,
-   "records": 342,
-   "secs": 0.5,
+   "records": 344,
+   "secs": 0.6,
    "info": {
     "players": 1061,
-    "kept": 342,
+    "kept": 344,
     "dropped": {
      "pos": 0,
      "team": 326,
-     "no_week_proj": 393
+     "no_week_proj": 391
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 137,
-   "secs": 39.1,
+   "records": 140,
+   "secs": 38.5,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 54
+    "no_projection": 51
    }
   },
   "fp": {
@@ -92,48 +92,48 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Ladd McConkey LAC",
   "Tyler Shough NO",
-  "Breece Hall NYJ",
-  "Carson Beck ARI",
   "Jameis Winston NYG",
-  "Jonathan Taylor IND",
-  "David Montgomery HOU",
-  "Courtland Sutton DEN",
-  "Tony Pollard TEN",
-  "Kyle McCord MIA",
-  "Kirk Cousins MIN",
-  "DK Metcalf PIT",
   "DeVonta Smith PHI",
-  "Jordyn Tyson NO",
-  "Stefon Diggs WAS",
-  "Geno Smith NYJ",
-  "Kyle Monangai CHI",
-  "Tetairoa McMillan CAR",
-  "Jaylen Waddle DEN",
-  "Garrett Wilson NYJ",
-  "Bryce Young CAR",
-  "Jalen Coker CAR",
+  "Kyle McCord MIA",
+  "Daniel Jones IND",
   "Cam Skattebo NYG",
-  "Emmett Johnson KC",
-  "Chase Brown CIN"
+  "DJ Moore BUF",
+  "Jordyn Tyson NO",
+  "Saquon Barkley PHI",
+  "Chase Brown CIN",
+  "J.J. McCarthy NYG",
+  "Malik Nabers NYG",
+  "Carson Beck ARI",
+  "Tank Dell HOU",
+  "Joe Milton III PHI",
+  "Jameson Williams DET",
+  "Xavier Hutchinson HOU",
+  "Jaylen Warren PIT",
+  "Baker Mayfield TB",
+  "DK Metcalf PIT",
+  "Stefon Diggs WAS",
+  "Breece Hall NYJ",
+  "Ollie Gordon II MIA",
+  "Courtland Sutton DEN",
+  "Elic Ayomanor TEN"
  ],
  "fp_unmatched_5plus_count": 64,
  "scorecard": "week 11: 532 pre-kickoff projections saved",
  "consensus": {
-  "used": 335,
-  "fallback": 70,
-  "single_source_blend": 56,
+  "used": 338,
+  "fallback": 71,
+  "single_source_blend": 57,
   "out_by_injury": 50,
-  "no_source_zero": 75,
+  "no_source_zero": 71,
   "added_from_sites": 2,
   "added_4plus": [],
   "sources_per_player": {
-   "0": 122,
-   "1": 72,
-   "2": 197,
-   "3": 101,
-   "4": 38
+   "0": 120,
+   "1": 71,
+   "2": 201,
+   "3": 98,
+   "4": 40
   },
   "min_sources": 2
  },
