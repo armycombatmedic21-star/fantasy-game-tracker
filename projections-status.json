@@ -1,5 +1,5 @@
 {
- "at": "2026-11-18T20:59:06+00:00",
+ "at": "2026-11-19T02:50:22+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -11,8 +11,8 @@
    "total_available": {
     "QB": "77",
     "RB": "140",
-    "WR": "231",
-    "TE": "139"
+    "WR": "230",
+    "TE": "137"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 414,
-   "secs": 3.2,
+   "secs": 3.5,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,7 +54,7 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 249
+    "injury_flags": 258
    }
   },
   "espn": {
@@ -73,12 +73,12 @@
   },
   "cbs": {
    "ok": true,
-   "records": 133,
-   "secs": 72.4,
+   "records": 137,
+   "secs": 39.1,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 58
+    "no_projection": 54
    }
   },
   "fp": {
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Chris Olave NO",
-  "Emmett Johnson KC",
-  "Mike Evans SF",
-  "Rome Odunze CHI",
-  "J.J. McCarthy NYG",
+  "Ladd McConkey LAC",
+  "Tyler Shough NO",
+  "Breece Hall NYJ",
+  "Carson Beck ARI",
+  "Jameis Winston NYG",
+  "Jonathan Taylor IND",
+  "David Montgomery HOU",
   "Courtland Sutton DEN",
-  "Ollie Gordon II MIA",
-  "Justin Herbert LAC",
-  "Geno Smith NYJ",
-  "Emeka Egbuka TB",
+  "Tony Pollard TEN",
+  "Kyle McCord MIA",
   "Kirk Cousins MIN",
   "DK Metcalf PIT",
-  "Chase Brown CIN",
-  "Bucky Irving TB",
-  "Tyler Shough NO",
-  "Jameson Williams DET",
-  "Aaron Rodgers PIT",
-  "Jacory Croskey-Merritt WAS",
-  "Joe Milton III PHI",
-  "Rashee Rice KC",
   "DeVonta Smith PHI",
-  "Carnell Tate TEN",
-  "David Montgomery HOU",
-  "Jalon Daniels TB",
-  "Josh Downs KC"
+  "Jordyn Tyson NO",
+  "Stefon Diggs WAS",
+  "Geno Smith NYJ",
+  "Kyle Monangai CHI",
+  "Tetairoa McMillan CAR",
+  "Jaylen Waddle DEN",
+  "Garrett Wilson NYJ",
+  "Bryce Young CAR",
+  "Jalen Coker CAR",
+  "Cam Skattebo NYG",
+  "Emmett Johnson KC",
+  "Chase Brown CIN"
  ],
  "fp_unmatched_5plus_count": 64,
  "scorecard": "week 11: 532 pre-kickoff projections saved",
@@ -131,9 +131,9 @@
   "sources_per_player": {
    "0": 122,
    "1": 72,
-   "2": 202,
-   "3": 95,
-   "4": 39
+   "2": 197,
+   "3": 101,
+   "4": 38
   },
   "min_sources": 2
  },
