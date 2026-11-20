@@ -1,5 +1,5 @@
 {
- "at": "2026-11-20T06:58:56+00:00",
+ "at": "2026-11-20T20:50:58+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -10,8 +10,8 @@
    "requests": 4,
    "total_available": {
     "QB": "76",
-    "RB": "140",
-    "WR": "229",
+    "RB": "139",
+    "WR": "227",
     "TE": "136"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 415,
-   "secs": 3.2,
+   "records": 410,
+   "secs": 3.9,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,7 +54,7 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 261
+    "injury_flags": 258
    }
   },
   "espn": {
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 140,
-   "secs": 23.1,
+   "secs": 26.8,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -87,59 +87,61 @@
   }
  },
  "checks": {
-  "players": 653,
+  "players": 654,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "DeVonta Smith PHI",
-  "Mike Evans SF",
-  "Jordyn Tyson NO",
-  "Geno Smith NYJ",
-  "Jacory Croskey-Merritt WAS",
-  "Adonai Mitchell NYJ",
-  "Ladd McConkey LAC",
-  "Cam Ward TEN",
-  "Khalil Shakir BUF",
-  "Kyle Monangai CHI",
-  "Ashton Jeanty LV",
-  "Deebo Samuel Sr. SF",
-  "Jameis Winston NYG",
-  "Kyle McCord MIA",
-  "Travis Etienne NO",
-  "Aaron Rodgers PIT",
-  "Chase Brown CIN",
-  "Jared Goff DET",
-  "Ryan Flournoy DAL",
-  "Emari Demercado HOU",
+  "J.J. McCarthy NYG",
   "Stefon Diggs WAS",
-  "Kirk Cousins MIN",
-  "Joe Milton III PHI",
   "Ollie Gordon II MIA",
-  "Jalon Daniels TB"
+  "Joe Milton III PHI",
+  "Jaylen Warren PIT",
+  "Carson Beck ARI",
+  "Garrett Wilson NYJ",
+  "Jordan Mason MIN",
+  "Travis Etienne NO",
+  "Ladd McConkey LAC",
+  "Kirk Cousins MIN",
+  "Bucky Irving TB",
+  "Rome Odunze CHI",
+  "Aaron Rodgers PIT",
+  "Khalil Shakir BUF",
+  "Jacory Croskey-Merritt WAS",
+  "DJ Moore BUF",
+  "Adonai Mitchell NYJ",
+  "Malik Nabers NYG",
+  "DeVonta Smith PHI",
+  "Rashee Rice KC",
+  "Tetairoa McMillan CAR",
+  "Dalton Kincaid BUF",
+  "Jakobi Meyers JAX",
+  "Deebo Samuel Sr. SF"
  ],
  "fp_unmatched_5plus_count": 65,
- "scorecard": "week 11: 491 pre-kickoff projections saved",
+ "scorecard": "week 11: 492 pre-kickoff projections saved",
  "consensus": {
-  "used": 338,
-  "fallback": 70,
+  "used": 334,
+  "fallback": 69,
   "single_source_blend": 56,
-  "out_by_injury": 50,
-  "no_source_zero": 72,
-  "added_from_sites": 2,
-  "added_4plus": [],
+  "out_by_injury": 54,
+  "no_source_zero": 73,
+  "added_from_sites": 3,
+  "added_4plus": [
+   "Josh Johnson ARI QB 6.4"
+  ],
   "sources_per_player": {
-   "0": 121,
-   "1": 70,
-   "2": 201,
-   "3": 98,
+   "0": 124,
+   "1": 71,
+   "2": 196,
+   "3": 99,
    "4": 40
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 653,
+ "players": 654,
  "spread_k": 1.35,
  "spread_rho": 0.06,
  "no_games_yet": 0
