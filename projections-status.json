@@ -1,5 +1,5 @@
 {
- "at": "2026-11-20T02:39:15+00:00",
+ "at": "2026-11-20T06:58:56+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 415,
-   "secs": 3.5,
+   "secs": 3.2,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,13 +54,13 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 259
+    "injury_flags": 261
    }
   },
   "espn": {
    "ok": true,
    "records": 344,
-   "secs": 0.5,
+   "secs": 0.4,
    "info": {
     "players": 1061,
     "kept": 344,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 140,
-   "secs": 43.9,
+   "secs": 23.1,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Bryce Young CAR",
-  "Joe Milton III PHI",
-  "Tank Dell HOU",
+  "DeVonta Smith PHI",
+  "Mike Evans SF",
+  "Jordyn Tyson NO",
+  "Geno Smith NYJ",
+  "Jacory Croskey-Merritt WAS",
+  "Adonai Mitchell NYJ",
   "Ladd McConkey LAC",
-  "Fernando Mendoza LV",
-  "Tyler Shough NO",
-  "Carnell Tate TEN",
-  "Deebo Samuel Sr. SF",
-  "Bucky Irving TB",
-  "Rashee Rice KC",
-  "Travis Etienne NO",
-  "Jalon Daniels TB",
-  "Emeka Egbuka TB",
-  "Elic Ayomanor TEN",
-  "Jordan Mason MIN",
-  "Jonathan Taylor IND",
+  "Cam Ward TEN",
+  "Khalil Shakir BUF",
+  "Kyle Monangai CHI",
   "Ashton Jeanty LV",
-  "Kirk Cousins MIN",
-  "DK Metcalf PIT",
-  "DJ Moore BUF",
-  "Cam Skattebo NYG",
-  "Courtland Sutton DEN",
+  "Deebo Samuel Sr. SF",
+  "Jameis Winston NYG",
+  "Kyle McCord MIA",
+  "Travis Etienne NO",
+  "Aaron Rodgers PIT",
+  "Chase Brown CIN",
+  "Jared Goff DET",
+  "Ryan Flournoy DAL",
+  "Emari Demercado HOU",
   "Stefon Diggs WAS",
-  "Kenneth Walker III KC",
-  "Malik Nabers NYG"
+  "Kirk Cousins MIN",
+  "Joe Milton III PHI",
+  "Ollie Gordon II MIA",
+  "Jalon Daniels TB"
  ],
- "fp_unmatched_5plus_count": 64,
+ "fp_unmatched_5plus_count": 65,
  "scorecard": "week 11: 491 pre-kickoff projections saved",
  "consensus": {
   "used": 338,
