@@ -1,5 +1,5 @@
 {
- "at": "2026-11-21T05:54:05+00:00",
+ "at": "2026-11-21T19:52:41+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -9,9 +9,9 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "76",
+    "QB": "74",
     "RB": "139",
-    "WR": "226",
+    "WR": "224",
     "TE": "136"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -45,7 +45,7 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 408,
+   "records": 405,
    "secs": 3.2,
    "info": {
     "QB": 355,
@@ -59,22 +59,22 @@
   },
   "espn": {
    "ok": true,
-   "records": 344,
+   "records": 345,
    "secs": 0.4,
    "info": {
     "players": 1061,
-    "kept": 344,
+    "kept": 345,
     "dropped": {
      "pos": 0,
-     "team": 325,
-     "no_week_proj": 392
+     "team": 323,
+     "no_week_proj": 393
     }
    }
   },
   "cbs": {
    "ok": true,
    "records": 139,
-   "secs": 22.1,
+   "secs": 21.7,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Jaylen Warren PIT",
-  "Kyle McCord MIA",
-  "Jordan Mason MIN",
-  "Rome Odunze CHI",
+  "Joe Milton III PHI",
+  "Jacoby Brissett BAL",
+  "Cam Ward TEN",
+  "Aaron Rodgers PIT",
+  "Jaylen Waddle DEN",
   "Kirk Cousins MIN",
-  "Ollie Gordon II MIA",
-  "Bryce Young CAR",
-  "Josh Downs KC",
-  "Jakobi Meyers JAX",
-  "Jameson Williams DET",
-  "Mike Evans SF",
-  "J.J. McCarthy NYG",
-  "Jalen Coker CAR",
-  "Jameis Winston NYG",
-  "Xavier Hutchinson HOU",
-  "Ryan Flournoy DAL",
-  "Courtland Sutton DEN",
-  "Justin Herbert LAC",
-  "DK Metcalf PIT",
-  "DeVonta Smith PHI",
-  "Carnell Tate TEN",
+  "DJ Moore BUF",
+  "Daniel Jones IND",
   "Khalil Shakir BUF",
-  "Jordyn Tyson NO",
+  "Rashee Rice KC",
+  "Jaylen Warren PIT",
+  "Xavier Hutchinson HOU",
+  "Tyler Shough NO",
+  "Ollie Gordon II MIA",
+  "Braelon Allen NYJ",
+  "Jared Goff DET",
+  "Rome Odunze CHI",
+  "Jalen Coker CAR",
+  "Cam Skattebo NYG",
+  "Ladd McConkey LAC",
+  "Travis Etienne NO",
+  "Zay Flowers BAL",
+  "Tony Pollard TEN",
   "Malik Nabers NYG",
-  "Saquon Barkley PHI"
+  "Josh Downs KC"
  ],
- "fp_unmatched_5plus_count": 64,
+ "fp_unmatched_5plus_count": 63,
  "future": {
   "12": {
    "sites": [
@@ -169,29 +169,29 @@
    "projected": 490
   },
   "nm_scale": {
-   "QB": 1.079,
-   "RB": 0.942,
+   "QB": 1.072,
+   "RB": 0.945,
    "WR": 1.07,
-   "TE": 1.134,
-   "K": 1.051,
-   "DST": 1.028
+   "TE": 1.131,
+   "K": 1.05,
+   "DST": 1.026
   }
  },
  "scorecard": "week 11: 492 pre-kickoff projections saved",
  "consensus": {
-  "used": 333,
-  "fallback": 68,
-  "single_source_blend": 56,
-  "out_by_injury": 56,
-  "no_source_zero": 73,
+  "used": 334,
+  "fallback": 64,
+  "single_source_blend": 53,
+  "out_by_injury": 58,
+  "no_source_zero": 74,
   "added_from_sites": 3,
   "added_4plus": [
    "Josh Johnson ARI QB 6.4"
   ],
   "sources_per_player": {
-   "0": 127,
-   "1": 69,
-   "2": 194,
+   "0": 130,
+   "1": 65,
+   "2": 195,
    "3": 100,
    "4": 40
   },
