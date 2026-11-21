@@ -812,7 +812,7 @@ with sync_playwright() as pw:
         if pp:
             mlp = max(range(12), key=lambda k: pp['dp']['11'][k]) + 1
             check(f'[{tag}] ppe v1.21: draft card top pick = engine most likely pick', dpr and dpr[0][0] == f'Pick {mlp}', (dpr[:1], mlp))
-        check(f'[{tag}] ppe v1.21: strip = Playoffs, Bye, Proj. seed, Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Proj. seed|Loser Bowl')
+        check(f'[{tag}] ppe v1.21: strip = Playoffs, Bye, Proj. seed, Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Likely seed|Loser Bowl')
         check(f'[{tag}] ppe v1.21: road to the title = 5 rounds, last one gold', page.evaluate("document.querySelectorAll('.pqroad .rr').length === 5 && document.querySelectorAll('.pqroad .rr.gold').length === 1 && /road to the title/.test(document.querySelector('.pqroad .pqch b').textContent)"))
         check(f'[{tag}] ppe v1.21: projected seeds = one card, 12 teams, colored seed dots', page.evaluate("document.querySelectorAll('.pqseeds .sr').length === 12 && document.querySelectorAll('.pqseeds .rk.zby').length === 6 && document.querySelectorAll('.pqseeds .rk.zwc').length === 4 && document.querySelectorAll('.pqseeds .rk.zlb').length === 2"))
         games = page.evaluate("[...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt b')].map(b => parseInt(b.textContent)))")
@@ -823,6 +823,25 @@ with sync_playwright() as pw:
         check(f'[{tag}] bracket v1.21: lines drawn between rounds', page.evaluate("(document.querySelector('svg.pqcn path') || { getAttribute: () => '' }).getAttribute('d').split('M').length - 1") == 8)
         check(f'[{tag}] bracket v1.21: Super Bowl has the moving light (unless Reduce Motion)', page.evaluate("!!document.querySelector('#pqsb > .pqglow svg rect')"))
         check(f'[{tag}] bracket v1.21: Super Bowl teams = each division final favorite', page.evaluate("document.querySelectorAll('#pqsb .st').length") == 2)
+        adv = page.evaluate("""(() => { const G = [...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt')].map(t => [t.querySelector('.c').textContent, parseInt(t.querySelector('b').textContent)]));
+          const win = g => g[0][1] >= g[1][1] ? g[0][0] : g[1][0], has = (g, c) => g.some(x => x[0] === c);
+          const sb = [...document.querySelectorAll('#pqsb .st')].map(s => s.querySelector('b').textContent);
+          // top lane: [wc, s1, s2, f]; bottom lane (mirrored): [f, s1, s2, wc]
+          const A = G.slice(0, 4), N = G.slice(4, 8);
+          return { a: has(A[1], win(A[0])) && has(A[3], win(A[1])) && has(A[3], win(A[2])), n: has(N[1], win(N[3])) && has(N[0], win(N[1])) && has(N[0], win(N[2])), fa: win(A[3]), fn: win(N[0]), sb: sb }; })()""")
+        check(f'[{tag}] bracket v1.21.2: the winner of every box moves on (wild card -> semis -> final)', adv['a'] and adv['n'], adv)
+        sbn = page.evaluate("[...document.querySelectorAll('#pqsb .st')].map(s => s.querySelector('b').textContent)")
+        names = page.evaluate("Object.fromEntries([...document.querySelectorAll('.pqseeds .sr')].map(r => [r.querySelector('.badge img') ? r.querySelector('.badge img').dataset.alt : r.querySelector('.badge').textContent, r.querySelector('.nm').textContent]))")
+        check(f'[{tag}] bracket v1.21.2: Super Bowl = the two division final winners', len(sbn) == 2 and names.get(adv['fa'], adv['fa']) == sbn[0] and names.get(adv['fn'], adv['fn']) == sbn[1], (adv['fa'], adv['fn'], sbn, names))
+        if pp:
+            pp2 = page.evaluate("window.__fgt.ENG.res.pp")
+            ml = max(range(6), key=lambda k: pp2['seed']['11'][k]) + 1
+            check(f'[{tag}] strip v1.21.2: Likely seed = Dallas own most likely seed', page.evaluate("document.querySelectorAll('.pqstrip b')[2].textContent") == f'#{ml}', (ml, pp2['seed']['11']))
+            wm = pp2.get('wm', {}).get('11')
+            want = f"{wm[0] // 2}-{12 - wm[0] // 2 - wm[0] % 2}" + ('-1' if wm[0] % 2 else '') if wm else None
+            got = page.evaluate("[...document.querySelectorAll('.pqseeds .sr')].filter(r => /Dallas/.test(r.querySelector('.nm').textContent)).map(r => r.querySelector('.rc').textContent)[0]")
+            check(f'[{tag}] seeds v1.21.2: record = most likely final record from the simulations', bool(wm) and got == want and wm[1] > 0, (got, want, wm))
+            check(f'[{tag}] seeds v1.21.2: every team has a most likely record whose odds are >= any other record', all(len(v) == 2 and 0 < v[1] <= 1 for v in pp2.get('wm', {}).values()) and len(pp2.get('wm', {})) == 12)
         dn = page.evaluate("[...document.querySelectorAll('.pqat .tr .pk')].map(e => parseInt(e.textContent.slice(1)))")
         check(f'[{tag}] all teams v1.21: 12 rows, Draft # = projected order 1-12 (no ties)', sorted(dn) == list(range(1, 13)), dn)
         if pp:
@@ -934,6 +953,29 @@ with sync_playwright() as pw:
     page.click('.tabbtn[data-tab="match"]'); page.wait_for_timeout(1200)
     check('opt no code: Current | Optimal switch shows (v1.21.0)', page.evaluate("document.querySelectorAll('.optg').length") == 2)
     ctx.close(); br.close()
+
+# ---- v1.21.2: projections refresh within ~2 min — a tiny stamp file decides, projections.json only when it changed ----
+_pj = {'n': 0, 'stamp': None}
+def _route_stamp(r):
+    u = r.request.url
+    if '/proj-stamp.txt' in u:
+        return r.fulfill(body=(_pj['stamp'] or 'x') + '\n', content_type='text/plain')
+    if u.startswith('http://127.0.0.1') and '/projections.json' in u: _pj['n'] += 1
+    return route(r)
+with sync_playwright() as pw:
+    br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    ctx = br.new_context(viewport={'width': 393, 'height': 852}); ctx.route('**/*', _route_stamp)
+    ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
+    page = ctx.new_page(); errs = []; page.on('pageerror', lambda e: errs.append(str(e)))
+    page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_engine(page); page.wait_for_timeout(800)
+    _pj['stamp'] = page.evaluate("window.__fgt.S.proj.raw.generated"); n0 = _pj['n']
+    page.evaluate("document.dispatchEvent(new Event('visibilitychange'))"); page.wait_for_timeout(1500)
+    check('stamp v1.21.2: same stamp -> projections.json NOT downloaded again', _pj['n'] == n0, (_pj['n'], n0))
+    _pj['stamp'] = 'new-run'; n1 = _pj['n']
+    page.evaluate("document.dispatchEvent(new Event('visibilitychange'))"); page.wait_for_timeout(1500)
+    check('stamp v1.21.2: new stamp -> projections.json downloaded', _pj['n'] == n1 + 1, (_pj['n'], n1))
+    check('stamp v1.21.2: no page errors', not errs, errs)
+    br.close()
 
 # ---- v1.21.1: future weeks use the sites' projections for THAT week (projections.json "fut"), else our model x nm_scale ----
 def _fx(proj_path):

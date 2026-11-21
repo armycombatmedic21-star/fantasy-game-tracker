@@ -1224,10 +1224,11 @@ svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.21.1';
+const APP_VERSION = '1.21.2';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.21.2', 'Playoff Engine fixes: (1) the bracket now reads like a real bracket — the winner of each box (its higher % = chance to win that game) moves on to the next round and the Super Bowl. Before, a team could lose a box and still show up in the next round. (2) Projected seeds show each team’s most likely final record (before, a rounded average: 5.4 wins showed as 5-7 when 6-6 was more likely). (3) The top section’s seed box is now “Likely seed”: the selected team’s own most likely seed and its odds. (4) New projections show up within about 2 minutes of each run (the app checks a tiny file every 2 minutes and only downloads the projections when they changed). Visual changes: “Proj. seed” label now reads “Likely seed”; bracket and record numbers may differ from before.'],
   ['1.21.1', 'More accurate playoff odds, bracket and draft odds: the weeks still to come (Week 12 through the Super Bowl) now use ESPN’s and Sleeper’s projections for each of those weeks, scored with our league’s rules, so injuries, byes and matchups they know about count. Before, every future week used one fixed number from our own model. Game ranges for future weeks are also a little tighter (they were wider than any team’s real week-to-week swings). No visual changes.'],
   ['1.21.0', 'Playoff Prediction Engine redesign. The page now uses every team’s best healthy lineup (players whose game has started keep their real CBS spot and points), so it updates live as scores come in. New top section: your team banner, Title chance with Reach Super Bowl, a Draft pick card with your 4 most likely picks and the average pick, and Playoffs / Bye / Proj. seed / Loser Bowl. Road to the title, Projected seeds (one card, both divisions, color seed dots: green bye, blue wild card, orange Loser Bowl) and All teams are cleaner. The bracket (marked Projected, like the Loser Bowl) is one card that meets at a gold Super Bowl in the middle, with logos, byes shown by name, and every % = the chance to win that game. All teams and the Standings DRAFT # column now show the projected draft order (each team gets its own #1–#12; your own pick odds stay on Home and in the team drop-down). Live players’ moving outline on Matchup is about 10% brighter, and the Super Bowl card has the same moving light in gold. Visual changes: the whole Playoff Engine page; bigger Standings button and team chip on that page; brighter live-player outline.'],
   ['1.20.0', 'Draft order fixed to the league rule: the two 1st-place teams pick 11–12, the two 2nd-place teams pick 9–10, the 3rd–5th place teams pick 3–8 by record, the Loser Bowl decides 1–2. Ties: same division = division record then points; different divisions = points. Before, 2nd-place teams were mixed into picks 3–10 by record. Draft odds update. No visual changes.'],
@@ -2970,9 +2971,9 @@ function ppeView(){
   const dpr = top.map(function(x, i){ return '<div class="pr' + (i === 0 ? ' ml' : '') + '"><span>Pick ' + (x[0] + 1) + '</span><span class="br"><i style="width:' + Math.max(4, x[1] / tmax * 100).toFixed(0) + '%"></i></span><span>' + dpPct(x[1]) + '</span></div>'; }).join('');
   h += '<div class="pqhud" data-key="pqhud"><div class="pqtc"><small>' + PQI.trophy(14) + 'Title chance</small><b>' + sup(ppP(D.ti[t], true)) + '</b><em>Reach Super Bowl <b>' + ppP(D.sb[t], true) + '</b></em></div>' +
     '<div class="pqdc"><div class="dh"><small>Draft pick</small><em>Avg <b>' + ppEP(dd).toFixed(1) + '</b></em></div>' + dpr + '</div></div>';
-  const sd = D.seed[t] || [], sm = Math.max(0, ppSeedAt(D, TM, t));
+  const sd = D.seed[t] || [], sm = ppML(sd);   // v1.21.2 (Wes): this team's OWN most likely seed (the seeds card lists one team per seed by average seed)
   const cell = function(l, v, s){ return '<div><small>' + l + '</small><b>' + v + '</b><em>' + s + '</em></div>'; };
-  h += '<div class="pqstrip" data-key="pqstrip">' + cell('Playoffs', sup(ppP(D.po[t])), 'Top 5') + cell('Bye', sup(ppP(D.bye[t])), 'Top 3') + cell('Proj. seed', '#' + (sm + 1), ppP(sd[sm]) + ' chance') + cell('Loser Bowl', sup(ppP(D.lb[t])), '6th place') + '</div>';
+  h += '<div class="pqstrip" data-key="pqstrip">' + cell('Playoffs', sup(ppP(D.po[t])), 'Top 5') + cell('Bye', sup(ppP(D.bye[t])), 'Top 3') + cell('Likely seed', '#' + (sm + 1), ppP(sd[sm]) + ' chance') + cell('Loser Bowl', sup(ppP(D.lb[t])), '6th place') + '</div>';
   // ---- road to the title
   const road = [['Make playoffs', 'po'], ['Reach division semis', 'semi'], ['Reach division final', 'fin'], ['Reach Super Bowl', 'sb'], ['Win title', 'ti']];
   h += '<section class="pqcard pqroad" data-key="pqroad"><div class="pqch">' + badge(me.T) + '<div><b>' + esc(me.name) + '’s road to the title</b><small>Odds to reach each round</small></div></div>' + road.map(function(r, i){
@@ -2980,7 +2981,9 @@ function ppeView(){
     return '<div class="rr' + (g ? ' gold' : '') + '"><div class="rl"><span>' + (g ? PQI.trophy(15) : '') + r[0] + '</span><b>' + sup(ppP(v, true)) + '</b></div><i class="rb"><em style="width:' + Math.max(1.5, Math.min(100, v * 100)).toFixed(1) + '%"></em></i></div>'; }).join('') + '</section>';
   // ---- projected seeds (one card, both divisions)
   const ordered = {}; TM.divs.forEach(function(d){ ordered[d.id] = ppSeeds(D, d.ids); });
-  const prec = function(id){ const w = Math.round(D.w[id]); return w + '-' + Math.max(0, REG_END - w); };
+  const prec = function(id){   // v1.21.2: most likely final record from the simulations (not a rounded average)
+    const x = D.wm && D.wm[id]; if(x){ const w = Math.floor(x[0] / 2), t = x[0] % 2; return w + '-' + Math.max(0, REG_END - w - t) + (t ? '-1' : ''); }
+    const w = Math.round(D.w[id]); return w + '-' + Math.max(0, REG_END - w); };
   const zc = function(i){ return i < 3 ? 'by' : i < 5 ? 'wc' : 'lb'; };
   h += '<section class="pqcard pqseeds" data-key="pqseeds"><div class="pqst"><b>Projected seeds</b><span>(% = odds of that seed)</span></div>' + TM.divs.map(function(d){
     return '<div class="sh"><b class="' + pqDc(d.id) + '">' + esc(d.id) + '</b><span>Proj</span><span>Seed %</span></div>' + ordered[d.id].map(function(id, i){
@@ -2989,7 +2992,6 @@ function ppeView(){
   // ---- bracket: Loser Bowl card, then one bracket that meets at the Super Bowl
   const dvs = TM.divs.filter(function(d){ return ordered[d.id].length >= 5; });
   if(dvs.length === 2){
-    const best = function(ids, k){ return ids.slice().sort(function(x, y){ return D[k][y] - D[k][x]; })[0]; };
     const seedN = function(id){ let n = ''; dvs.forEach(function(d){ const k = ordered[d.id].indexOf(id); if(k >= 0) n = k + 1; }); return n; };
     const nm = function(id){ return esc(TM.by[id].name); }, cd = function(id){ return esc(TM.by[id].T.code); };
     const trow = function(id, p){ return '<div class="gt' + (p >= 50 ? ' fav' : '') + (id === t ? ' pqme' : '') + '"><span class="s">' + seedN(id) + '</span>' + badge(TM.by[id].T) + '<span class="c">' + cd(id) + '</span><b>' + p + '%</b></div>'; };
@@ -3000,12 +3002,16 @@ function ppeView(){
       h += '<section class="pqcard pqlb" data-key="pqlb">' + pqHead('lb', PQI.down(17), 'Loser Bowl', '<b class="pj">(Projected)</b> · winner gets the #1 pick', 'Wk 13') +
         '<div class="pqvs"><div class="tm">' + vsT(x6, esc(dvs[0].id) + ' 6th') + '<span class="vs">VS</span>' + vsT(y6, esc(dvs[1].id) + ' 6th', true) + '</div>' +
         '<div class="vp"><span class="' + (p >= 50 ? '' : 'lo') + '">' + p + '%</span><span class="' + (p < 50 ? '' : 'lo') + '">' + (100 - p) + '%</span></div><div class="vb"><i style="width:' + p + '%"></i><i></i></div></div></section>'; }
-    const lane = function(d, P, dir){ const sq = ordered[d.id], wc = best([sq[3], sq[4]], 'semi'), fa = best([sq[0], wc], 'fin'), fb = best([sq[1], sq[2]], 'fin');
+    // v1.21.2 (Wes, Nov 21): the winner of each box (its higher % = chance to win THAT game) moves on, like a real
+    // bracket. Was: each slot = the team that got there most often, so a team could lose a box and still advance
+    // (Buffalo 46% vs Dallas in the AFC final, then Buffalo in the Super Bowl). Road odds stay in Road to the title / All teams.
+    const won = function(a, b, w){ return ppWin(D, w, a, b) >= 0.5 ? a : b; };
+    const lane = function(d, P, dir){ const sq = ordered[d.id], wc = won(sq[3], sq[4], 14), fa = won(sq[0], wc, 15), fb = won(sq[1], sq[2], 15);
       const bye = '<div class="pqbye"><small>Bye · seeds 1–3</small><div>' + sq.slice(0, 3).map(function(id){ return '<span' + (id === t ? ' class="pqme"' : '') + '>' + badge(TM.by[id].T) + cd(id) + '</span>'; }).join('') + '</div></div>';
       const r1 = '<div class="pqrw"><span class="rt"><i>Wild card · Wk 14</i></span>' + bye + game(P + 'w', sq[3], sq[4], 14, P + 's1:' + dir) + '</div>';
       const r2 = '<div class="pqrw"><span class="rt"><i>Semis · Wk 15</i></span>' + game(P + 's1', sq[0], wc, 15, P + 'f:' + dir) + game(P + 's2', sq[1], sq[2], 15, P + 'f:' + dir) + '</div>';
       const r3 = '<div class="pqrw"><span class="rt"><i>' + esc(d.id) + ' final · Wk 16</i></span>' + game(P + 'f', fa, fb, 16, 'pqsb:' + dir) + '</div>';
-      return { rows: dir === 'd' ? r1 + r2 + r3 : r3 + r2 + r1, champ: best([fa, fb], 'sb') }; };
+      return { rows: dir === 'd' ? r1 + r2 + r3 : r3 + r2 + r1, champ: won(fa, fb, 16) }; };
     const A = lane(dvs[0], 'pqa', 'd'), N = lane(dvs[1], 'pqn', 'u'), sx = A.champ, sy = N.champ, sp = pqPc(ppWin(D, 17, sx, sy));
     const sbt = function(id, p, lab){ return '<div class="st' + (p >= 50 ? '' : ' dim') + (id === t ? ' pqme' : '') + '">' + badge(TM.by[id].T) + '<b>' + nm(id) + '</b><small>' + lab + '</small><span>' + p + '%</span></div>'; };
     h += '<section class="pqcard pqbk" data-key="pqbk">' + pqHead('bk', PQI.bracket(18), 'Playoff bracket', '<b class="pj">(Projected)</b> · % = chance to win', 'Wk 14–17') +
@@ -4114,7 +4120,7 @@ function engineWorker(){
     const tankW = tank ? nextW : 0;
     const z = function(){ const o = {}; ids.forEach(function(id){ o[id] = 0; }); return o; };
     const cnt = z(), bye = z(), lbc = z(), lbw = z(), semi = z(), fin = z(), sbc = z(), ti = z(), wsum = z(), nxw = z();
-    const seed = {}, dp = {}; ids.forEach(function(id){ seed[id] = [0, 0, 0, 0, 0, 0]; dp[id] = new Array(n).fill(0); });
+    const seed = {}, dp = {}, wd = {}; ids.forEach(function(id){ seed[id] = [0, 0, 0, 0, 0, 0]; dp[id] = new Array(n).fill(0); wd[id] = {}; });
     const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
     const pw = {}; PO_WEEKS.forEach(function(w){ pw[w] = {}; ids.forEach(function(id){ pw[w][id] = futureTeam(msg.teams[id] || { roster: [] }, w); }); });
     const W = {}, DW = {}, PF = {}, PAg = {};
@@ -4151,7 +4157,7 @@ function engineWorker(){
           if(F.w === nextW){ nxw[pr[0]] += x; nxw[pr[1]] += 1 - x; }
           apply(pr[0], pr[1], sa, sb, x); });
       });
-      const divs = {}, pos = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); wsum[id] += W[id]; });
+      const divs = {}, pos = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); wsum[id] += W[id]; const h = Math.round(W[id] * 2); wd[id][h] = (wd[id][h] || 0) + 1; });   // v1.21.2: final record, in half wins (a tie = 0.5)
       dks.forEach(function(d){ divs[d].sort(rank); divs[d].forEach(function(id, k){ pos[id] = k; if(k < 6) seed[id][k]++; if(k < 5) cnt[id]++; if(k < 3) bye[id]++; }); });
       // Week 13: Loser Bowl (6th vs 6th)
       let lbWin = null; const six = dks.map(function(d){ return divs[d][5]; }).filter(Boolean);
@@ -4182,7 +4188,10 @@ function engineWorker(){
     ids.forEach(function(id){ sd[id] = seed[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); d[id] = dp[id].map(function(c){ return Math.round(c / N * 10000) / 10000; }); });
     PO_WEEKS.forEach(function(w){ fx[w] = {}; ids.forEach(function(id){ const t = pw[w][id]; fx[w][id] = [Math.round(t.m * 10) / 10, Math.round(t.s * 10) / 10]; }); });
     const wa = {}; ids.forEach(function(id){ wa[id] = Math.round(wsum[id] / N * 100) / 100; });
-    return { po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), nxw: f(nxw), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW };
+    // v1.21.2 (Wes, Nov 21): MOST LIKELY final record (half wins, odds) — a rounded average misleads (5.44 wins -> "5-7"
+    // while 6-6 happens 52% of the time)
+    const wm = {}; ids.forEach(function(id){ let bh = 0, bc = -1; Object.keys(wd[id]).forEach(function(h){ if(wd[id][h] > bc){ bc = wd[id][h]; bh = +h; } }); wm[id] = [bh, Math.round(bc / N * 10000) / 10000]; });
+    return { wm: wm, po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), nxw: f(nxw), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW };
   }
   let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
   self.onmessage = function(e){
@@ -4412,6 +4421,16 @@ function engineTick(){
 function engMatch(key){ return engineReady() && ENG.res && ENG.res.m[key] || null; }
 function engPlayer(pid){ return engineReady() && ENG.res && ENG.res.p[pid] || null; }
 setInterval(function(){ if(!document.hidden){ engineTick(); if(Date.now() - ENG.projAt > 600000) loadProj(); loadFuture(); } }, 2000);
+// v1.21.2 (Wes, Nov 21): every 2 min (and on open) check a tiny stamp file (the projections' "generated" time, a few
+// bytes); download projections.json only when it changed, so a new projections run shows within ~2 min.
+let projStampAt = 0;
+function projStamp(){
+  if(document.hidden || busy.proj || Date.now() - projStampAt < 110000) return; projStampAt = Date.now();
+  fetch('proj-stamp.txt?t=' + Date.now(), { cache: 'no-store' }).then(function(r){ return r.ok ? r.text() : ''; }).then(function(t){
+    t = (t || '').trim(); if(t && S.proj && S.proj.raw && t !== S.proj.raw.generated) loadProj(); }).catch(function(){});
+}
+setInterval(projStamp, 15000);
+document.addEventListener('visibilitychange', function(){ if(!document.hidden){ projStampAt = 0; projStamp(); } });
 
 /* ---------- start ---------- */
 /* ---------- League chat + who's online (v1.3.0) ----------

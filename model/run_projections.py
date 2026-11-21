@@ -94,6 +94,7 @@ def main():
         tmp = OUT + ".tmp"
         json.dump(res, open(tmp, "w"), separators=(",", ":"))
         shutil.move(tmp, OUT)
+        open(os.path.join(ROOT, "proj-stamp.txt"), "w").write(res["generated"] + "\n")   # v1.21.2: phones check this tiny file every 2 min
         try:
             st["scorecard"] = snapshot(week, res)
         except Exception as e:

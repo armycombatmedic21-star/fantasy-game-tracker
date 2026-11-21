@@ -60,7 +60,7 @@ jobs:
         run: |
           git config user.name "fgt-bot"
           git config user.email "fgt-bot@users.noreply.github.com"
-          git add projections.json projections-status.json history
+          git add projections.json projections-status.json proj-stamp.txt history
           if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
           WK=$(python -c "import json;s=json.load(open('projections-status.json'));print(s.get('week','?'), 'FP-blended' if s.get('fp_blended') else 'unblended', 'OK' if s.get('ok') else 'FAILED')")
           git commit -m "projections: week $WK"
