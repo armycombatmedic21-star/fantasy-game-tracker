@@ -1272,8 +1272,31 @@ html.gsm .toast{bottom:calc(94px + env(safe-area-inset-bottom))}
 .gear.gsmg.hold .gring circle{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset 5s linear}
 .fp .pj.gsmpj span{color:#8b9bb4;transition:color .6s ease}
 .fp .pj.gsmpj.pjb span{color:#dce8f5}
+/* v1.25.0 (Wes, Nov 21, version "C", all modes): player drop-down — bigger boxes (3 to a row when there are 5-6,
+   one row when 4 or fewer) with what each takes under it, and bigger text throughout */
+.bk.bkbig{grid-template-columns:repeat(var(--n),1fr);gap:6px 5px;margin-top:6px}
+.bcw{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bk.bkbig .bc{height:32px;border-radius:8px;font-size:16px}
+.bk.bkbig .bc small{font-size:10px}
+.bk.bkbig .bc i{height:4px}
+.bcl{font-size:12px;font-weight:700;color:var(--faint);text-align:center;line-height:14px;white-space:nowrap}
+.bcl.nx{color:#dce8f5}
+.bcl.cu{color:var(--muted)}
+.detail .bh > span{font-size:13.5px}
+.detail .pv{height:26px;min-width:36px;font-size:14.5px}
+.detail .bn{font-size:12px;line-height:15px;margin-top:5px}
+.detail .bn em{font-size:13px}
+.detail .dl span{font-size:13.5px}
+.detail .dsub{font-size:12.5px}
+.detail .dtot span{font-size:12.5px}
+.detail .pv.total{font-size:19px;height:34px;min-width:50px}
+.detail .bsrc{font-size:11.5px;line-height:14px}
+@media (max-width:380px){.detail .bh > span{font-size:12.5px;letter-spacing:.3px}.detail .bn > span:first-child{white-space:normal;line-height:1.25}}
+@media (max-width:340px){.dcol.bx{padding:8px 8px 10px}.detail .bh > span{font-size:11.5px;letter-spacing:.2px}.detail .bh .pv{min-width:30px;padding:0 5px;font-size:13px;height:24px}
+  .detail .bn{font-size:11px}.detail .bn em{font-size:12px}.bk.bkbig .bc{font-size:14.5px}.bcl{font-size:11px}.bk.bkbig.c4{grid-template-columns:repeat(2,1fr)}
+  .detail .bh > span,.detail .bn > span:first-child{white-space:normal;line-height:1.25}}   /* big phone text: TD boxes 2 + 2, long labels wrap instead of cutting off */
 /* v1.24.0 Safe Mode: league cards shorter (no "N left" row), name + win % on line 1, record · owner on line 2;
-   yardage buckets bigger, 3 to a row; no text selection (stops Chrome's Touch to Search panel) */
+   no text selection (stops Chrome's Touch to Search panel) */
 html.gsm .mc.lg .rows{padding-top:0}
 html.gsm .mc.lg{padding-top:9px;padding-bottom:9px}
 .mc.lg .tn.gsmtn{display:flex;flex-direction:column;justify-content:center;min-width:0}
@@ -1283,13 +1306,6 @@ html.gsm .mc.lg{padding-top:9px;padding-bottom:9px}
 .mc.lg .tn.gsmtn small.gl2{display:block;margin:1px 0 0;font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gsmtn .gl2 .go{font-size:12px;color:var(--faint)}
 @media (max-width:310px){html.gsm .mc.lg .gsmtn .gl1 b{font-size:15.5px}html.gsm .gsmtn .gl1 .chip2{margin-left:4px;padding:1px 4px}html.gsm .mc.lg .trow{gap:8px}}
-.bk.gsmbk{grid-template-columns:repeat(3,1fr);gap:6px 5px;margin-top:6px}
-.bcw{display:flex;flex-direction:column;gap:2px;min-width:0}
-.bk.gsmbk .bc{height:30px;border-radius:8px;font-size:14.5px}
-.bk.gsmbk .bc i{height:4px}
-.bcl{font-size:11px;font-weight:700;color:var(--faint);text-align:center;line-height:13px;white-space:nowrap}
-.bcl.nx{color:#dce8f5}
-.bcl.cu{color:var(--muted)}
 html.gsm body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
 
@@ -1364,10 +1380,11 @@ html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.24.0';
+const APP_VERSION = '1.25.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.25.0', 'Bigger, easier-to-read player drop-downs: bigger point boxes with the yards (or distance) right under each one, three to a row for yards and points allowed, one row for touchdowns and field goals, and bigger text throughout.'],
   ['1.24.0', 'Cards go closer to the edges of the screen, so everything is a little wider. Grandpa Safe Mode: shorter game cards with no wrapping (team and win % on top, record and owner underneath), bigger bucket boxes in the player drop-down, and no text highlighting on a long press.'],
   ['1.23.0', 'Grandpa Safe Mode: a simpler, tap-proof version of the app for one phone. Turn it on in Settings with its own code. While it’s on, the Settings gear has a red X and does nothing on a tap (hold it 5 seconds to turn Safe Mode off with the code), there’s no Online card or Chat tab, the tab bar is bigger and solid black, the week always shows the current week, there are no pins, Indianapolis’s game sits right after your own, and the matchup projections show in gray. Phones without Safe Mode don’t change.'],
   ['1.22.0', 'Small behind-the-scenes improvements to the Playoff Engine.'],
@@ -2452,19 +2469,14 @@ const TDB = [[0, 6, '<40'], [40, 8, '40s'], [50, 10, '50s'], [60, 12, '60+']];
 const FGB = [[0, 3, '<40'], [40, 4, '40s'], [50, 5, '50+']];
 const PAB = [[0, 15, '0'], [7, 9, '≤7'], [17, 6, '≤17'], [24, 3, '≤24'], [29, 0, '≤29'], [1e9, -3, '30+']];
 function bkChip(v, td){ return pv(v > 0 ? '+' + v : String(v), td ? 'td' : v > 0 ? 'earn' : v < 0 ? 'neg' : 'zero'); }
-function bkGroup(g, head, pts, td, cells, cap, kind, yd){
+// v1.25.0 (Wes, Nov 21, version "C"): bigger boxes and text for everyone. Up to 4 boxes = one row (TD 4, FG 3);
+// 5 or 6 = three to a row (rush/rec 3·6·10 / 12·15, pass and D/ST 3 + 3). What each box takes sits right under it.
+function bkGroup(g, head, pts, td, cells, cap, kind){
+  const n = cells.length, cols = n >= 5 ? 3 : n;
   let h = '<div class="bg"><div class="bh"><span>' + head + '</span>' + bkChip(pts, td) + '</div>';
-  if(GSM && yd){   // v1.24.0 Safe Mode: yardage buckets bigger, 3 to a row (3 · 6 · 10 / 12 · 15), each with its yards right under it
-    h += '<div class="bk gsmbk">' + cells.map(function(c, i){
-      return '<span class="bcw"><span class="bc' + (c.st ? ' ' + c.st : '') + '" style="--i:' + i + ';--g:' + g + '">' + (c.f != null ? '<i style="width:' + c.f.toFixed(1) + '%"></i>' : '') +
-        '<b>' + c.t + '</b></span><span class="bcl' + (c.st === 'next' ? ' nx' : /^on/.test(c.st || '') ? ' cu' : '') + '">' + c.th + '</span></span>'; }).join('') + '</div>';
-    if(cap) h += '<div class="bn">' + cap + '</div>';
-    return h + '</div>';
-  }
-  h += '<div class="bk' + (kind ? ' ' + kind : '') + '" style="--n:' + cells.length + '">' + cells.map(function(c, i){
-    return '<span class="bc' + (c.st ? ' ' + c.st : '') + '" style="--i:' + i + ';--g:' + g + '">' + (c.f != null ? '<i style="width:' + c.f.toFixed(1) + '%"></i>' : '') +
-      '<b>' + c.t + (c.n ? '<small>×' + c.n + '</small>' : '') + '</b></span>'; }).join('') + '</div>';
-  h += '<div class="bt" style="--n:' + cells.length + '">' + cells.map(function(c){ return '<span' + (c.st === 'next' ? ' class="nx"' : /^on/.test(c.st || '') ? ' class="cu"' : '') + '>' + c.th + '</span>'; }).join('') + '</div>';
+  h += '<div class="bk bkbig c' + n + (kind ? ' ' + kind : '') + '" style="--n:' + cols + '">' + cells.map(function(c, i){
+    return '<span class="bcw"><span class="bc' + (c.st ? ' ' + c.st : '') + '" style="--i:' + i + ';--g:' + g + '">' + (c.f != null ? '<i style="width:' + c.f.toFixed(1) + '%"></i>' : '') +
+      '<b>' + c.t + (c.n ? '<small>×' + c.n + '</small>' : '') + '</b></span><span class="bcl' + (c.st === 'next' ? ' nx' : /^on/.test(c.st || '') ? ' cu' : '') + '">' + c.th + '</span></span>'; }).join('') + '</div>';
   if(cap) h += '<div class="bn">' + cap + '</div>';
   return h + '</div>';
 }
@@ -2485,7 +2497,7 @@ function bkCol(p, L){
       if(i === nx){ c.f = clamp((b.y - floor) / (t[0] - floor) * 100, 0, 100); c.st = live ? 'next' : 'part'; }
       return c; });
     const cap = nx < 0 ? '<span>Top bucket</span><em class="mx">MAX</em>' : live ? '<span>' + (T[nx][0] - b.y) + ' more yds</span><span class="tgw">' + TGA + '</span><em>+' + (T[nx][1] - b.v) + '</em>' : '';
-    h += bkGroup(g++, b.k + ' <em>' + b.y + ' yds</em>', b.v, false, cells, cap, '', true);
+    h += bkGroup(g++, b.k + ' <em>' + b.y + ' yds</em>', b.v, false, cells, cap);
   });
   const tds = [].concat(s.ptd || [], s.rtd || [], s.ctd || []);
   if(tds.length){   // v1.10.1 (Wes): "1 yd, 31 yd" (no Pass/Rush label: every TD is scored by its distance); wraps on a big day

@@ -247,7 +247,7 @@ with sync_playwright() as pw:
           const grp = h => [...c.querySelectorAll('.bg')].find(g => g.querySelector('.bh span').textContent.indexOf(h) === 0);
           const pass = grp('PASS'), td = grp('TD');
           const chips = [...c.querySelectorAll('.bh .pv')].map(b => parseFloat(b.textContent)), tot = parseFloat(c.querySelector('.pv.total').textContent);
-          return { passOn: pass && pass.querySelector('.bc.on b').textContent, passDone: pass && pass.querySelectorAll('.bc.done').length, passLab: pass && pass.querySelector('.bt').innerText.replace(/\\s+/g, ' '),
+          return { passOn: pass && pass.querySelector('.bc.on b').textContent, passDone: pass && pass.querySelectorAll('.bc.done').length, passLab: pass && [...pass.querySelectorAll('.bcl')].map(x => x.textContent).join(' '),   // v1.25.0: what each bucket takes sits under its own box
                    tdHead: td && td.querySelector('.bh').innerText.replace(/\\s+/g, ' '), tdOn: td && [...td.querySelectorAll('.bc.on')].map(x => x.textContent), tdCap: td && td.querySelector('.bn').textContent,
                    sum: chips.reduce((a, b) => a + b, 0), tot: tot, over: [...d.querySelectorAll('.bh > span, .bn > span:first-child, .dcol')].filter(e => e.scrollWidth > e.clientWidth + 1).length,
                    mini: [...document.querySelectorAll('.prow[data-row="0"] .mini')].filter(m => m.offsetHeight > 0).length, fr: document.querySelectorAll('.prow[data-row="0"] .lvf').length }; })()""")
