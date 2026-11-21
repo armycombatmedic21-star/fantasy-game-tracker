@@ -1,5 +1,5 @@
 {
- "at": "2026-11-20T20:50:58+00:00",
+ "at": "2026-11-21T02:51:34+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -11,7 +11,7 @@
    "total_available": {
     "QB": "76",
     "RB": "139",
-    "WR": "227",
+    "WR": "226",
     "TE": "136"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -45,7 +45,7 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 410,
+   "records": 408,
    "secs": 3.9,
    "info": {
     "QB": 355,
@@ -54,13 +54,13 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 258
+    "injury_flags": 250
    }
   },
   "espn": {
    "ok": true,
    "records": 344,
-   "secs": 0.4,
+   "secs": 0.6,
    "info": {
     "players": 1061,
     "kept": 344,
@@ -73,12 +73,12 @@
   },
   "cbs": {
    "ok": true,
-   "records": 140,
-   "secs": 26.8,
+   "records": 139,
+   "secs": 38.9,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 51
+    "no_projection": 52
    }
   },
   "fp": {
@@ -92,49 +92,49 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "J.J. McCarthy NYG",
-  "Stefon Diggs WAS",
-  "Ollie Gordon II MIA",
-  "Joe Milton III PHI",
-  "Jaylen Warren PIT",
-  "Carson Beck ARI",
-  "Garrett Wilson NYJ",
-  "Jordan Mason MIN",
-  "Travis Etienne NO",
+  "Baker Mayfield TB",
+  "Tony Pollard TEN",
+  "Cam Skattebo NYG",
+  "Kyle McCord MIA",
+  "Ashton Jeanty LV",
+  "Omarion Hampton LAC",
   "Ladd McConkey LAC",
-  "Kirk Cousins MIN",
-  "Bucky Irving TB",
-  "Rome Odunze CHI",
-  "Aaron Rodgers PIT",
-  "Khalil Shakir BUF",
-  "Jacory Croskey-Merritt WAS",
-  "DJ Moore BUF",
-  "Adonai Mitchell NYJ",
+  "Jalen Coker CAR",
+  "Jonathan Taylor IND",
+  "Travis Etienne NO",
+  "Jordan Mason MIN",
+  "Carnell Tate TEN",
+  "Deebo Samuel Sr. SF",
+  "Chris Olave NO",
+  "Mike Evans SF",
+  "Elic Ayomanor TEN",
+  "Bryce Young CAR",
   "Malik Nabers NYG",
-  "DeVonta Smith PHI",
-  "Rashee Rice KC",
-  "Tetairoa McMillan CAR",
-  "Dalton Kincaid BUF",
-  "Jakobi Meyers JAX",
-  "Deebo Samuel Sr. SF"
+  "Chase Brown CIN",
+  "Jacoby Brissett BAL",
+  "Adonai Mitchell NYJ",
+  "Aaron Rodgers PIT",
+  "Breece Hall NYJ",
+  "Geno Smith NYJ",
+  "Braelon Allen NYJ"
  ],
- "fp_unmatched_5plus_count": 65,
+ "fp_unmatched_5plus_count": 64,
  "scorecard": "week 11: 492 pre-kickoff projections saved",
  "consensus": {
-  "used": 334,
-  "fallback": 69,
+  "used": 333,
+  "fallback": 68,
   "single_source_blend": 56,
-  "out_by_injury": 54,
+  "out_by_injury": 56,
   "no_source_zero": 73,
   "added_from_sites": 3,
   "added_4plus": [
    "Josh Johnson ARI QB 6.4"
   ],
   "sources_per_player": {
-   "0": 124,
-   "1": 71,
-   "2": 196,
-   "3": 99,
+   "0": 127,
+   "1": 69,
+   "2": 194,
+   "3": 100,
    "4": 40
   },
   "min_sources": 2
