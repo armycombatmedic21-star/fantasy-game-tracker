@@ -1,5 +1,5 @@
 {
- "at": "2026-11-21T05:27:11+00:00",
+ "at": "2026-11-21T05:54:05+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 408,
-   "secs": 3.4,
+   "secs": 3.2,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 139,
-   "secs": 33.0,
+   "secs": 22.1,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Tyler Shough NO",
-  "Justin Herbert LAC",
-  "Carnell Tate TEN",
-  "Jaylen Waddle DEN",
-  "Ollie Gordon II MIA",
-  "Jonathan Taylor IND",
-  "Daniel Jones IND",
-  "Josh Downs KC",
-  "Jameson Williams DET",
   "Jaylen Warren PIT",
-  "David Montgomery HOU",
-  "Xavier Hutchinson HOU",
-  "Emari Demercado HOU",
-  "Ladd McConkey LAC",
-  "Tetairoa McMillan CAR",
   "Kyle McCord MIA",
-  "Tony Pollard TEN",
+  "Jordan Mason MIN",
+  "Rome Odunze CHI",
   "Kirk Cousins MIN",
-  "Khalil Shakir BUF",
+  "Ollie Gordon II MIA",
+  "Bryce Young CAR",
+  "Josh Downs KC",
+  "Jakobi Meyers JAX",
+  "Jameson Williams DET",
+  "Mike Evans SF",
   "J.J. McCarthy NYG",
-  "Ryan Flournoy DAL",
-  "Garrett Wilson NYJ",
   "Jalen Coker CAR",
-  "Aaron Rodgers PIT",
-  "Zay Flowers BAL"
+  "Jameis Winston NYG",
+  "Xavier Hutchinson HOU",
+  "Ryan Flournoy DAL",
+  "Courtland Sutton DEN",
+  "Justin Herbert LAC",
+  "DK Metcalf PIT",
+  "DeVonta Smith PHI",
+  "Carnell Tate TEN",
+  "Khalil Shakir BUF",
+  "Jordyn Tyson NO",
+  "Malik Nabers NYG",
+  "Saquon Barkley PHI"
  ],
  "fp_unmatched_5plus_count": 64,
  "future": {
@@ -169,12 +169,12 @@
    "projected": 490
   },
   "nm_scale": {
-   "QB": 1.078,
-   "RB": 0.941,
-   "WR": 1.066,
-   "TE": 1.132,
+   "QB": 1.079,
+   "RB": 0.942,
+   "WR": 1.07,
+   "TE": 1.134,
    "K": 1.051,
-   "DST": 1.027
+   "DST": 1.028
   }
  },
  "scorecard": "week 11: 492 pre-kickoff projections saved",
