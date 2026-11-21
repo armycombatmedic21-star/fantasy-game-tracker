@@ -753,8 +753,11 @@ with sync_playwright() as pw:
         check(f'[{tag}] no code: Draft # shows 12 picks', page.evaluate("[...document.querySelectorAll('.stdp')].filter(e => /^\\d+$/.test(e.textContent)).length") == 12)
         check(f'[{tag}] Standings DRAFT # = projected order 1-12, no ties (v1.21.0)', sorted(int(x) for x in page.evaluate("[...document.querySelectorAll('.strow .stdp')].map(e => e.textContent)")) == list(range(1, 13)))
         check(f'[{tag}] no code: Standings playoff odds show', page.evaluate("document.querySelectorAll('.stpo.lk').length") == 0 and page.evaluate("document.querySelectorAll('.lockic').length") == 0)
+        st_dn = page.evaluate("Object.fromEntries([...document.querySelectorAll('.strow')].map(r => [r.dataset.st, r.querySelector('.stdp').textContent]))")
         page.click('#ppeBtn'); page.wait_for_timeout(800)
         check(f'[{tag}] no code: Playoff Engine opens', page.evaluate("!!document.querySelector('.ppe.pq')"))
+        at_dn = page.evaluate("(() => { const m = window.__fgt.weekModel(), nm = {}; Object.keys(m.teams).forEach(id => nm[m.teams[id].name.trim()] = id); return Object.fromEntries([...document.querySelectorAll('.pqat .tr')].map(r => [nm[r.querySelector('.nm b').textContent], r.querySelector('.pk').textContent.slice(1)])); })()")
+        check(f'[{tag}] coherence v1.21.4: Standings DRAFT # = Playoff Engine All teams Draft #', st_dn == at_dn and len(st_dn) == 12, (st_dn, at_dn))
         check(f'[{tag}] no code: no Loser Bowl / bracket cards (admin only, v1.21.3); seeds then All teams', page.evaluate("!document.querySelector('.pqlb') && !document.querySelector('.pqbk') && !!document.querySelector('.pqseeds') && document.querySelector('.pqseeds').nextElementSibling === document.querySelector('.pqat')"))
         page.click('#ppeBack'); page.wait_for_timeout(600)
         page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(400)
@@ -813,15 +816,31 @@ with sync_playwright() as pw:
         if pp:
             mlp = max(range(12), key=lambda k: pp['dp']['11'][k]) + 1
             check(f'[{tag}] ppe v1.21: draft card top pick = engine most likely pick', dpr and dpr[0][0] == f'Pick {mlp}', (dpr[:1], mlp))
-        check(f'[{tag}] ppe v1.21: strip = Playoffs, Bye, Proj. seed, Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Likely seed|Loser Bowl')
+        check(f'[{tag}] ppe v1.21: strip = Playoffs, Bye, Proj. seed, Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Proj. seed|Loser Bowl')
         check(f'[{tag}] ppe v1.21: road to the title = 5 rounds, last one gold', page.evaluate("document.querySelectorAll('.pqroad .rr').length === 5 && document.querySelectorAll('.pqroad .rr.gold').length === 1 && /road to the title/.test(document.querySelector('.pqroad .pqch b').textContent)"))
         so = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, out = { ok: true, why: [] };
           const rows = [...document.querySelectorAll('.pqseeds .sr')].map(r => r.querySelector('.nm').textContent);
           const nameOf = id => { const m = window.__fgt.weekModel(); return m.teams[id] ? m.teams[id].name.trim() : id; };
-          const want = Object.keys(pp.ord || {}).map(d => pp.ord[d][0].map(nameOf));
+          const want = Object.keys((pp.sc && pp.sc.divs) || {}).map(d => pp.sc.divs[d].map(nameOf));
           want.forEach(w => { const i = rows.indexOf(w[0]); if(i < 0 || rows.slice(i, i + w.length).join('|') !== w.join('|')){ out.ok = false; out.why.push([w, rows]); } });
-          out.ok = out.ok && want.length === 2; out.p = Object.keys(pp.ord || {}).map(d => pp.ord[d][1]); return out; })()""")
-        check(f'[{tag}] seeds v1.21.3: card order = the most common final standings from the simulations', so['ok'] and all(0 < x <= 1 for x in so['p']), so)
+          out.ok = out.ok && want.length === 2; out.p = [pp.sc ? pp.sc.share : 0]; return out; })()""")
+        check(f'[{tag}] seeds v1.21.4: card order = the most common league finish from the simulations', so['ok'] and all(0 < x <= 1 for x in so['p']), so)
+        # v1.21.4 coherence: everything describing the end of the season comes from the SAME finish
+        coh = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, sc = pp.sc, out = { bad: [] }; if(!sc) return { bad: ['no sc'] };
+          const nm = {}; const m = window.__fgt.weekModel(); Object.keys(m.teams).forEach(id => nm[m.teams[id].name.trim()] = id);
+          const card = {}; let div = null; [...document.querySelectorAll('.pqseeds .sh, .pqseeds .sr')].forEach(e => { if(e.classList.contains('sh')){ div = e.querySelector('b').textContent; card[div] = []; } else card[div].push([nm[e.querySelector('.nm').textContent], e.querySelector('.rc').textContent, e.querySelector('.sp').textContent]); });
+          const wins = r => { const a = r.split('-').map(Number); return a[0] + (a[2] ? 0.5 * a[2] : 0); };
+          Object.keys(card).forEach(d => { card[d].forEach((x, k) => { if(k && wins(x[1]) > wins(card[d][k - 1][1])) out.bad.push(['record above', d, k]);
+            const want = Math.round(pp.seed[x[0]][k] * 100); if(Math.abs(parseFloat(x[2].replace(/[<>]/g, '')) - want) > 1 && !/[<>]/.test(x[2])) out.bad.push(['seed %', x[0], x[2], want]); }); });
+          const dn = {}; [...document.querySelectorAll('.pqat .tr')].forEach(r => dn[nm[r.querySelector('.nm b').textContent]] = parseInt(r.querySelector('.pk').textContent.slice(1)));
+          Object.keys(card).forEach(d => card[d].forEach((x, k) => { const p = dn[x[0]]; const ok = k === 0 ? p >= 11 : k === 1 ? (p === 9 || p === 10) : k === 5 ? p <= 2 : (p >= 3 && p <= 8); if(!ok) out.bad.push(['draft # vs seed', x[0], k + 1, p]); }));
+          const t = '11', me = card[Object.keys(card).find(d => card[d].some(x => x[0] === t))].findIndex(x => x[0] === t);
+          if(document.querySelectorAll('.pqstrip b')[2].textContent !== '#' + (me + 1)) out.bad.push(['strip seed', document.querySelectorAll('.pqstrip b')[2].textContent, me + 1]);
+          const road = [...document.querySelectorAll('.pqroad .rr b')].map(b => parseInt(b.textContent)), hud = [...document.querySelectorAll('.pqstrip b')].map(b => b.textContent);
+          if(parseInt(hud[0]) !== road[0] && !/>/.test(hud[0])) out.bad.push(['playoffs heads-up vs road', hud[0], road[0]]);
+          for(let k = 1; k < road.length; k++) if(road[k] > road[k - 1]) out.bad.push(['road not decreasing', road]);
+          return out; })()""")
+        check(f'[{tag}] coherence v1.21.4: records never go up down a division, seed % = own odds, Draft # fits the seed, strip = card, road decreasing', not coh['bad'], coh)
         check(f'[{tag}] ppe v1.21: projected seeds = one card, 12 teams, colored seed dots', page.evaluate("document.querySelectorAll('.pqseeds .sr').length === 12 && document.querySelectorAll('.pqseeds .rk.zby').length === 6 && document.querySelectorAll('.pqseeds .rk.zwc').length === 4 && document.querySelectorAll('.pqseeds .rk.zlb').length === 2"))
         games = page.evaluate("[...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt b')].map(b => parseInt(b.textContent)))")
         check(f'[{tag}] bracket v1.21: 8 games (wild card, 2 semis, final per division), each side adds to 100%', len(games) == 8 and all(len(g) == 2 and g[0] + g[1] == 100 for g in games), games)
@@ -843,12 +862,11 @@ with sync_playwright() as pw:
         check(f'[{tag}] bracket v1.21.2: Super Bowl = the two division final winners', len(sbn) == 2 and names.get(adv['fa'], adv['fa']) == sbn[0] and names.get(adv['fn'], adv['fn']) == sbn[1], (adv['fa'], adv['fn'], sbn, names))
         if pp:
             pp2 = page.evaluate("window.__fgt.ENG.res.pp")
-            ml = max(range(6), key=lambda k: pp2['seed']['11'][k]) + 1
-            check(f'[{tag}] strip v1.21.2: Likely seed = Dallas own most likely seed', page.evaluate("document.querySelectorAll('.pqstrip b')[2].textContent") == f'#{ml}', (ml, pp2['seed']['11']))
-            wm = pp2.get('wm', {}).get('11')
-            want = f"{wm[0] // 2}-{12 - wm[0] // 2 - wm[0] % 2}" + ('-1' if wm[0] % 2 else '') if wm else None
+            hv = (pp2.get('sc') or {}).get('rec', {}).get('11')
+            want = f"{hv // 2}-{12 - hv // 2 - hv % 2}" + ('-1' if hv % 2 else '') if hv is not None else None
             got = page.evaluate("[...document.querySelectorAll('.pqseeds .sr')].filter(r => /Dallas/.test(r.querySelector('.nm').textContent)).map(r => r.querySelector('.rc').textContent)[0]")
-            check(f'[{tag}] seeds v1.21.2: record = most likely final record from the simulations', bool(wm) and got == want and wm[1] > 0, (got, want, wm))
+            check(f'[{tag}] seeds v1.21.4: record = Dallas record in the same most likely finish', hv is not None and got == want, (got, want, hv))
+            st_dn = None
             check(f'[{tag}] seeds v1.21.2: every team has a most likely record whose odds are >= any other record', all(len(v) == 2 and 0 < v[1] <= 1 for v in pp2.get('wm', {}).values()) and len(pp2.get('wm', {})) == 12)
         dn = page.evaluate("[...document.querySelectorAll('.pqat .tr .pk')].map(e => parseInt(e.textContent.slice(1)))")
         check(f'[{tag}] all teams v1.21: 12 rows, Draft # = projected order 1-12 (no ties)', sorted(dn) == list(range(1, 13)), dn)
