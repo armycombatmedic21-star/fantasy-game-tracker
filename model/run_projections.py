@@ -86,6 +86,11 @@ def main():
                     and p.get("m", 0) >= 5 and p.get("fp") is None and "FantasyPros" not in (p.get("b") or "")]
             st["fp_unmatched_5plus"] = miss[:25]
             st["fp_unmatched_5plus_count"] = len(miss)
+        # v1.21.1 (Wes, Nov 21): future weeks from Sleeper + ESPN (they post every remaining week); never fails the run
+        try:
+            st["future"] = add_future(week, res)
+        except Exception as e:
+            st["future"] = {"error": f"{type(e).__name__}: {e}"[:300]}
         tmp = OUT + ".tmp"
         json.dump(res, open(tmp, "w"), separators=(",", ":"))
         shutil.move(tmp, OUT)
@@ -102,6 +107,36 @@ def main():
         st["error"] = f"{type(e).__name__}: {e}"[:500]
         st["trace"] = traceback.format_exc()[-1500:]
         return st, 1
+
+
+def add_future(week, res, last=17):
+    """res["fut"][week] = {"srcs": [...], "p": {key: [mean, sd, sites]}} for every week after this one through the
+    Super Bowl (Week 17), and res["nm_scale"] (our model's calibration for anyone the sites miss)."""
+    fut, info = {}, {}
+    for w in range(week + 1, last + 1):
+        try:
+            recs, sst = fetch_sources.fetch_all(w, only=["sleeper", "espn"])
+        except Exception as e:
+            info[str(w)] = f"{type(e).__name__}: {e}"[:120]
+            continue
+        ok = [k for k, v in sst.items() if isinstance(v, dict) and v.get("ok")]
+        if not ok:
+            info[str(w)] = "no site answered"
+            continue
+        path = os.path.join(CACHE, f"future-week{w}.json")
+        json.dump({"week": w, "at": now(), "status": sst, "records": recs}, open(path, "w"), separators=(",", ":"))
+        f = M.future_proj(res["players"], path)
+        f["at"] = now()
+        fut[str(w)] = f
+        info[str(w)] = {"sites": ok, "players": len(f["p"]), "projected": sum(1 for v in f["p"].values() if v[0] > 0)}
+    # compact: player keys once, then per week a flat list [mean, sd, mean, sd, ...] in key order (-1 = no number ->
+    # the app uses our own model for him that week)
+    keys = sorted({k for f in fut.values() for k in f["p"]})
+    res["fut"] = {"k": keys, "w": {w: {"srcs": f["srcs"], "at": f["at"], "v": [x for k in keys for x in
+                  ((round(f["p"][k][0], 1), round(f["p"][k][1], 1)) if k in f["p"] else (-1, -1))]} for w, f in fut.items()}}
+    res["nm_scale"] = M.nm_scale(res["players"])
+    info["nm_scale"] = res["nm_scale"]
+    return info
 
 
 def snapshot(week, res):

@@ -1224,10 +1224,11 @@ svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.21.0';
+const APP_VERSION = '1.21.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.21.1', 'More accurate playoff odds, bracket and draft odds: the weeks still to come (Week 12 through the Super Bowl) now use ESPN’s and Sleeper’s projections for each of those weeks, scored with our league’s rules, so injuries, byes and matchups they know about count. Before, every future week used one fixed number from our own model. Game ranges for future weeks are also a little tighter (they were wider than any team’s real week-to-week swings). No visual changes.'],
   ['1.21.0', 'Playoff Prediction Engine redesign. The page now uses every team’s best healthy lineup (players whose game has started keep their real CBS spot and points), so it updates live as scores come in. New top section: your team banner, Title chance with Reach Super Bowl, a Draft pick card with your 4 most likely picks and the average pick, and Playoffs / Bye / Proj. seed / Loser Bowl. Road to the title, Projected seeds (one card, both divisions, color seed dots: green bye, blue wild card, orange Loser Bowl) and All teams are cleaner. The bracket (marked Projected, like the Loser Bowl) is one card that meets at a gold Super Bowl in the middle, with logos, byes shown by name, and every % = the chance to win that game. All teams and the Standings DRAFT # column now show the projected draft order (each team gets its own #1–#12; your own pick odds stay on Home and in the team drop-down). Live players’ moving outline on Matchup is about 10% brighter, and the Super Bowl card has the same moving light in gold. Visual changes: the whole Playoff Engine page; bigger Standings button and team chip on that page; brighter live-player outline.'],
   ['1.20.0', 'Draft order fixed to the league rule: the two 1st-place teams pick 11–12, the two 2nd-place teams pick 9–10, the 3rd–5th place teams pick 3–8 by record, the Loser Bowl decides 1–2. Ties: same division = division record then points; different divisions = points. Before, 2nd-place teams were mixed into picks 3–10 by record. Draft odds update. No visual changes.'],
   ['1.19.0', 'Playoff Prediction Engine: the projected bracket now comes from the simulations — each spot shows the team that gets there most often. Before, every game just advanced the team with the higher projection, even by a tenth of a point (that put Green Bay in the Super Bowl while Indianapolis gets there far more often).'],
@@ -3829,7 +3830,7 @@ function engineWorker(){
   // Dithered rounding keeps exact ties possible (plain rounding after stretching skipped some scores).
   const SPOS0 = { QB: 1.10, RB: 1.15, WR: 1.13, TE: 1.12, K: 1.18, DST: 1.08 };
   let SPOS = Object.assign({}, SPOS0), SRHO = 0.06;
-  let SPREAD_K = 1.35;   // future weeks (playoff odds) only; projections.json "spread_k" wins
+  let SPREAD_K = 1.05;   // future weeks (playoff odds) only; projections.json "spread_k" wins (v1.21.1: 1.35 -> 1.05)
   function varOf(a){ let m = 0; for(let i = 0; i < a.length; i++) m += a[i]; m /= a.length; let v = 0; for(let i = 0; i < a.length; i++){ const d = a[i] - m; v += d * d; } return v / a.length; }
   function stretch(tot, parts, R){
     const n = tot.length; let mu = 0, lo = Infinity;
@@ -3892,7 +3893,7 @@ function engineWorker(){
     }
     return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec') - flr;
   }
-  let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {};
+  let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {}, FUT = {}, NMS = {}, REPLF = {};
   // v1.5.3 (Wes, Nov 10): playoff odds assume every owner fills a position nobody healthy can play with a waiver pickup.
   // Conservative: the player just past what 12 teams typically roster at that position (this week and neutral).
   const REPL_RANK = { QB: 26, RB: 62, WR: 62, TE: 20, K: 14, DST: 14 };
@@ -3903,8 +3904,29 @@ function engineWorker(){
       const wk = players.filter(function(r){ return r.p === pos && !r.bye && r.m > 0 && r.c && r.c.length; }).sort(function(a, b){ return b.m - a.m; });
       if(wk.length) REPL[pos] = wk[Math.min(n, wk.length - 1)].k;
       const nt = players.filter(function(r){ return r.p === pos && r.nm > 0; }).sort(function(a, b){ return b.nm - a.nm; });
-      if(nt.length){ const r = nt[Math.min(n, nt.length - 1)]; REPLN[pos] = { m: r.nm, v: Math.pow(r.ns || 0, 2) }; }
+      if(nt.length){ const r = nt[Math.min(n, nt.length - 1)], sc = NMS[pos] || 1; REPLN[pos] = { m: r.nm * sc, v: Math.pow((r.ns || 0) * sc, 2) }; }
     });
+    // v1.21.1: waiver fill for each future week from that week's site projections
+    REPLF = {};
+    Object.keys(FUT).forEach(function(w){ const f = FUT[w] && FUT[w].p; if(!f) return; const by = {};
+      Object.keys(f).forEach(function(k){ const r = P[k], e = f[k]; if(!r || !e || !(e[0] > 0)) return; (by[r.p] || (by[r.p] = [])).push(e); });
+      REPLF[w] = {}; Object.keys(REPL_RANK).forEach(function(pos){ const a = (by[pos] || []).sort(function(x, y){ return y[0] - x[0]; });
+        if(a.length >= 8){ const e = a[Math.min(REPL_RANK[pos] - 1, a.length - 1)]; REPLF[w][pos] = { m: e[0], v: e[1] * e[1] }; } }); });
+  }
+  // v1.21.1 (Wes, Nov 21): a player's number for a future week = the sites' consensus for THAT week (Sleeper + ESPN post
+  // every remaining week), so injuries, roles and matchups they know about count. Not listed -> our own model's neutral
+  // number, calibrated to this week's consensus by position (nm_scale).
+  function futUnpack(f){   // projections.json "fut" = { k: [keys], w: { week: { v: [mean, sd, ...] } } } (-1 = none)
+    const out = {}; if(!f) return out;
+    if(!f.k){ Object.keys(f).forEach(function(w){ if(f[w] && f[w].p) out[w] = f[w]; }); return out; }
+    Object.keys(f.w || {}).forEach(function(w){ const v = f.w[w].v || [], p = {};
+      f.k.forEach(function(k, i){ const m = v[2 * i]; if(m != null && m >= 0) p[k] = [m, v[2 * i + 1]]; }); out[w] = { p: p }; });
+    return out;
+  }
+  function futVal(q, r, wk){
+    const f = FUT[wk] && FUT[wk].p, e = f ? f[q.key] : null;
+    if(e) return { m: e[0] || 0, v: Math.pow(e[1] || 0, 2) };
+    const sc = NMS[q.pos] || 1; return { m: (r.nm || 0) * sc, v: Math.pow((r.ns || 0) * sc, 2) };
   }
   function simPlayer(q){
     // q = { pid, key, pos, mode: pre|live|final|none, pts, live }
@@ -3987,9 +4009,10 @@ function engineWorker(){
   // best lineup by neutral mean for a future week (Drop 1 §4.5)
   function futureTeam(T, wk){
     const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
-    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push({ m: r.nm || 0, v: Math.pow(r.ns || 0, 2) }); });
+    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push(futVal(q, r, wk)); });
     Object.keys(pool).forEach(function(k){ pool[k].sort(function(a, b){ return b.m - a.m; }); });
-    const take = function(k){ return pool[k].length ? pool[k].shift() : (REPLN[k] || { m: 0, v: 0 }); };
+    const rf = REPLF[wk] || {};
+    const take = function(k){ return pool[k].length ? pool[k].shift() : (rf[k] || REPLN[k] || { m: 0, v: 0 }); };
     const L = [take('QB'), take('RB'), take('WR'), take('WR'), take('TE'), take('K'), take('DST')];
     const fx = (pool.RB[0] || { m: -1 }).m >= (pool.WR[0] || { m: -1 }).m ? take('RB') : take('WR'); L.push(fx);
     let m = 0, v = 0; L.forEach(function(x){ m += x.m; v += x.v; });
@@ -4164,7 +4187,7 @@ function engineWorker(){
   let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
   self.onmessage = function(e){
     const msg = e.data;
-    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); FUT = futUnpack(msg.proj.fut); NMS = msg.proj.nm_scale || {}; setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.05;
       const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
       const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
     if(msg.type === 'one'){   // v1.17.0: Matchup Current / Optimal toggle — one game with the lineups the screen shows

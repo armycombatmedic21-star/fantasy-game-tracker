@@ -935,6 +935,38 @@ with sync_playwright() as pw:
     check('opt no code: Current | Optimal switch shows (v1.21.0)', page.evaluate("document.querySelectorAll('.optg').length") == 2)
     ctx.close(); br.close()
 
+# ---- v1.21.1: future weeks use the sites' projections for THAT week (projections.json "fut"), else our model x nm_scale ----
+def _fx(proj_path):
+    if proj_path: os.environ['FGT_PROJ'] = proj_path
+    else: os.environ.pop('FGT_PROJ', None)
+    with sync_playwright() as pw:
+        br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+        ctx = br.new_context(viewport={'width': 393, 'height': 852}); ctx.route('**/*', route)
+        ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
+        page = ctx.new_page(); errs = []; page.on('pageerror', lambda e: errs.append(str(e)))
+        page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_fresh(page, 30000)
+        fx = page.evaluate("window.__fgt.ENG.res.pp && window.__fgt.ENG.res.pp.fx")
+        br.close()
+    os.environ.pop('FGT_PROJ', None)
+    return fx, errs
+_base = json.load(open(os.path.join(APP_DIR, 'tests', 'projections-week9.json')))
+_fx0, _e0 = _fx(None)
+_fk = [r['k'] for r in _base['players']]   # same compact format run_projections.py writes
+_fut = dict(_base); _fut['fut'] = {'k': _fk, 'w': {str(w): {'srcs': ['espn', 'sleeper'], 'v': [x for r in _base['players'] for x in (round((r.get('nm') or 0) * 2, 1), r.get('ns') or 0)]} for w in range(13, 18)}}
+json.dump(_fut, open('/tmp/fgt-fut-test.json', 'w'))
+_fx1, _e1 = _fx('/tmp/fgt-fut-test.json')
+_sc = dict(_base); _sc['nm_scale'] = {p: 1.5 for p in ('QB', 'RB', 'WR', 'TE', 'K', 'DST')}
+json.dump(_sc, open('/tmp/fgt-nms-test.json', 'w'))
+_fx2, _e2 = _fx('/tmp/fgt-nms-test.json')
+if _fx0 and _fx1 and _fx2:
+    r1 = [_fx1[w][t][0] / _fx0[w][t][0] for w in ('13', '17') for t in _fx0[w] if _fx0[w][t][0] > 0]
+    r2 = [_fx2[w][t][0] / _fx0[w][t][0] for w in ('13', '17') for t in _fx0[w] if _fx0[w][t][0] > 0]
+    check('future weeks: site numbers for that week are used (2x numbers -> about 2x team ratings)', all(1.8 <= x <= 2.2 for x in r1), [round(x, 2) for x in r1][:6])
+    check('future weeks: no site numbers -> our model x nm_scale (1.5x -> about 1.5x)', all(1.35 <= x <= 1.65 for x in r2), [round(x, 2) for x in r2][:6])
+else:
+    check('future weeks: engine ran with fut / nm_scale', False, (bool(_fx0), bool(_fx1), bool(_fx2)))
+check('future weeks: no page errors', not (_e0 or _e1 or _e2), (_e0, _e1, _e2))
+
 srv.shutdown()
 # version.txt drives auto-update (v1.4.3): it must match APP_VERSION or phones never update
 import re as _re2

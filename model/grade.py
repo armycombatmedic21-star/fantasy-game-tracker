@@ -74,7 +74,16 @@ def grade_week(week):
     act = cbs_points(week)
     if not act:
         return None
-    rows = [(k, proj[k], act[k]) for k in act if k in proj]
+    # v1.21.1: a player traded since the projection is keyed with his old team in proj-wN.json (Brissett |ARI -> BAL,
+    # Cousins LV -> MIN): match him by name when exactly one projected player has that name
+    by_name = {}
+    for k in proj:
+        by_name.setdefault(k.split("|")[0], []).append(k)
+    rows = []
+    for k in act:
+        pk = k if k in proj else (by_name.get(k.split("|")[0], [None])[0] if len(by_name.get(k.split("|")[0], [])) == 1 and not k.startswith("DST|") else None)
+        if pk:
+            rows.append((k, proj[pk], act[k]))
     full = [(e, a) for k, e, a in rows if e.get("fp") is not None and e.get("own") is not None]
     res = {"graded_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
            "all_rostered": {"ours": stats([(e["m"], a) for k, e, a in rows])},
@@ -100,8 +109,9 @@ def main():
         if not (f.startswith("proj-w") and f.endswith(".json")):
             continue
         w = int(f[6:-5])
-        if w >= cur or str(w) in G["weeks"]:
-            continue                      # week not over yet, or already graded
+        # v1.21.1: re-grade the last 2 finished weeks on every run (NFL stat corrections land Wed-Thu); older weeks stay
+        if w >= cur or (str(w) in G["weeks"] and cur - w > 2):
+            continue                      # week not over yet, or graded and settled
         try:
             r = grade_week(w)
         except Exception as e:
