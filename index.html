@@ -1004,6 +1004,164 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 @media (max-width:380px){.ppcm .ch{letter-spacing:.3px}.ppcm .ch,.ppcm .cr{grid-template-columns:1.3fr .95fr .7fr .7fr}}
 @media (max-width:370px){.pptc>b{font-size:33px}.ppla .lacell b{font-size:21px}.ppsr .nm{font-size:13.5px}.ppg .gn{font-size:12px}.ppcm .cr{font-size:12px}}
 
+/* v1.21.0 Playoff Engine redesign (pq*) */
+.pq .pqtop{margin-bottom:14px;gap:6px}
+.pq .pqtop .back{height:42px;padding:0 10px;font-size:13.75px;border-radius:12px}
+.pq .pqtt{font-size:13px;letter-spacing:1.2px;white-space:nowrap}
+.pq .ppsel{height:42px;padding:0 11px 0 6px;font-size:14px;gap:7px}
+.pq .ppsel .badge{width:28px;height:28px;border-radius:14px}
+.pq .ppdd{top:50px}
+@media (max-width:370px){.pq .pqtt{font-size:12px;letter-spacing:.6px}}
+.pq .badge img{border-radius:inherit}
+.pqban{display:flex;align-items:center;gap:12px;margin:0 2px 14px}
+.pqban .badge{width:50px;height:50px;border-radius:15px}
+.pqban .pn{flex:1;min-width:0;display:block}
+.pqban .pn > b{display:block;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pqban .pn > span{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-top:3px;line-height:1.35}
+.pqban .pn > span b{display:inline;font-size:13px;letter-spacing:0;color:#fff}
+.pqban .pl{align-self:flex-start;margin-top:4px;display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--green);white-space:nowrap}
+.pqban .pl i{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.pqhud{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pqtc,.pqdc,.pqstrip,.pqcard{border:1px solid var(--hair2);background:var(--card);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 10px 24px rgba(0,0,0,.42)}
+.pqtc{padding:16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-color:rgba(244,196,61,.32);background:linear-gradient(180deg,#151a22,#0d1320)}
+.pqtc small{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold)}
+.pqtc>b{font-size:50px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1;margin:10px 0}
+.pqtc>b sup,.pqstrip b sup,.pqroad .rl b sup{font-size:.48em;vertical-align:top;position:relative;top:.18em;margin-left:1px;letter-spacing:0}
+.pqtc em{width:100%;border-top:1px solid var(--hair2);padding-top:10px;font-style:normal;font-size:12.5px;font-weight:700;color:var(--muted)}
+.pqtc em b{color:#fff;font-size:15px}
+.pqdc{padding:14px 12px}
+.pqdc .dh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.pqdc .dh small{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.pqdc .dh em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--muted)}.pqdc .dh em b{color:#fff}
+.pqdc .pr{display:grid;grid-template-columns:54px 1fr 34px;white-space:nowrap;align-items:center;gap:6px;height:25px;font-size:13px;font-weight:700;color:var(--muted)}
+.pqdc .pr .br{height:7px;border-radius:4px;background:rgba(147,174,200,.12);overflow:hidden}
+.pqdc .pr .br i{display:block;height:100%;background:rgba(79,141,255,.55);border-radius:4px}
+.pqdc .pr span:last-child{text-align:right}
+.pqdc .pr.ml{color:#fff;font-weight:800;font-size:14px}.pqdc .pr.ml .br i{background:var(--acc)}.pqdc .pr.ml span:last-child{color:var(--acc)}
+.pqstrip{display:grid;grid-template-columns:repeat(4,1fr);margin:10px 0 14px;padding:14px 4px}
+.pqstrip>div{text-align:center;border-left:1px solid var(--hair2);min-width:0}.pqstrip>div:first-child{border:0}
+.pqstrip small{display:block;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+.pqstrip b{display:block;font-size:26px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-top:3px;line-height:1.1}
+.pqstrip em{display:block;font-style:normal;font-size:10px;font-weight:800;color:var(--faint);margin-top:3px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.pqcard{margin-bottom:14px;overflow:hidden;position:relative}
+.pqch{display:flex;align-items:center;gap:10px;padding:14px 15px 12px}
+.pqch .badge{width:30px;height:30px;border-radius:9px}
+.pqch b{display:block;font-size:16px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.pqch small{display:block;font-size:11px;font-weight:700;color:var(--faint);margin-top:1px}
+.pqroad{padding-bottom:4px}
+.pqroad .rr{margin:0 15px;padding:9px 0 11px;border-top:1px solid var(--hair)}
+.pqroad .rl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.pqroad .rl span{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--text)}
+.pqroad .rl b{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.pqroad .rb{display:block;height:9px;border-radius:5px;background:rgba(147,174,200,.12);overflow:hidden}
+.pqroad .rb em{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,rgba(79,141,255,.6),#4f8dff)}
+.pqroad .rr.gold .rl span{color:var(--gold)}.pqroad .rr.gold .rb em{background:linear-gradient(90deg,rgba(244,196,61,.55),#f4c43d)}
+.pqseeds{padding:14px 0 10px}
+.pqst{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:0 14px}
+.pqst b{font-size:16px;font-weight:800;color:#fff}.pqst span{font-size:11.5px;font-weight:700;color:var(--faint)}
+.pqseeds .sh{display:grid;grid-template-columns:minmax(0,1fr) 44px 50px;gap:8px;align-items:center;padding:12px 14px 4px;font-size:9.5px;font-weight:800;letter-spacing:1.1px;color:var(--faint);text-transform:uppercase}
+.pqseeds .sh span{text-align:right}
+.pqseeds .sh b{font-size:12.5px;letter-spacing:2px}
+.pq b.afc,.pq i.afc{color:#4f8dff}.pq b.nfc,.pq i.nfc{color:#ff5c6c}
+.pqseeds .sr{display:grid;grid-template-columns:22px 26px minmax(0,1fr) 44px 50px;align-items:center;gap:9px;height:46px;padding:0 14px;border-top:1px solid rgba(147,174,200,.07)}
+.pqseeds .sr .rk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;color:#06101f}
+.pq .zby{background:#3ddc84}.pq .zwc{background:#4f8dff}.pq .zlb{background:#ffb020}
+.pqseeds .sr .badge{width:26px;height:26px;border-radius:7px}
+.pqseeds .sr .nm{font-size:15px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pqseeds .sr .rc{font-size:13.5px;font-weight:800;color:#fff;text-align:right}
+.pqseeds .sr .sp{font-size:13px;font-weight:700;color:var(--muted);text-align:right}
+.pqseeds .sep{height:1px;background:var(--hair2);margin:8px 14px 0}
+.pqseeds .lg{display:flex;justify-content:center;gap:14px;padding:10px 14px 2px;margin-top:6px;border-top:1px solid var(--hair);font-size:11px;font-weight:700;color:var(--muted)}
+.pqseeds .lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.pq .pqme{background:linear-gradient(90deg,rgba(79,141,255,.20),rgba(79,141,255,.04));box-shadow:inset 3px 0 0 #4f8dff}
+.pq .pqme .nm,.pq .pqme .c{color:#8fb6ff}
+.pqhh{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.pqhh .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;background:rgba(79,141,255,.15);border:1px solid rgba(79,141,255,.4)}
+.pqhh .hx{min-width:0}
+.pqhh .tt{font-size:14px;font-weight:800;letter-spacing:1.8px;color:#fff;line-height:1.1;text-transform:uppercase}
+.pqhh .st{font-size:11px;font-weight:700;color:var(--faint);margin-top:3px}
+.pqhh .st .pj{font-size:12px;font-weight:800;color:#fff;letter-spacing:.2px}   /* v1.21.0 (Wes): projections must read as projections */
+.pqhh .wk{margin-left:auto;align-self:flex-start;white-space:nowrap;font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted);padding:4px 7px;border-radius:7px;border:1px solid var(--hair2);text-transform:uppercase}
+.pqlb{border-color:rgba(255,176,32,.35)}
+.pqhh.lb .ic{background:rgba(255,176,32,.13);border-color:rgba(255,176,32,.4)}
+.pqvs{padding:2px 14px 14px}
+.pqvs .tm,.pqsb .tm{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+.pqvs .vt{display:flex;align-items:center;gap:8px;min-width:0;border-radius:10px;padding:2px}
+.pqvs .vt.r{flex-direction:row-reverse;text-align:right}
+.pqvs .vt .badge{width:32px;height:32px;border-radius:10px}
+.pqvs .vt div{min-width:0}
+.pqvs .vt b{display:block;font-size:14.5px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pqvs .vt small{display:block;font-size:10px;font-weight:800;color:var(--faint);letter-spacing:.6px;text-transform:uppercase}
+.pqvs .vt.pqme{box-shadow:none;background:none}.pqvs .vt.pqme b{color:#8fb6ff}
+.pq .vs{font-size:10px;font-weight:800;color:var(--faint);padding:0 6px}
+.pqvs .vp{display:flex;justify-content:space-between;margin-top:9px;font-size:14px;font-weight:800;color:#fff}.pqvs .vp .lo{color:var(--muted)}
+.pq .vb{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;margin-top:5px}
+.pq .vb i{display:block;height:100%}
+.pqvs .vb i:first-child{background:#ffb020}.pqvs .vb i:last-child{flex:1;background:rgba(255,176,32,.35)}
+.pqbk{padding-bottom:12px}
+.pqwrap{position:relative;padding:4px 12px 0}
+svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.pqlane{position:relative;z-index:1}
+.pqconf{display:flex;align-items:center;gap:8px;margin:6px 2px 8px}
+.pqconf b{font-size:12px;font-weight:800;letter-spacing:2px}
+.pqconf:after{content:"";flex:1;height:1px;background:var(--hair2)}
+.pqconf.end{margin:0 2px 2px}
+.pqrw{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:22px}
+.pqrw .rt{width:100%;text-align:center;font-size:9px;font-weight:800;letter-spacing:1px;color:var(--faint);text-transform:uppercase}
+.pqrw .rt i{font-style:normal;background:#0c1525;padding:2px 8px}
+.pqg{width:min(150px,calc(50% - 6px));border-radius:11px;border:1px solid var(--hair2);background:#0f1a2c;overflow:hidden}
+.pqg .gt{display:grid;grid-template-columns:12px 22px minmax(0,1fr) auto;align-items:center;gap:6px;height:32px;padding:0 9px 0 6px}
+.pqg .gt+.gt{border-top:1px solid var(--hair)}
+.pqg .s{font-size:10px;font-weight:800;color:var(--faint);text-align:center}
+.pqg .badge{width:22px;height:22px;border-radius:6px}
+.pqg .c{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden}
+.pqg b{font-size:12.5px;font-weight:800;color:var(--muted)}
+.pqg .gt.fav .c,.pqg .gt.fav b{color:#fff}
+.pqg .gt.pqme{box-shadow:inset 2px 0 0 #4f8dff}
+.pqbye{width:min(150px,calc(50% - 6px));border-radius:11px;border:1px dashed rgba(61,220,132,.35);background:rgba(61,220,132,.05);padding:6px 8px}
+.pqbye small{display:block;font-size:9px;font-weight:800;letter-spacing:1px;color:#3ddc84;margin-bottom:4px;text-transform:uppercase}
+.pqbye div{display:flex;gap:4px}
+.pqbye span{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;font-size:10.5px;font-weight:800;color:var(--text);border-radius:7px;padding:2px 0}
+.pqbye span.pqme{box-shadow:none;background:rgba(79,141,255,.18);color:#8fb6ff}
+.pqbye .badge{width:26px;height:26px;border-radius:7px}
+.pqsb{margin:0 0 24px;border-radius:16px;border:1px solid rgba(244,196,61,.45);background:linear-gradient(180deg,rgba(244,196,61,.12),rgba(244,196,61,.03)),#0d1422;padding:10px 12px 12px;position:relative;z-index:1}
+.pqsb > .pqglow{position:absolute;inset:-1px;pointer-events:none;z-index:0;display:block}
+.pqsb > .pqglow svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pqsb .h{display:flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:2.4px;color:#f4d77a;text-transform:uppercase}
+.pqsb .h2{text-align:center;margin-top:3px;font-size:9.5px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.pqsb .tm{margin-top:10px}
+.pqsb .st{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;border-radius:12px;padding:4px 2px}
+.pqsb .st .badge{width:46px;height:46px;border-radius:14px}
+.pqsb .st b{font-size:15px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pqsb .st small{font-size:9.5px;font-weight:800;letter-spacing:1px;color:var(--faint);text-transform:uppercase}
+.pqsb .st span{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.4px}
+.pqsb .st.dim b,.pqsb .st.dim span{color:var(--muted)}
+.pqsb .st.pqme{box-shadow:none;background:rgba(79,141,255,.12)}.pqsb .st.pqme b{color:#8fb6ff}
+.pqsb .vb{margin-top:10px}
+.pqsb .vb i:first-child{background:#f4c43d}.pqsb .vb i:last-child{flex:1;background:rgba(244,196,61,.38)}
+.pqat .th,.pqat .tr{display:grid;grid-template-columns:30px minmax(0,1fr) 46px 40px 50px 44px;align-items:center;gap:6px;padding:0 12px}
+.pqat .th{height:30px;font-size:9.5px;font-weight:800;letter-spacing:.7px;color:var(--faint);text-transform:uppercase;border-top:1px solid var(--hair2);border-bottom:1px solid var(--hair2);background:rgba(255,255,255,.015)}
+.pqat .th span{text-align:right;white-space:nowrap}.pqat .th span:first-child{grid-column:1/3;text-align:left}
+.pqat .th .gd{color:var(--gold)}
+.pqat .tr{height:52px;border-top:1px solid rgba(147,174,200,.07)}
+.pqat .th + .tr{border-top:0}
+.pqat .tr .badge{width:30px;height:30px;border-radius:9px}
+.pqat .nm{min-width:0}
+.pqat .nm b{display:block;font-size:14.5px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.pqat .nm small{display:block;font-size:10.5px;font-weight:700;color:var(--faint);margin-top:2px}
+.pqat .nm small i{font-style:normal;font-weight:800;letter-spacing:.6px}
+.pqat .v{text-align:right;font-size:13.5px;font-weight:800;color:var(--muted)}
+.pqat .ti{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.pqat .ti b{font-size:14.5px;font-weight:800;color:#fff}
+.pqat .ti em{display:block;width:40px;height:4px;border-radius:2px;background:rgba(147,174,200,.14);overflow:hidden}
+.pqat .ti em i{display:block;height:100%;border-radius:2px;background:#f4c43d}
+.pqat .pk{justify-self:end;min-width:36px;text-align:center;padding:4px 0;border-radius:8px;border:1px solid var(--hair2);font-size:12.5px;font-weight:800;color:var(--text)}
+.pqat .tr.pqme .nm b{color:#8fb6ff}
+.pqat .ft{padding:10px 14px 12px;border-top:1px solid var(--hair);font-size:11px;font-weight:700;color:var(--faint);text-align:center}
+@media (max-width:380px){.pqat .th,.pqat .tr{grid-template-columns:26px minmax(0,1fr) 42px 36px 46px 40px;gap:5px;padding:0 10px}.pqat .tr .badge{width:26px;height:26px}.pqat .nm b{font-size:13px}
+  .pqtc>b{font-size:44px}.pqstrip b{font-size:23px}.pqstrip small{font-size:10.5px}.pqdc{padding:13px 10px}.pqdc .pr{grid-template-columns:50px 1fr 32px;font-size:12.5px}}
+@media (prefers-reduced-motion:reduce){.pqsb > .pqglow{display:none}}
+
 </style>
 </head>
 <body>
@@ -1045,13 +1203,6 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
   <div class="confirmrow"><button class="confirmcancel" data-close="installOverlay">Got it</button></div>
 </div></div>
 
-<div class="overlay" id="admNotice" data-locked="1"><div class="sheet adm" role="dialog" aria-label="Notice">
-  <div class="hd"><span class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span><div><div class="eb">Restricted access</div><h2>Notice</h2></div></div>
-  <p class="ld">The following has been disabled for all non&#8209;Dallas owners:</p>
-  <div class="lst"><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 4.5 5.5 4v4"/><path d="M3.6 14.2c.3-.7 1-1.1 1.7-1 .9.1 1.4 1 1 1.8L3.6 18h3"/></svg></span><span class="tx">Advanced Draft Order Prediction Engine</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg></span><span class="tx">All advanced computer modeling</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="tx">Data/Team Analysis</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg></span><span class="tx">Advanced playoff projections</span><span class="off">OFF</span></div><div class="lrow"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="7" r="2"/><circle cx="5" cy="17" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="19" cy="17" r="2"/><path d="M7 7.8 10.2 11M7 16.2l3.2-3.2M13.8 11 17 7.8M13.8 13l3.2 3.2"/></svg></span><span class="tx">Advanced machine learning player/matchup projections</span><span class="off">OFF</span></div></div>
-  <p class="ft">These advanced features have a high potential for abuse and will stay disabled unless league rules are updated.</p>
-  <div class="confirmrow admbtns" id="admNoticeBtns"><button class="confirmyes" id="admEnter">Enter Code</button><button class="confirmcancel" id="admClose">Close</button></div>
-</div></div>
 <div class="overlay" id="admCode"><div class="sheet adm" role="dialog" aria-label="Advanced features" id="admCodeSheet">
   <div class="hd"><span class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span><div><div class="eb">Admin access</div><h2>Advanced Features</h2></div></div>
   <p class="ld" id="admLead"></p>
@@ -1060,11 +1211,6 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
   <div class="confirmrow"><button class="confirmyes" id="admGo">Unlock</button><button class="confirmcancel" data-close="admCode">Cancel</button></div>
 </div></div>
 
-<div class="overlay" id="ppeLock"><div class="sheet adm" role="dialog" aria-label="Locked">
-  <div class="hd"><span class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span><div><div class="eb">Restricted access</div><h2>Locked</h2></div></div>
-  <p class="ld">The Playoff Prediction Engine is an advanced feature and is only available on admin devices.</p>
-  <div class="confirmrow"><button class="confirmcancel" data-close="ppeLock">Close</button></div>
-</div></div>
 
 <div class="gate" id="gate" hidden><div class="gatein" id="gateIn"></div></div>
 <div class="toast" id="toast"></div>
@@ -1078,18 +1224,18 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.20.0';
+const APP_VERSION = '1.21.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
-  ['1.20.0', 'Draft order fixed to the league rule (commissioner Dale, Nov 17): the two 1st-place teams pick 11–12, the two 2nd-place teams pick 9–10, the 3rd–5th place teams pick 3–8 by record, the Loser Bowl decides 1–2. Ties: same division = division record then points; different divisions = points. Before, 2nd-place teams were mixed into picks 3–10 by record. Draft odds, tank calls and the TANK pills update. No visual changes.', 'Small fixes.'],
-  ['1.19.0', 'Playoff Prediction Engine: (1) the projected bracket now comes from the simulation — each spot shows the team that gets there most often in the 20,000 seasons, and each team’s % is its odds to reach the next round (with ▲/▼ when Strategic Tank is on). Before, every game just advanced the team with the higher projection, even by a tenth of a point (that put Green Bay in the Super Bowl while Indianapolis gets there far more often). (2) Turning Strategic Tank ON now also opens the full breakdown under the recommendation: this week’s game, standings and bye, the playoff path round by round, the draft, the ripple effect on every other team (who gets knocked out of a bye or the playoffs, who moves up) and which rule made the call. Picking another team in the drop-down turns the tank switch off. Visual changes: bracket % meaning changed and small ▲/▼ next to them when the tank is on; the breakdown panel under the recommendation while the tank is on.', 'Small fixes.'],
-  ['1.18.0', 'Playoff Prediction Engine: new team drop-down (top right). Each team shows its logo, its name (YOU tag on your team) and a TANK pill: green = tanking is recommended for that team this week, red with an X = not, gray = still working it out. The team you’re looking at is highlighted green. To fill the pills the engine now runs Strategic Tank for every team in the background (your selected team first). Visual changes: the iPhone/Android pick-list is replaced by this drop-down; the arrow on the team chip flips when it’s open.', 'Small fixes.'],
-  ['1.17.0', 'Matchup: new Current | Optimal switch under each team (admin), like FantasyPros. It always starts on Current. Optimal puts that team’s best healthy lineup in (by our projections; players whose game has started stay where CBS has them; Out / IR / bye players never start): the bench player moves up into the starter row, the starter moves down to the bench, and the projected score and win % update. Playoff Prediction Engine: draft changes now use the AVERAGE pick (the most likely pick can jump between groups of picks, e.g. Pittsburgh 9 → 4 while the average only moves 7.6 → 6.0); new “Avg. pick” row; the recommendation text says “picks on average”. New rule first: a “free tank” (title, playoff and bye odds each drop less than half a point and the average pick improves) = TANK NOW. Visual changes: the Current | Optimal switch under each team name on the Matchup card; the draft card’s change now reads like “▲1.6 avg”; one more row in the Tank table.', 'Small fixes.'],
-  ['1.16.1', 'Fix: playoff odds, draft odds and the Playoff Prediction Engine assume every team plays its best healthy lineup this week again (like before v1.16.0). v1.16.0 used the lineups currently set in CBS, and early in the week (bye-week players still in lineups) that made some games lopsided — Dallas showed 99% to make the playoffs instead of about 91%. Use Strategic Tank to see a team throwing a game. Scoreboard and Matchup win % still use the real CBS lineups. No visual changes.', 'Fix: more accurate odds early in the week. No visual changes.'],
-  ['1.16.0', 'Playoff Prediction Engine (admin): new “Playoff Prediction Engine” button on Standings (between the Online card and the AFC card) opens a new page. The engine now plays the whole playoffs in each of the 20,000 seasons (Week 13 Loser Bowl as a real game, Week 14 wild card 4 vs 5, re-seeded Week 15 semis, Week 16 division final, Week 17 Super Bowl; the bracket stays in the division). The page shows title chance, draft pick, playoffs / bye / projected seed / Loser Bowl, the road to the title, projected seeds, the projected bracket with win % per game, and every team’s odds. A team drop-down (top right) shows any team without changing yours. Strategic Tank re-runs everything with that team losing its next game, shows every change, and says TANK NOW (green) or DON’T TANK (red). Also: playoff odds now use this week’s real CBS lineups (same as draft odds), the Loser Bowl is a real game in the draft odds (was 50/50), the “Most likely” line is gone from the draft pick tile (the bold row + blue % show it), and Admin turns on and off in Settings without re-typing the code once it’s been entered on that phone. Visual changes: new pill button on Standings; new page; draft tile one line shorter. Phones without the code see the button with a lock and get a “Locked” sheet.', 'New on Standings: a Playoff Prediction Engine button (admin only — other phones see a lock). Admin turns on and off in Settings without re-typing the code.'],
-  ['1.15.0', 'Draft pick projections (Advanced Draft Order Prediction Engine): each simulated season now also works out the draft order (league rule 4.C: the two 6th-place teams play the Week 13 Loser Bowl for picks 1-2, picks 3-10 go fewest wins first, division winners pick 11-12; playoffs don’t matter). It uses this week’s real CBS lineups, so a lineup change moves it live. New on screen: a 4th Home box “Draft Pick” with the most likely pick and its odds; a DRAFT # column after PLAYOFF % in Standings; in a team’s drop-down, “Proj. Draft Pick” (most likely pick in the middle with the pick above and below and their odds) replaces Differential. To fit: the Standings column headers are slightly smaller (they wrap to two lines on small Androids), the columns are a little narrower, and the drop-down arrow moved left under the team name. The Notice has a new first line. Non-admin phones see locks.', 'Advanced Draft Order Prediction Engine added. Disabled for all non-Dallas owners unless league rules are updated.'],
-  ['1.14.0', 'Admin lock: a one-time Notice slides up once per phone (its Enter Code / Close buttons appear after 5 seconds). Settings has a new Admin row; the code is entered once and the phone stays unlocked. Phones without the code: no player projections (player rows and the tap-open panel), no projected team scores (Scoreboard cards and the Matchup screen), and playoff odds show a gray lock on the Home card and in the Standings column. Live scores, matchups, the win bar with its %, yards-to-next-tier and the TOUCHDOWN / RED ZONE pills stay. Phones with the code look exactly like before.', 'All advanced computer modeling, Data/Team Analysis, advanced playoff projections and advanced machine learning player/matchup projections are disabled for all non-Dallas owners unless league rules are updated.'],
+  ['1.21.0', 'Playoff Prediction Engine redesign. The page now uses every team’s best healthy lineup (players whose game has started keep their real CBS spot and points), so it updates live as scores come in. New top section: your team banner, Title chance with Reach Super Bowl, a Draft pick card with your 4 most likely picks and the average pick, and Playoffs / Bye / Proj. seed / Loser Bowl. Road to the title, Projected seeds (one card, both divisions, color seed dots: green bye, blue wild card, orange Loser Bowl) and All teams are cleaner. The bracket (marked Projected, like the Loser Bowl) is one card that meets at a gold Super Bowl in the middle, with logos, byes shown by name, and every % = the chance to win that game. All teams and the Standings DRAFT # column now show the projected draft order (each team gets its own #1–#12; your own pick odds stay on Home and in the team drop-down). Live players’ moving outline on Matchup is about 10% brighter, and the Super Bowl card has the same moving light in gold. Visual changes: the whole Playoff Engine page; bigger Standings button and team chip on that page; brighter live-player outline.'],
+  ['1.20.0', 'Draft order fixed to the league rule: the two 1st-place teams pick 11–12, the two 2nd-place teams pick 9–10, the 3rd–5th place teams pick 3–8 by record, the Loser Bowl decides 1–2. Ties: same division = division record then points; different divisions = points. Before, 2nd-place teams were mixed into picks 3–10 by record. Draft odds update. No visual changes.'],
+  ['1.19.0', 'Playoff Prediction Engine: the projected bracket now comes from the simulations — each spot shows the team that gets there most often. Before, every game just advanced the team with the higher projection, even by a tenth of a point (that put Green Bay in the Super Bowl while Indianapolis gets there far more often).'],
+  ['1.18.0', 'Playoff Prediction Engine: new team drop-down (top right) with each team’s logo and name (YOU tag on your team); the team you’re looking at is highlighted.'],
+  ['1.17.0', 'Matchup: new Current | Optimal switch under each team, like FantasyPros. It always starts on Current. Optimal puts that team’s best healthy lineup in (by our projections; players whose game has started stay where CBS has them; Out / IR / bye players never start): the bench player moves up into the starter row, the starter moves down to the bench, and the projected score and win % update.'],
+  ['1.16.1', 'Fix: playoff odds, draft odds and the Playoff Prediction Engine assume every team plays its best healthy lineup this week again. Early in the week (bye-week players still in lineups) the lineups set in CBS made some games lopsided. Scoreboard and Matchup win % still use the real CBS lineups. No visual changes.'],
+  ['1.16.0', 'Playoff Prediction Engine: new button on Standings opens a new page. The engine now plays the whole playoffs in every simulated season (Week 13 Loser Bowl, Week 14 wild card 4 vs 5, re-seeded Week 15 semis, Week 16 division final, Week 17 Super Bowl). The page shows title chance, draft pick, playoffs / bye / projected seed / Loser Bowl, the road to the title, projected seeds, the projected bracket and every team’s odds. A team drop-down (top right) shows any team without changing yours. The Loser Bowl is a real game in the draft odds (was 50/50).'],
+  ['1.15.0', 'Draft pick projections: each simulated season now also works out the draft order (playoffs don’t matter). New on screen: a 4th Home box “Draft Pick” with the most likely pick and its odds; a DRAFT # column after PLAYOFF % in Standings; in a team’s drop-down, “Proj. Draft Pick” (most likely pick in the middle with the pick above and below and their odds) replaces Differential.'],
   ['1.13.0', 'TOUCHDOWN pill fixed: it now shows for 3 minutes from the moment the touchdown actually happened (ESPN’s play time), not from when your phone first noticed it. Before, if the app was in the background or your phone was locked when a TD was scored, coming back gave it a fresh 3 minutes (Goff’s TD at 10:15 was still showing at 10:38). Opening the app a minute after a TD still shows the pill for the rest of the 3 minutes. Look change: the red injury letters (Q, D, O, IR, SUS) now pulse only down to 75% brightness instead of 50%, so they stay easier to read. Nothing else looks different.'],
   ['1.12.0', 'New home-screen icon: a gold football with a blue live pulse line through it, and FANTASY in white italic letters with a blue underline across the top (replaces the old blue “GT”). The app’s name is unchanged. The app now uses a real install file (manifest) with proper PNG icons, so Android Chrome can install it as a real app, which should remove the little Chrome logo from the icon. To see the new icon: iPhone — delete the old icon, then in Safari tap Share → Add to Home Screen. Android — remove the old icon, then in Chrome tap ⋮ → Install app. Your saved team and settings are not affected. Nothing inside the app looks different.'],
   ['1.11.0', 'Injury letters from CBS: a bold red letter now shows next to a player, just like on CBS: Q (questionable), D (doubtful), O (out), IR (injured reserve), SUS (suspended). It slowly fades in and out. On the left team it sits after the NFL team, on the right team before the name. When CBS lists a player Out (or IR / suspended) for this week, his projection drops to 0, the win % is redone right away, and his name, team and logo are dimmed (the letter stays bright). This updates within about a minute or two of CBS posting it, instead of waiting for the next projections run. Tap a player before kickoff to see an INJURY note (what\u2019s hurt, CBS\u2019s status and expected return). The old \u201c% to play\u201d line is gone. If a long name plus the letter doesn\u2019t fit, the name is shortened with \u201c\u2026\u201d. Projections also refresh more often now (after injury reports Wed\u2013Fri, three times Saturday, and after the inactive lists on game days).'],
@@ -1699,6 +1845,9 @@ function mBegun(A, la, B, lb){ return begun(A, la) || begun(B, lb); }
    win bar (with its percent) stay. The engine still runs on every phone. Only a scrambled code is kept here. */
 const ADM_KEY = '98e8bf72b79761fc524508f1f7fb7b544081abbf34206beb60dd9077a0f3aa91';
 let ADMIN = getLocal('adm') === ADM_KEY;
+// v1.21.0 (Wes, Nov 20): every lock is off — projections, playoff odds, draft odds and the Playoff Engine are for
+// everyone. ADMIN (code in Settings) is kept for the admin version of the Playoff Engine (Phase 2).
+const ADV = true;
 const LOCKI = '<span class="lockic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span>';
 let PJB = false;   // v1.9.0: matchup not begun yet → player projections bright
 let DIMF = false;  // v1.10.0: this matchup still has players left → finished players' name + logo dimmed
@@ -1842,6 +1991,7 @@ function render(){
   else html = homeView();
   morph(v, html);
   if(S.view === 'match'){ fitPills(); lvFrames(); ijSync(); }
+  if(S.view === 'ppe') pqLines();
   lightTabs(S.view === 'ppe' ? 'standings' : S.view);
   paintRecBadge();
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
@@ -1952,7 +2102,7 @@ function card(mt, mine, LM){
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
   const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
   const on = mBegun(A, la, B, lb);
-  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done && ADMIN ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
+  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done && ADV ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
     (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '<span></span><span class="tag">' + left + ' players left</span>' :
@@ -1971,9 +2121,9 @@ function homeView(){
     h += '<button class="lasec" id="laBtn">League Analysis<span>›</span></button><section class="la' + (dw ? ' dw' : '') + '" data-key="la">' + (dw ? DWB : '') + '<div class="lagrid">' +
       '<div class="lacell"><small>Division</small><b>' + (d ? ordSup(d.rank) : '–') + '</b><em>' + esc(d ? d.div : '') + '</em></div><hr>' +
       '<div class="lacell"><small>League</small><b>' + (lr ? ordSup(lr.rank) : '–') + '</b><em>of ' + (lr ? lr.of : 12) + '</em></div><hr>' +
-      (!ADMIN ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? 'top 5 in div' : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
+      (!ADV ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? 'top 5 in div' : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
       // v1.15.0 (Wes): 4th box — most likely draft pick and its odds
-      (function(){ const x = engineReady() ? dpOf(S.team) : null; return '<hr><div class="lacell dpc"><small>Draft Pick</small><b>' + (!ADMIN ? LOCKI : x ? (x.ml + 1) : '–') + '</b><em>' + (ADMIN && x ? '(' + dpPct(x.d[x.ml]) + ')' : '&nbsp;') + '</em></div>'; })() +
+      (function(){ const x = engineReady() ? dpOf(S.team) : null; return '<hr><div class="lacell dpc"><small>Draft Pick</small><b>' + (!ADV ? LOCKI : x ? (x.ml + 1) : '–') + '</b><em>' + (ADV && x ? '(' + dpPct(x.d[x.ml]) + ')' : '&nbsp;') + '</em></div>'; })() +
       '</div></section>';
   }
   if(!LM){ return h + '<div class="empty">Getting this week’s lineups…</div>'; }
@@ -2002,7 +2152,7 @@ function side(p, L, r){
   const show = (st === 'pre' || st === 'bye' || L.pts == null) ? '–' : L.pts;
   const zero = !(L.pts > 0) ? ' zero' : '';
   const gone = cbsGone(p, L), ci = cbsInj(p);
-  const ep0 = ADMIN && (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && gone ? [0, 0, 0] : ep0;
+  const ep0 = ADV && (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && gone ? [0, 0, 0] : ep0;
   return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + (st === 'post' && DIMF ? ' fn' : '') + (gone ? ' io' : '') + '"' + (st === 'in' ? ' data-pos="' + esc(p.pos) + '"' : '') + '>' +
     '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj' + (PJB ? ' pjb' : '') + '">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
     pnmHtml(p, ci, r) +
@@ -2051,19 +2201,20 @@ function pv(v, c){ return '<b class="pv ' + (c || '') + '">' + v + '</b>'; }
    Every light runs on one shared clock (startTime 0), so they all move together and a re-render never makes one jump.
    Right-side frames are mirrored, so in a row where both players are live the two lights meet under the square.
    iPhone "Reduce Motion": outline only. morph() skips these nodes (data-keep); lvFrames() adds/removes/resizes them. */
-const LVF = { lap: 6000, base: 0.30, band: 0.45, glow: 0.144, r: 11 };
-const LVC = { QB: [157,108,255], RB: [34,211,238], WR: [46,230,128], TE: [255,72,110], K: [255,145,40], DST: [176,190,208] };
+const LVF = { lap: 6000, base: 0.33, band: 0.45, glow: 0.158, r: 11 };   // v1.21.0 (Wes): 10% brighter
+const LVC = { SB: [244,196,61], QB: [157,108,255], RB: [34,211,238], WR: [46,230,128], TE: [255,72,110], K: [255,145,40], DST: [176,190,208] };
 let lvRM = false;
 try{ const mq = window.matchMedia('(prefers-reduced-motion: reduce)'); lvRM = mq.matches; if(mq.addEventListener) mq.addEventListener('change', function(e){ lvRM = e.matches; lvFrames(true); }); }catch(e){}
 function lvMix(a, b, t){ return a.map(function(v, i){ return Math.round(v + (b[i] - v) * t); }); }
 function lvRgba(c, a){ return 'rgba(' + c.join(',') + ',' + a + ')'; }
-function lvRect(svg, w, h, sw){
+function lvRect(svg, w, h, sw, r){
   const e = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   e.setAttribute('x', sw / 2); e.setAttribute('y', sw / 2); e.setAttribute('width', Math.max(0, w - sw)); e.setAttribute('height', Math.max(0, h - sw));
-  e.setAttribute('rx', LVF.r); e.setAttribute('fill', 'none'); e.setAttribute('stroke-width', sw);
+  e.setAttribute('rx', r || LVF.r); e.setAttribute('fill', 'none'); e.setAttribute('stroke-width', sw);
   svg.appendChild(e); return e;
 }
-function lvBuild(fr, pos, light){
+function lvBuild(fr, pos, light, rr){
+  rr = rr || LVF.r;   // v1.21.0: corner radius (the Super Bowl card is rounder)
   while(fr.firstChild) fr.removeChild(fr.firstChild);
   const b = fr.getBoundingClientRect(), w = b.width, h = b.height;
   fr.setAttribute('data-wh', Math.round(w) + 'x' + Math.round(h));
@@ -2071,12 +2222,12 @@ function lvBuild(fr, pos, light){
   const c = LVC[pos] || [61,220,132];
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h); svg.setAttribute('aria-hidden', 'true'); fr.appendChild(svg);
-  lvRect(svg, w, h, 1).setAttribute('stroke', lvRgba(c, LVF.base));
+  lvRect(svg, w, h, 1, rr).setAttribute('stroke', lvRgba(c, LVF.base));
   if(!light || lvRM || !svg.animate) return;
   const col = lvRgba(lvMix(lvMix(c, [255,255,255], 0.22), [255,255,255], 0.25), LVF.glow);
-  const P = 2 * (w - 1 - 2 * (LVF.r - 0.5)) + 2 * (h - 1 - 2 * (LVF.r - 0.5)) + 2 * Math.PI * (LVF.r - 0.5);   // the rect's own perimeter
+  const P = 2 * (w - 1 - 2 * (rr - 0.5)) + 2 * (h - 1 - 2 * (rr - 0.5)) + 2 * Math.PI * (rr - 0.5);   // the rect's own perimeter
   for(let k = 1; k <= 8; k++){   // 8 overlapping dashes centered on one point = a band that is brightest in the middle
-    const f = LVF.band * k / 8, L = P * f, start = P * (LVF.band - f) / 2, e = lvRect(svg, w, h, 1);
+    const f = LVF.band * k / 8, L = P * f, start = P * (LVF.band - f) / 2, e = lvRect(svg, w, h, 1, rr);
     e.setAttribute('stroke', col); e.setAttribute('stroke-dasharray', L + ' ' + (P - L));
     try{
       const a = e.animate([{ strokeDashoffset: (-start) + 'px' }, { strokeDashoffset: (-start - P) + 'px' }], { duration: LVF.lap, iterations: Infinity, easing: 'linear' });
@@ -2106,7 +2257,7 @@ function lvFrames(force){
     });
   });
 }
-try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ lvFrames(); }); }catch(e){}
+try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ lvFrames(); pqLines(); }); }catch(e){}
 
 /* ---------- v1.10.0 (Wes, Nov 12): tap-open bucket breakdown ----------
    Every scoring bucket is a cell showing the points it pays, with what it takes underneath. Yards: buckets already passed
@@ -2174,12 +2325,12 @@ function dcol(p, L){
   let h = '';
   if(L.state === 'bye') return '<div class="dcol"><div class="grp"><div class="dl"><span>' + (p.ir ? 'INJURED RESERVE' : 'BYE WEEK') + '</span>' + pv(0) + '</div><div class="dsub"><span>No game this week</span></div></div>' + injBlock(p) + '</div>';
   if(L.state === 'pre' || !L.sc){
-    const ep0 = ADMIN && isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && cbsGone(p, L) ? [0, 0, 0] : ep0, r = isCurrentWeek() ? projFor(p) : null, ib = injBlock(p);
+    const ep0 = ADV && isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && cbsGone(p, L) ? [0, 0, 0] : ep0, r = isCurrentWeek() ? projFor(p) : null, ib = injBlock(p);
     let x = '<div class="grp"><div class="dl"><span>' + (ep ? 'PROJECTED' : 'NOT STARTED') + '</span>' + pv(ep ? ep[0].toFixed(1) : '–', ep ? 'proj' : '') + '</div>' +
       (ep ? '<div class="dsub"><span>Floor ' + Math.round(ep[1]) + ' · Ceiling ' + Math.round(ep[2]) + '</span></div>' : '') + '<div class="dsub"><span>Kicks off ' + esc(L.kick) + '</span></div></div>';
     // v1.11.0 (Wes): CBS's INJURY block when CBS lists him; no "% to play" anywhere
     x += ib;
-    const extra = [ib ? '' : (r && r.inj) || ''].concat(ADMIN ? ((r && r.f) || []).concat(r && r.src ? ['Source: ' + r.src] : []) : []).filter(Boolean);
+    const extra = [ib ? '' : (r && r.inj) || ''].concat(ADV ? ((r && r.f) || []).concat(r && r.src ? ['Source: ' + r.src] : []) : []).filter(Boolean);
     if(extra.length) x += '<div class="grp"><div class="dsub"><span class="cbsl">' + esc(extra.join(' · ')) + '</span></div></div>';
     return '<div class="dcol">' + x + '</div>';
   }
@@ -2273,7 +2424,7 @@ function matchView(){
   let la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
   // v1.17.0: Current / Optimal (starts on Current for every game; admin, this week, game not final)
   if(!OPT.v || OPT.v.k !== mt.key) OPT.v = { k: mt.key, ids: {} };
-  const canOpt = ADMIN && isCurrentWeek() && !!B && !!(ENG.res && ENG.res.m && ENG.res.m[mt.key]);
+  const canOpt = ADV && isCurrentWeek() && !!B && !!(ENG.res && ENG.res.m && ENG.res.m[mt.key]);
   if(canOpt && optOn(A.id)){ const o = optSide(A, la); A = o.T; la = o.L; }
   if(canOpt && optOn(B.id)){ const o = optSide(B, lb); B = o.T; lb = o.L; }
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
@@ -2298,7 +2449,7 @@ function matchView(){
   const ON = mBegun(A, la, B, lb); PJB = isCurrentWeek() && !ON; DIMF = left > 0;
   h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
-    (E && ADMIN && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
+    (E && ADV && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
     '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : '') + '</div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : '') + '</div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
@@ -2529,11 +2680,21 @@ function dpOf(id){
 }
 function dpPct(v){ const r = v * 100; return r >= 99.5 && r < 100 ? '>99%' : r > 0 && r < 0.5 ? '<1%' : Math.round(r) + '%'; }
 function dpCell(id){
-  if(!ADMIN) return '<span class="stdp lk" aria-label="Locked">' + LOCKI + '</span>';
-  const x = dpOf(id); return x ? '<span class="stdp" aria-label="Projected draft pick ' + (x.ml + 1) + '">' + (x.ml + 1) + '</span>' : '<span class="stdp na">—</span>';
+  if(!ADV) return '<span class="stdp lk" aria-label="Locked">' + LOCKI + '</span>';
+  const n = dpRank()[id]; return n ? '<span class="stdp" aria-label="Projected draft order ' + n + '">' + n + '</span>' : '<span class="stdp na">—</span>';
+}
+// v1.21.0 (Wes, Nov 20): league tables (Standings DRAFT #, Playoff Engine All teams) show the PROJECTED DRAFT ORDER:
+// every team ranked by average pick, a unique #1-#12. One team's own view (Home box, drop-down tile, heads-up card)
+// keeps that team's most likely picks with their odds.
+let dpRankMemo = { src: null, r: {} };
+function dpRank(){
+  const dp = ENG.res && ((ENG.res.pp && ENG.res.pp.dp) || ENG.res.dp); if(!dp) return {};
+  if(dpRankMemo.src === dp) return dpRankMemo.r;
+  const r = {}; Object.keys(dp).sort(function(a, b){ return (ppEP(dp[a]) - ppEP(dp[b])) || (a < b ? -1 : 1); }).forEach(function(id, i){ r[id] = i + 1; });
+  dpRankMemo = { src: dp, r: r }; return r;
 }
 function dpTile(id){
-  if(!ADMIN) return '<div class="stt dpt"><small>Proj. Draft Pick</small><div class="dplk">' + LOCKI + '</div></div>';
+  if(!ADV) return '<div class="stt dpt"><small>Proj. Draft Pick</small><div class="dplk">' + LOCKI + '</div></div>';
   const x = dpOf(id); if(!x) return '<div class="stt dpt"><small>Proj. Draft Pick</small><b>—</b></div>';
   const n = x.d.length, a = Math.max(0, Math.min(n - 3, x.ml - 1));
   let h = '';
@@ -2541,7 +2702,7 @@ function dpTile(id){
   return '<div class="stt dpt"><small>Proj. Draft Pick</small>' + h + '</div>';
 }
 function poCell(id){
-  if(!ADMIN) return '<span class="stpo lk" aria-label="Locked">' + LOCKI + '</span>';
+  if(!ADV) return '<span class="stpo lk" aria-label="Locked">' + LOCKI + '</span>';
   const po = ENG.res && ENG.res.po ? ENG.res.po[id] : null;
   if(po == null) return '<span class="stpo na">—</span>';
   const v = po * 100;
@@ -2651,10 +2812,9 @@ function standingsView(){
 const PPE = { team: null, on: false, id: 0, busy: null, prog: 0, res: {}, y: 0 };
 const PPE_IC = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>';
 function ppeBtn(){
-  return '<button class="ppebtn" id="ppeBtn" data-key="ppebtn">' + PPE_IC + '<span>Playoff Prediction Engine</span>' + (ADMIN ? '<i class="pbc" aria-hidden="true">›</i>' : '<i class="pbl">' + LOCKI + '</i>') + '</button>';
+  return '<button class="ppebtn" id="ppeBtn" data-key="ppebtn">' + PPE_IC + '<span>Playoff Prediction Engine</span>' + '<i class="pbc" aria-hidden="true">›</i>' + '</button>';
 }
 function ppeOpen(){
-  if(!ADMIN){ openOverlay($('#ppeLock')); return; }
   PPE.y = window.scrollY || 0; PPE.team = S.team; PPE.on = false; PPE.dd = false;
   S.view = 'ppe'; try{ history.pushState({ v: 'ppe' }, ''); }catch(e){}
   render(); window.scrollTo(0, 0); saveView(); ppeAsk();
@@ -2664,8 +2824,9 @@ function ppeTeam(){ return PPE.team || S.team; }
 // v1.18.0: the selected team first (refresh every 60 s with new engine runs), then every other team for the drop-down's
 // TANK pills (every 5 min), one at a time so live scores never wait long
 function ppeNeed(id, age){ const h = PPE.res[id]; if(!h) return true; if(h.run === ENG.res.id) return false; return Date.now() - h.at > age; }
+const PPE_TANK = false;   // v1.21.0: tank runs are off until the admin version (Phase 2)
 function ppeAsk(force){
-  if(S.view !== 'ppe' || !ENG.worker || !ENG.res || !ENG.res.pp || ENG.res.snap) return;
+  if(!PPE_TANK || S.view !== 'ppe' || !ENG.worker || !ENG.res || !ENG.res.pp || ENG.res.snap) return;
   if(PPE.busy){ PPE.pend = true; return; }
   const sel = ppeTeam(); let t = null;
   if(sel && (force || ppeNeed(sel, 60000))) t = sel;
@@ -2771,101 +2932,119 @@ function ppWhy(B, T, t, TM, nx, opp, rc){
   const v = '<div class="pwsec vd"><h4>The call</h4><p class="pwn"><b>' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '.</b> ' + esc(rc.why) + ' Rules, in order: a free tank (no real cost) → tank; tanking raises title odds → tank; costs ≤1 pt of title odds for ≥2 picks → tank; title odds under 3% → take the better pick; otherwise → don’t.</p></div>';
   return '<div class="ppwhy" data-key="ppwhy">' + sec('This week', w1) + sec('Standings', w2) + sec('Playoff path', w3) + sec('Draft', w4) + ripH + v + '</div>';
 }
+// v1.21.0 (Wes, Nov 20): Playoff Engine redesign — one page for every owner. Every team plays its best healthy lineup
+// (players whose game has started keep their real CBS spot and points), so the numbers move live on game day.
+// Heads-up card, road to the title, projected seeds, one bracket that meets at the Super Bowl (every % in a game box =
+// chance to WIN that game, the two sides add up to 100), all teams with a projected draft order (unique #1-#12 by
+// average pick). The tank tools come back in the admin version (Phase 2).
+const PQI = {
+  trophy: function(s, c){ return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="' + (c || '#f4c43d') + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M9 20h6M10 17h4"/></svg>'; },
+  crown: function(s){ return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="#f4c43d" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.8 10H4.8z"/><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"/></svg>'; },
+  down: function(s){ return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 12l6 6 6-6"/></svg>'; },
+  bracket: function(s){ return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="#4f8dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h5v6h4M3 17h5v-6M12 11h4M16 8v6M16 11h5"/></svg>'; },
+  list: function(s){ return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="#4f8dff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg>'; }
+};
+function pqDc(id){ return /NFC/i.test(id || '') ? 'nfc' : 'afc'; }
+function pqPc(p){ return Math.max(1, Math.min(99, Math.round(p * 100))); }   // game win %, the other side = 100 minus this
+function pqHead(k, ic, title, sub, wk){ return '<div class="pqhh ' + k + '"><span class="ic">' + ic + '</span><div class="hx"><div class="tt">' + title + '</div><div class="st">' + sub + '</div></div>' + (wk ? '<span class="wk">' + wk + '</span>' : '') + '</div>'; }
 function ppeView(){
   const TM = ppeTeams(), t = ppeTeam(), me = TM.by[t];
-  const B = ENG.res && ENG.res.pp;
-  // v1.18.0 (Wes): our own drop-down — logo, name, YOU tag, and a TANK pill per team (green = recommended this week,
-  // red with an X = not, gray = still working); the selected team is highlighted green
-  const pill = function(id){ const R = PPE.res[id], rc = B && R ? ppRec(B, R.r, id) : null;
-    return rc ? '<span class="tkpl ' + (rc.yes ? 'yes' : 'no') + '" aria-label="' + (rc.yes ? 'Tank recommended' : 'Tank not recommended') + '">TANK</span>' : '<span class="tkpl wait" aria-label="Working">TANK</span>'; };
+  const D = ENG.res && ENG.res.pp;
   const ddm = !PPE.dd ? '' : '<div class="ppddbg" id="ppeDdBg" data-key="ppddbg"></div><div class="ppdd" role="listbox" aria-label="Show team" data-key="ppdd">' + TM.divs.map(function(d){
     return '<div class="ppddh">' + esc(d.id) + '</div>' + d.ids.map(function(id){ const x = TM.by[id];
-      return '<button class="ppddr' + (id === t ? ' sel' : '') + '" role="option" aria-selected="' + (id === t) + '" data-pt="' + esc(id) + '">' + badge(x.T) + '<span class="ddn"><span class="ddnm">' + esc(x.name) + '</span>' + (id === S.team ? '<i class="ddme">YOU</i>' : '') + '</span>' + pill(id) + '</button>'; }).join(''); }).join('') + '</div>';
-  let h = '<div class="ppe">' +
-    '<div class="mhead"><button class="back" id="ppeBack">‹ Standings</button><span class="mtitle">Playoff Engine</span>' +
+      return '<button class="ppddr' + (id === t ? ' sel' : '') + '" role="option" aria-selected="' + (id === t) + '" data-pt="' + esc(id) + '">' + badge(x.T) + '<span class="ddn"><span class="ddnm">' + esc(x.name) + '</span>' + (id === S.team ? '<i class="ddme">YOU</i>' : '') + '</span></button>'; }).join(''); }).join('') + '</div>';
+  let h = '<div class="ppe pq">' +
+    '<div class="mhead pqtop"><button class="back" id="ppeBack">‹ Standings</button><span class="mtitle pqtt">Playoff Engine</span>' +
     '<button class="ppsel' + (PPE.dd ? ' open' : '') + '" id="ppeSelBtn" aria-haspopup="listbox" aria-expanded="' + !!PPE.dd + '" data-key="ppsel">' + (me ? badge(me.T) + '<span>' + esc(me.T.code) + '</span>' : '<span>Team</span>') + ICON.chev + '</button></div>' + ddm;
-  if(!B || !me || !B.po || B.po[t] == null){ return h + '<div class="empty">' + (B ? 'No playoff data for this team yet.' : 'Prediction Engine is calculating…') + '</div></div>'; }
-  const TK = PPE.res[t] && PPE.res[t].r, on = PPE.on && !!TK, D = on ? TK : B, busy = PPE.busy === t || (!TK && !!ENG.res && !ENG.res.snap);
-  const dr = function(cur, base, up, unit){ return on ? ppDelta(cur, base, up, unit) : ''; };
-  const nx = B.nx || {}, opp = nx.opp && nx.opp[t] && TM.by[nx.opp[t]];
-  const divIdx = TM.divs.findIndex(function(d){ return d.ids.indexOf(t) >= 0; }), rk = divIdx >= 0 ? TM.divs[divIdx].ids.indexOf(t) + 1 : 0;
+  if(!D || !me || !D.po || D.po[t] == null){ return h + '<div class="empty">' + (D ? 'No playoff data for this team yet.' : 'Prediction Engine is calculating…') + '</div></div>'; }
   const ord = ['', '1st', '2nd', '3rd', '4th', '5th', '6th'];
-  h += '<div class="ppsub">' + esc(me.name) + ' · ' + esc(me.rec) + (rk ? ' · ' + esc(me.div) + ' ' + ord[rk] : '') + (nx.w ? ' · next: <b>Week ' + nx.w + (opp ? ' vs ' + esc(opp.name) : nx.w === RANK_WEEK ? ' (position night)' : '') + '</b>' : '') + '</div>';
-  // heads-up: title card + draft card
-  const dd = D.dp[t], ml = ppML(dd), n = dd.length, a0 = Math.max(0, Math.min(n - 3, ml - 1));
-  let dpr = ''; for(let k = a0; k < Math.min(n, a0 + 3); k++) dpr += '<div class="dpl' + (k === ml ? ' ml' : '') + '"><span>Pick ' + (k + 1) + '</span><span>' + dpPct(dd[k]) + '</span></div>';
-  h += '<div class="pphud" data-key="pphud"><div class="pphc pptc"><small>Title chance</small><b>' + ppP(D.ti[t], true).replace('%', '<sup>%</sup>') + '</b>' + dr(D.ti[t], B.ti[t], true) +
-    '<em>Reach Super Bowl <b>' + ppP(D.sb[t], true) + '</b></em></div>' +
-    '<div class="pphc ppdc"><small><span>Draft pick</span>' + (on ? ppDelta(ppEP(D.dp[t]), ppEP(B.dp[t]), true, 'apick').replace('</i>', ' avg</i>') : '') + '</small>' + dpr + '</div></div>';   // v1.17.0: change = average pick
-  const sd = D.seed[t] || [], sm = Math.max(0, ppSeedAt(D, TM, t)), bsm = Math.max(0, ppSeedAt(B, TM, t));   // same order as the seeds list + bracket
-  const cell = function(lab, val, extra){ return '<div class="lacell"><small>' + lab + '</small><b>' + val + '</b>' + (extra || '<em>&nbsp;</em>') + '</div>'; };
-  const pc = function(v){ return ppP(v).replace('%', '<sup>%</sup>'); };
-  h += '<section class="la ppla" data-key="ppla"><div class="lagrid">' + cell('Playoffs', pc(D.po[t]), dr(D.po[t], B.po[t], true)) + '<hr>' +
-    cell('Bye', pc(D.bye[t]), dr(D.bye[t], B.bye[t], true)) + '<hr>' +
-    cell('Proj. seed', '#' + (sm + 1), on && sm !== bsm ? '<i class="ppd ' + (sm > bsm ? 'r' : 'g') + '">' + (sm > bsm ? '▼' : '▲') + Math.abs(sm - bsm) + '</i>' : '<em>' + ppP(sd[sm]) + '</em>') + '<hr>' +
-    cell('Loser Bowl', pc(D.lb[t]), dr(D.lb[t], B.lb[t], null)) + '</div></section>';
-  // Strategic Tank
-  if(!nx.w){ h += '<section class="pptk" data-key="pptk"><div class="tl">Strategic Tank</div><div class="ts">No regular-season games left to tank.</div></section>'; }
-  else {
-    const tw = 'Week ' + nx.w + (opp ? ' vs ' + esc(opp.name) : '') + ' · ' + esc(me.name) + ' loses';
-    h += '<section class="pptk' + (PPE.on ? ' on' : '') + '" data-key="pptk"><div class="tkr"><div><div class="tl">Strategic Tank</div><div class="ts">' + tw + '</div></div>' +
-      '<button class="tkp' + (PPE.on ? ' on' : '') + '" id="ppeTank" role="switch" aria-checked="' + PPE.on + '" aria-label="Strategic Tank"><span class="kn"></span><span class="tx">' + (PPE.on ? 'ON' : 'OFF') + '</span></button></div>';
-    if(busy) h += '<div class="ppld" data-key="ppld"><div class="ldb" id="ppeLd"><i style="width:' + Math.round(PPE.prog * 100) + '%"></i></div><div class="ldt"><span>Simulating 20,000 seasons…</span><span id="ppeLdP">' + Math.round(PPE.prog * 100) + '%</span></div></div>';
-    else h += '<div class="ppld done" data-key="ppld"><div class="ldb"><i style="width:100%"></i></div><div class="ldt"><span>20,000 seasons each way</span><span>' + (ENG.at ? 'Updated ' + esc(new Date(ENG.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) : '') + '</span></div></div>';
-    const rc = ppRec(B, TK, t);
-    if(rc) h += '<div class="ppre ' + (rc.yes ? 'yes' : 'no') + '" data-key="ppre"><span class="rb">' + (rc.yes ? 'TANK NOW' : 'DON’T TANK') + '</span><span class="rt">' + esc(rc.why) + '</span></div>' +
-      (on ? ppWhy(B, TK, t, TM, nx, opp, rc) : '');   // v1.19.0 (Wes): the full breakdown only while Strategic Tank is ON
-    const rows = [['Playoffs', 'po', true], ['Bye (top 3)', 'bye', true], ['Title', 'ti', true], ['Avg. pick', 'ap', true], ['Most likely pick', 'pk', true], ['Loser Bowl', 'lb', null], ['Most likely seed', 'sd', false]];
-    h += '<div class="ppcm" data-key="ppcm"><div class="ch"><span></span><span class="' + (PPE.on ? '' : 'act') + '">Play to win</span><span class="' + (PPE.on ? 'act' : '') + '">Tank</span><span>Change</span></div>' + rows.map(function(r){
-      const val = function(X){ if(!X) return '…'; if(r[1] === 'ap') return ppEP(X.dp[t]).toFixed(1); if(r[1] === 'pk') return '#' + (ppML(X.dp[t]) + 1); if(r[1] === 'sd') return '#' + (ppSeedAt(X, TM, t) + 1); return ppP(X[r[1]][t], r[1] === 'ti'); };
-      let ch = '';
-      if(TK){ if(r[1] === 'ap') ch = ppDelta(ppEP(TK.dp[t]), ppEP(B.dp[t]), true, 'apick'); else if(r[1] === 'pk') ch = ppDelta(ppML(TK.dp[t]) + 1, ppML(B.dp[t]) + 1, true, 'pick');
-        else if(r[1] === 'sd'){ const x = ppSeedAt(TK, TM, t), y = ppSeedAt(B, TM, t); ch = x === y ? '<i class="ppd z">±0</i>' : '<i class="ppd ' + (x > y ? 'r' : 'g') + '">' + (x > y ? '▼' : '▲') + Math.abs(x - y) + '</i>'; }
-        else ch = ppDelta(TK[r[1]][t], B[r[1]][t], r[2]); }
-      return '<div class="cr"><span>' + r[0] + '</span><span class="' + (PPE.on ? '' : 'act') + '">' + val(B) + '</span><span class="' + (PPE.on ? 'act' : '') + '">' + val(TK) + '</span><span>' + ch + '</span></div>'; }).join('') + '</div></section>';
-  }
-  // road to the title
+  const divIdx = TM.divs.findIndex(function(d){ return d.ids.indexOf(t) >= 0; }), rk = divIdx >= 0 ? TM.divs[divIdx].ids.indexOf(t) + 1 : 0;
+  const nx = D.nx || {}, opp = nx.opp && nx.opp[t] && TM.by[nx.opp[t]];
+  const nxt = nx.w ? 'Next: <b>Wk ' + nx.w + (opp ? ' vs ' + esc(opp.name) : nx.w === RANK_WEEK ? ' · position night' : '') + '</b>' : '';
+  const sup = function(s){ return s.replace('%', '<sup>%</sup>'); };
+  // ---- team banner + heads-up card
+  h += '<div class="pqban" data-key="pqban">' + badge(me.T) + '<div class="pn"><b>' + esc(me.name) + '</b><span>' + esc(me.rec) + (rk ? ' · ' + esc(me.div) + ' ' + ord[rk] : '') + (nxt ? ' · ' + nxt : '') + '</span></div><span class="pl"><i></i>Best lineups</span></div>';
+  const dd = D.dp[t] || [], top = dd.map(function(v, k){ return [k, v]; }).sort(function(a, b){ return b[1] - a[1]; }).slice(0, 4).filter(function(x, i){ return i === 0 || x[1] >= 0.005; });
+  const tmax = top.length ? top[0][1] || 1 : 1;
+  const dpr = top.map(function(x, i){ return '<div class="pr' + (i === 0 ? ' ml' : '') + '"><span>Pick ' + (x[0] + 1) + '</span><span class="br"><i style="width:' + Math.max(4, x[1] / tmax * 100).toFixed(0) + '%"></i></span><span>' + dpPct(x[1]) + '</span></div>'; }).join('');
+  h += '<div class="pqhud" data-key="pqhud"><div class="pqtc"><small>' + PQI.trophy(14) + 'Title chance</small><b>' + sup(ppP(D.ti[t], true)) + '</b><em>Reach Super Bowl <b>' + ppP(D.sb[t], true) + '</b></em></div>' +
+    '<div class="pqdc"><div class="dh"><small>Draft pick</small><em>Avg <b>' + ppEP(dd).toFixed(1) + '</b></em></div>' + dpr + '</div></div>';
+  const sd = D.seed[t] || [], sm = Math.max(0, ppSeedAt(D, TM, t));
+  const cell = function(l, v, s){ return '<div><small>' + l + '</small><b>' + v + '</b><em>' + s + '</em></div>'; };
+  h += '<div class="pqstrip" data-key="pqstrip">' + cell('Playoffs', sup(ppP(D.po[t])), 'Top 5') + cell('Bye', sup(ppP(D.bye[t])), 'Top 3') + cell('Proj. seed', '#' + (sm + 1), ppP(sd[sm]) + ' chance') + cell('Loser Bowl', sup(ppP(D.lb[t])), '6th place') + '</div>';
+  // ---- road to the title
   const road = [['Make playoffs', 'po'], ['Reach division semis', 'semi'], ['Reach division final', 'fin'], ['Reach Super Bowl', 'sb'], ['Win title', 'ti']];
-  h += '<div class="ppsec">' + esc(me.name) + '’s road to the title' + (on ? ' <i class="pptg">TANK</i>' : '') + '</div><section class="ppcard pad" data-key="pproad">' + road.map(function(r){
-    const v = D[r[1]][t]; return '<div class="ppfn"><div class="fl"><span>' + r[0] + '</span><span><b>' + ppP(v, true) + '</b>' + dr(v, B[r[1]][t], true) + '</span></div><div class="fb"><i style="width:' + Math.max(1.5, Math.min(100, v * 100)).toFixed(1) + '%"></i></div></div>'; }).join('') + '</section>';
-  // projected seeds
+  h += '<section class="pqcard pqroad" data-key="pqroad"><div class="pqch">' + badge(me.T) + '<div><b>' + esc(me.name) + '’s road to the title</b><small>Odds to reach each round</small></div></div>' + road.map(function(r, i){
+    const v = D[r[1]][t], g = i === 4;
+    return '<div class="rr' + (g ? ' gold' : '') + '"><div class="rl"><span>' + (g ? PQI.trophy(15) : '') + r[0] + '</span><b>' + sup(ppP(v, true)) + '</b></div><i class="rb"><em style="width:' + Math.max(1.5, Math.min(100, v * 100)).toFixed(1) + '%"></em></i></div>'; }).join('') + '</section>';
+  // ---- projected seeds (one card, both divisions)
   const ordered = {}; TM.divs.forEach(function(d){ ordered[d.id] = ppSeeds(D, d.ids); });
   const prec = function(id){ const w = Math.round(D.w[id]); return w + '-' + Math.max(0, REG_END - w); };
-  h += '<div class="ppsec">Projected seeds <span class="sn">most likely finish · % = odds of that seed</span></div>';
-  TM.divs.forEach(function(d){
-    h += '<section class="ppcard" data-key="pps-' + esc(d.id) + '"><div class="ppsh"><b>' + esc(d.id) + '</b><span>Proj</span><span>Seed&nbsp;%</span><span></span></div>' + ordered[d.id].map(function(id, i){
-      const tg = i < 3 ? ['by', 'BYE'] : i < 5 ? ['wc', 'WC'] : ['lb', 'LOSER BOWL'];
-      return '<div class="ppsr' + (id === t ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' + badge(TM.by[id].T) + '<span class="nm">' + esc(TM.by[id].name) + '</span><span class="rc">' + prec(id) + '</span><span class="sp">' + ppP((D.seed[id] || [])[i]) + '</span><span class="pptag ' + tg[0] + '">' + tg[1] + '</span></div>'; }).join('') + '</section>';
-  });
-  // v1.19.0 (Wes, Nov 17): bracket from the SIMULATION, not "the higher projection always wins": each slot shows the team
-  // that gets there most often in the 20,000 seasons, and each team's % = its odds to reach the NEXT round (so a tank
-  // moves them; ▲/▼ = change vs playing to win). Was: favorite-wins-every-game path + head-to-head % (Green Bay in the
-  // Super Bowl on a 0.6-pt edge while Indy reached it far more often).
-  const adv = function(id, k, wide){ const v = D[k][id], b0 = B[k][id], dv = (v - b0) * 100;   // narrow boxes: arrow only (names stay readable)
-    const d = !on || Math.abs(dv) < 0.5 ? '' : wide ? ppDelta(v, b0, true).replace('class="ppd', 'class="ppd sm') : '<i class="ppd sm ' + (dv > 0 ? 'g' : 'r') + '">' + (dv > 0 ? '▲' : '▼') + '</i>';
-    return '<span class="gp">' + ppP(v) + d + '</span>'; };
-  const gm = function(a, sa, ka, b, sb, kb, wide){ const cd = function(id){ return wide ? esc(TM.by[id].name) : esc(TM.by[id].T.code); };
-    const ln = function(id, sd, k){ return '<div class="gt' + (id === t ? ' me' : '') + '"><span class="sd">' + sd + '</span>' + (wide ? badge(TM.by[id].T) : '') + '<span class="gn">' + cd(id) + '</span>' + adv(id, k, wide) + '</div>'; };
-    return '<div class="ppg' + (wide ? ' wide' : '') + '">' + ln(a, sa, ka) + ln(b, sb, kb) + '</div>'; };
-  const best = function(ids, k){ return ids.slice().sort(function(x, y){ return D[k][y] - D[k][x]; })[0]; };
-  h += '<div class="ppsec">Projected bracket <span class="sn">% = odds to reach the next round · 20,000 seasons</span></div>';
+  const zc = function(i){ return i < 3 ? 'by' : i < 5 ? 'wc' : 'lb'; };
+  h += '<section class="pqcard pqseeds" data-key="pqseeds"><div class="pqst"><b>Projected seeds</b><span>(% = odds of that seed)</span></div>' + TM.divs.map(function(d){
+    return '<div class="sh"><b class="' + pqDc(d.id) + '">' + esc(d.id) + '</b><span>Proj</span><span>Seed %</span></div>' + ordered[d.id].map(function(id, i){
+      return '<div class="sr' + (id === t ? ' pqme' : '') + '"><span class="rk z' + zc(i) + '">' + (i + 1) + '</span>' + badge(TM.by[id].T) + '<span class="nm">' + esc(TM.by[id].name) + '</span><span class="rc">' + prec(id) + '</span><span class="sp">' + ppP((D.seed[id] || [])[i]) + '</span></div>'; }).join(''); }).join('<div class="sep"></div>') +
+    '<div class="lg"><span><i class="zby"></i>Bye</span><span><i class="zwc"></i>Wild Card</span><span><i class="zlb"></i>Loser Bowl</span></div></section>';
+  // ---- bracket: Loser Bowl card, then one bracket that meets at the Super Bowl
   const dvs = TM.divs.filter(function(d){ return ordered[d.id].length >= 5; });
-  if(dvs.length === 2 && ordered[dvs[0].id][5] && ordered[dvs[1].id][5]){ const x = ordered[dvs[0].id][5], y = ordered[dvs[1].id][5];
-    h += '<section class="ppcard pad" data-key="pplb"><div class="rh">Week 13 · Loser Bowl · % = odds to win it (pick #1) · playoff teams sit out</div>' + gm(x, esc(dvs[0].id) + ' 6', 'lbw', y, esc(dvs[1].id) + ' 6', 'lbw', true) + '</section>'; }
-  const champ = {}, sdOf = function(sq, id){ const k = sq.indexOf(id); return k >= 0 ? '#' + (k + 1) : ''; };
-  dvs.forEach(function(d){ const sq = ordered[d.id], wc = best([sq[3], sq[4]], 'semi'), fa = best([sq[0], wc], 'fin'), fb = best([sq[1], sq[2]], 'fin'); champ[d.id] = best([fa, fb], 'sb');
-    h += '<section class="ppcard pad" data-key="ppb-' + esc(d.id) + '"><div class="ppbh">' + esc(d.id) + ' division playoffs</div><div class="ppbr">' +
-      '<div class="pbcol"><div class="rh">Wk 14 · Wild card</div>' + gm(sq[3], '#4', 'semi', sq[4], '#5', 'semi') + '<div class="byes">Byes: #1 #2 #3</div></div>' +
-      '<div class="pbcol"><div class="rh">Wk 15 · Semis</div>' + gm(sq[0], '#1', 'fin', wc, sdOf(sq, wc), 'fin') + gm(sq[1], '#2', 'fin', sq[2], '#3', 'fin') + '</div>' +
-      '<div class="pbcol"><div class="rh">Wk 16 · Final</div><div class="pvc">' + gm(fa, sdOf(sq, fa), 'sb', fb, sdOf(sq, fb), 'sb') + '</div></div></div></section>'; });
-  if(dvs.length === 2){ const x = champ[dvs[0].id], y = champ[dvs[1].id];
-    h += '<section class="ppcard pad" data-key="ppsb"><div class="rh">Week 17 · Super Bowl · % = odds to win the title</div>' + gm(x, esc(dvs[0].id), 'ti', y, esc(dvs[1].id), 'ti', true) + '</section>'; }
-  // all teams
-  const all = Object.keys(TM.by).filter(function(id){ return D.po[id] != null; }).sort(function(a, b){ return (D.ti[b] - D.ti[a]) || (D.po[b] - D.po[a]); });
-  h += '<div class="ppsec">All teams <span class="sn">20,000 simulated seasons' + (on ? ' · with the tank' : '') + '</span></div><section class="ppcard pptb" data-key="pptb"><div class="th"><span>Team</span><span>Playoff</span><span>Bye</span><span>Title</span><span>Pick</span></div>' +
-    all.map(function(id){ return '<div class="tr' + (id === t ? ' me' : '') + '"><span class="pptn">' + badge(TM.by[id].T) + esc(TM.by[id].name) + '</span><span>' + ppP(D.po[id]) + '</span><span>' + ppP(D.bye[id]) + '</span><span>' + ppP(D.ti[id], true) + '</span><span>#' + (ppML(D.dp[id]) + 1) + '</span></div>'; }).join('') + '</section>';
-  h += '<p class="note">This week: real CBS lineups · later weeks: our model, best healthy lineups · playoffs: best lineups (no tanking) · Loser Bowl winner = pick #1</p></div>';
-  return h;
+  if(dvs.length === 2){
+    const best = function(ids, k){ return ids.slice().sort(function(x, y){ return D[k][y] - D[k][x]; })[0]; };
+    const seedN = function(id){ let n = ''; dvs.forEach(function(d){ const k = ordered[d.id].indexOf(id); if(k >= 0) n = k + 1; }); return n; };
+    const nm = function(id){ return esc(TM.by[id].name); }, cd = function(id){ return esc(TM.by[id].T.code); };
+    const trow = function(id, p){ return '<div class="gt' + (p >= 50 ? ' fav' : '') + (id === t ? ' pqme' : '') + '"><span class="s">' + seedN(id) + '</span>' + badge(TM.by[id].T) + '<span class="c">' + cd(id) + '</span><b>' + p + '%</b></div>'; };
+    const game = function(gid, a, b, w, to){ const p = pqPc(ppWin(D, w, a, b)); return '<div class="pqg" id="' + gid + '" data-to="' + to + '">' + trow(a, p) + trow(b, 100 - p) + '</div>'; };
+    const vsT = function(id, lab, r){ return '<div class="vt' + (r ? ' r' : '') + (id === t ? ' pqme' : '') + '">' + badge(TM.by[id].T) + '<div><b>' + nm(id) + '</b><small>' + lab + '</small></div></div>'; };
+    const x6 = ordered[dvs[0].id][5], y6 = ordered[dvs[1].id][5];
+    if(x6 && y6){ const p = pqPc(ppWin(D, 13, x6, y6));
+      h += '<section class="pqcard pqlb" data-key="pqlb">' + pqHead('lb', PQI.down(17), 'Loser Bowl', '<b class="pj">(Projected)</b> · winner gets the #1 pick', 'Wk 13') +
+        '<div class="pqvs"><div class="tm">' + vsT(x6, esc(dvs[0].id) + ' 6th') + '<span class="vs">VS</span>' + vsT(y6, esc(dvs[1].id) + ' 6th', true) + '</div>' +
+        '<div class="vp"><span class="' + (p >= 50 ? '' : 'lo') + '">' + p + '%</span><span class="' + (p < 50 ? '' : 'lo') + '">' + (100 - p) + '%</span></div><div class="vb"><i style="width:' + p + '%"></i><i></i></div></div></section>'; }
+    const lane = function(d, P, dir){ const sq = ordered[d.id], wc = best([sq[3], sq[4]], 'semi'), fa = best([sq[0], wc], 'fin'), fb = best([sq[1], sq[2]], 'fin');
+      const bye = '<div class="pqbye"><small>Bye · seeds 1–3</small><div>' + sq.slice(0, 3).map(function(id){ return '<span' + (id === t ? ' class="pqme"' : '') + '>' + badge(TM.by[id].T) + cd(id) + '</span>'; }).join('') + '</div></div>';
+      const r1 = '<div class="pqrw"><span class="rt"><i>Wild card · Wk 14</i></span>' + bye + game(P + 'w', sq[3], sq[4], 14, P + 's1:' + dir) + '</div>';
+      const r2 = '<div class="pqrw"><span class="rt"><i>Semis · Wk 15</i></span>' + game(P + 's1', sq[0], wc, 15, P + 'f:' + dir) + game(P + 's2', sq[1], sq[2], 15, P + 'f:' + dir) + '</div>';
+      const r3 = '<div class="pqrw"><span class="rt"><i>' + esc(d.id) + ' final · Wk 16</i></span>' + game(P + 'f', fa, fb, 16, 'pqsb:' + dir) + '</div>';
+      return { rows: dir === 'd' ? r1 + r2 + r3 : r3 + r2 + r1, champ: best([fa, fb], 'sb') }; };
+    const A = lane(dvs[0], 'pqa', 'd'), N = lane(dvs[1], 'pqn', 'u'), sx = A.champ, sy = N.champ, sp = pqPc(ppWin(D, 17, sx, sy));
+    const sbt = function(id, p, lab){ return '<div class="st' + (p >= 50 ? '' : ' dim') + (id === t ? ' pqme' : '') + '">' + badge(TM.by[id].T) + '<b>' + nm(id) + '</b><small>' + lab + '</small><span>' + p + '%</span></div>'; };
+    h += '<section class="pqcard pqbk" data-key="pqbk">' + pqHead('bk', PQI.bracket(18), 'Playoff bracket', '<b class="pj">(Projected)</b> · % = chance to win', 'Wk 14–17') +
+      '<div class="pqwrap" data-wrap="1"><div class="pqlane">' +
+      '<div class="pqconf ' + pqDc(dvs[0].id) + '"><b>' + esc(dvs[0].id) + '</b></div>' + A.rows +
+      '<div class="pqsb" id="pqsb"><div class="h">' + PQI.crown(17) + '<span>Super Bowl</span>' + PQI.crown(17) + '</div><div class="h2">Week 17 · % = chance to win the title</div>' +
+      '<div class="tm">' + sbt(sx, sp, esc(dvs[0].id) + ' champ') + '<span class="vs">VS</span>' + sbt(sy, 100 - sp, esc(dvs[1].id) + ' champ') + '</div><div class="vb"><i style="width:' + sp + '%"></i><i></i></div></div>' +
+      N.rows + '<div class="pqconf ' + pqDc(dvs[1].id) + ' end"><b>' + esc(dvs[1].id) + '</b></div></div></div></section>';
+  }
+  // ---- all teams: Draft # = projected draft order (unique #1-#12 by average pick)
+  const all = Object.keys(TM.by).filter(function(id){ return D.po[id] != null; });
+  const dn = dpRank();   // same numbers as the Standings DRAFT # column
+  all.sort(function(a, b){ return (D.ti[b] - D.ti[a]) || (D.po[b] - D.po[a]); });
+  const tmx = Math.max.apply(null, all.map(function(id){ return D.ti[id] || 0; })) || 1;
+  h += '<section class="pqcard pqat" data-key="pqat">' + pqHead('at', PQI.list(17), 'All teams', 'Sorted by title chance', '') +
+    '<div class="th"><span>Team</span><span>Playoff</span><span>Bye</span><span class="gd">Title</span><span>Draft #</span></div>' + all.map(function(id){ const x = TM.by[id];
+      return '<div class="tr' + (id === t ? ' pqme' : '') + '">' + badge(x.T) + '<div class="nm"><b>' + esc(x.name) + '</b><small><i class="' + pqDc(x.div) + '">' + esc(x.div) + '</i> · ' + esc(x.rec) + '</small></div>' +
+        '<span class="v">' + ppP(D.po[id]) + '</span><span class="v">' + ppP(D.bye[id]) + '</span><span class="ti"><b>' + ppP(D.ti[id], true) + '</b><em><i style="width:' + Math.max(0, (D.ti[id] || 0) / tmx * 100).toFixed(0) + '%"></i></em></span><span class="pk">#' + dn[id] + '</span></div>'; }).join('') +
+    '<div class="ft">Draft # = projected draft order · every team plays its best healthy lineup</div></section>';
+  return h + '</div>';
+}
+// bracket lines: drawn after each render (positions come from the real layout), so they fit any phone width
+function pqLines(){
+  if(S.view !== 'ppe') return;
+  document.querySelectorAll('.pq [data-wrap]').forEach(function(w){
+    let s = w.querySelector(':scope > svg.pqcn');
+    if(!s){ s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'pqcn'); s.setAttribute('data-keep', ''); s.setAttribute('aria-hidden', 'true'); w.insertBefore(s, w.firstChild); }
+    const R = w.getBoundingClientRect(); let p = '';
+    w.querySelectorAll('[data-to]').forEach(function(a){ const m = a.getAttribute('data-to').split(':'), b = document.getElementById(m[0]); if(!b) return;
+      const A = a.getBoundingClientRect(), B = b.getBoundingClientRect(), x1 = A.left + A.width / 2 - R.left, x2 = B.left + B.width / 2 - R.left;
+      const y1 = (m[1] === 'u' ? A.top : A.bottom) - R.top, y2 = (m[1] === 'u' ? B.bottom : B.top) - R.top, ym = (y1 + y2) / 2;
+      p += 'M' + x1.toFixed(1) + ' ' + y1.toFixed(1) + 'V' + ym.toFixed(1) + 'H' + x2.toFixed(1) + 'V' + y2.toFixed(1); });
+    s.setAttribute('width', R.width); s.setAttribute('height', R.height); s.setAttribute('viewBox', '0 0 ' + R.width + ' ' + R.height);
+    if(s.getAttribute('data-p') !== p){ s.setAttribute('data-p', p); s.innerHTML = '<path d="' + p + '" fill="none" stroke="rgba(147,174,200,.32)" stroke-width="1.5" stroke-linejoin="round"/>'; }
+  });
+  const sb = document.getElementById('pqsb');   // the Super Bowl gets the same travelling light as a live player (gold)
+  if(sb){ let fr = sb.querySelector(':scope > .lvf');
+    if(!fr){ fr = document.createElement('span'); fr.className = 'lvf pqglow'; fr.setAttribute('data-keep', ''); fr.setAttribute('aria-hidden', 'true'); sb.insertBefore(fr, sb.firstChild); }
+    const b = fr.getBoundingClientRect();
+    if(!fr.firstChild || fr.getAttribute('data-wh') !== Math.round(b.width) + 'x' + Math.round(b.height)) lvBuild(fr, 'SB', true, 16); }
 }
 $('#view').addEventListener('change', function(e){ if(e.target && e.target.id === 'ppeSel'){ PPE.team = e.target.value; render(); ppeAsk(); } });
 function chatView(){
@@ -3045,7 +3224,7 @@ teamOverlay.addEventListener('click', function(e){
     teamOverlay.dataset.locked = '';
     closeOverlay(teamOverlay);
     const v = $('#setTeamVal'); if(v) v.textContent = LEAGUE[S.team] || '';
-    render(); setTimeout(admNoticeCheck, 700); return;
+    render(); return;
   }
   if(e.target === teamOverlay && teamOverlay.dataset.locked !== '1') closeOverlay(teamOverlay);
 });
@@ -3124,14 +3303,11 @@ function openSettings(){
 $('#setTeam').addEventListener('click', function(){ closeOverlay($('#setOverlay')); setTimeout(function(){ openTeamSheet(false); }, 260); });
 $('#installBtn').addEventListener('click', function(){ const so = $('#setOverlay'); if(installEvent){ closeOverlay(so); fireOffer(); return; } closeOverlay(so); setTimeout(fireOffer, 300); });
 $('#newsBtn').addEventListener('click', function(){
-  // v1.14.0: non-admin phones don't see notes about projections / playoff odds (and get the short v1.14.0 note)
-  $('#newsList').innerHTML = CHANGELOG.filter(function(c){ return ADMIN || c[2] || !ADV_NEWS.test(c[1]); }).map(function(c){ return '<div class="cl"><b>' + esc(c[0]) + '</b>' + esc(!ADMIN && c[2] ? c[2] : c[1]) + '</div>'; }).join('');
+  $('#newsList').innerHTML = CHANGELOG.map(function(c){ return '<div class="cl"><b>' + esc(c[0]) + '</b>' + esc(c[1]) + '</div>'; }).join('');
   closeOverlay($('#setOverlay')); setTimeout(function(){ openOverlay($('#newsOverlay')); }, 260);
 });
-/* v1.14.0 admin: Settings → Admin, the one-time notice, the code sheet */
-const ADV_NEWS = /playoff odds|projection|prediction engine|win %|draft/i;
-const admNotice = $('#admNotice'), admCode = $('#admCode'), admInput = $('#admInput'), admHint = $('#admHint');
-let admNoticeTimer = 0;
+/* Settings → Admin and the code sheet (the code unlocks the admin version of the Playoff Engine, Phase 2) */
+const admCode = $('#admCode'), admInput = $('#admInput'), admHint = $('#admHint');
 function admHash(t){
   try{ return crypto.subtle.digest('SHA-256', new TextEncoder().encode('fgt-admin:' + t)).then(function(b){ return Array.prototype.map.call(new Uint8Array(b), function(x){ return ('0' + x.toString(16)).slice(-2); }).join(''); }); }
   catch(e){ return Promise.reject(e); }
@@ -3168,16 +3344,6 @@ if(ADMIN && getLocal('adm-ok') !== ADM_KEY) put('adm-ok', ADM_KEY);
 $('#admBtn').addEventListener('click', function(){
   if(ADMIN || getLocal('adm-ok') === ADM_KEY){ const on = !ADMIN; admSet(on); $('#admVal').textContent = on ? 'On' : 'Off'; toast(on ? 'Advanced features on' : 'Advanced features off'); return; }
   closeOverlay($('#setOverlay')); setTimeout(openAdmCode, 260); });
-// one-time notice: shows once per phone (after the home-screen gate and team pick); buttons appear after 5 s
-function admNoticeCheck(){
-  if(ADMIN || getLocal('adm-seen') || !S.team) return;
-  if(overlayStack.length || !gate.hidden){ setTimeout(admNoticeCheck, 1500); return; }
-  const b = $('#admNoticeBtns'); b.classList.remove('on');
-  openOverlay(admNotice);
-  clearTimeout(admNoticeTimer); admNoticeTimer = setTimeout(function(){ b.classList.add('on'); }, 5000);
-}
-$('#admEnter').addEventListener('click', function(){ put('adm-seen', 1); closeOverlay(admNotice); setTimeout(openAdmCode, 300); });
-$('#admClose').addEventListener('click', function(){ put('adm-seen', 1); closeOverlay(admNotice); });
 document.addEventListener('click', function(e){
   const c = e.target.closest('[data-close]'); if(c){ closeOverlay(document.getElementById(c.dataset.close)); return; }
   const ov = e.target.classList && e.target.classList.contains('overlay') ? e.target : null;
@@ -4445,7 +4611,7 @@ $('#chatDelYes').addEventListener('click', function(){
     .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); CH.msgs = Object.assign({}, CH.msgs); delete CH.msgs[id]; paintChat(true); paintBadge(); toast('Message deleted'); })
     .catch(function(){ toast('Couldn’t delete that message'); });
 });
-window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); if(S.view === 'match'){ fitPills(); lvFrames(); } });
+window.addEventListener('resize', function(){ if(S.view === 'chat') placePane(); if(S.view === 'match'){ fitPills(); lvFrames(); } if(S.view === 'ppe') pqLines(); });
 beat(true); openStream('pres'); openStream('chat'); setTimeout(function(){ poll('pres'); poll('chat'); }, 3000);
 var chatHook = function(){ placePane(); paintBadge(); };
 /* pinch-zoom off (iPhone Safari ignores user-scalable=no, so block the gesture itself) */
@@ -4470,7 +4636,6 @@ render();
 tick();
 loadProj();
 setTimeout(function(){ checkUpdate('wake'); }, UPD_START_DELAY);
-setTimeout(admNoticeCheck, 1200);
 if(!S.team){
   if(!isInstalled() && !getLocal('gate')){ gate.hidden = false; gateHome(false); }
   else openTeamSheet(true);
