@@ -831,7 +831,9 @@ with sync_playwright() as pw:
           const card = {}; let div = null; [...document.querySelectorAll('.pqseeds .sh, .pqseeds .sr')].forEach(e => { if(e.classList.contains('sh')){ div = e.querySelector('b').textContent; card[div] = []; } else card[div].push([nm[e.querySelector('.nm').textContent], e.querySelector('.rc').textContent, e.querySelector('.sp').textContent]); });
           const wins = r => { const a = r.split('-').map(Number); return a[0] + (a[2] ? 0.5 * a[2] : 0); };
           Object.keys(card).forEach(d => { card[d].forEach((x, k) => { if(k && wins(x[1]) > wins(card[d][k - 1][1])) out.bad.push(['record above', d, k]);
-            const want = Math.round(pp.seed[x[0]][k] * 100); if(Math.abs(parseFloat(x[2].replace(/[<>]/g, '')) - want) > 1 && !/[<>]/.test(x[2])) out.bad.push(['seed %', x[0], x[2], want]); }); });
+            const want = Math.round(pp.seed[x[0]][k] * 100); if(Math.abs(parseFloat(x[2].replace(/[<>]/g, '')) - want) > 1 && !/[<>]/.test(x[2])) out.bad.push(['seed %', x[0], x[2], want]);
+            if(sc.fit){ const ok = (p, inside) => Math.abs(p - 0.5) < 0.02 || (p > 0.5) === inside;
+              if(!ok(pp.bye[x[0]], k < 3) || !ok(pp.po[x[0]], k < 5) || !ok(pp.lb[x[0]], k === 5)) out.bad.push(['seed vs own odds', x[0], k + 1, pp.bye[x[0]], pp.po[x[0]], pp.lb[x[0]]]); } }); });
           const dn = {}; [...document.querySelectorAll('.pqat .tr')].forEach(r => dn[nm[r.querySelector('.nm b').textContent]] = parseInt(r.querySelector('.pk').textContent.slice(1)));
           Object.keys(card).forEach(d => card[d].forEach((x, k) => { const p = dn[x[0]]; const ok = k === 0 ? p >= 11 : k === 1 ? (p === 9 || p === 10) : k === 5 ? p <= 2 : (p >= 3 && p <= 8); if(!ok) out.bad.push(['draft # vs seed', x[0], k + 1, p]); }));
           const t = '11', me = card[Object.keys(card).find(d => card[d].some(x => x[0] === t))].findIndex(x => x[0] === t);

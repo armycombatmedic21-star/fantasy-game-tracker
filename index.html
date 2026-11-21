@@ -4214,12 +4214,19 @@ function engineWorker(){
     // v1.21.4 (Wes, Nov 21): ONE coherent end-of-season picture = the most common league finish (both divisions' final
     // order) across all simulated seasons; within those seasons the most common set of final records; within those, the most
     // common draft order. Order, records and draft order all come from the same seasons, so they can't contradict.
-    let sc = null; { let bl = '', bn = -1; Object.keys(LS).forEach(function(k){ if(LS[k].n > bn){ bn = LS[k].n; bl = k; } });
+    // The picture must also agree with every team's own odds: listed in the top 3 only if a bye is more likely than not,
+    // top 5 only if the playoffs are, 6th only if the Loser Bowl is (coin flips within 2 pts count either way). So the
+    // chosen finish is the most common one that fits all of that; if none does, the most common finish overall.
+    const fits = function(k){ return k.split('|').every(function(x){ return x.split(',').every(function(id, j){
+      const by = bye[id] / N, po = cnt[id] / N, lb = lbc[id] / N, ok = function(p, inside){ return Math.abs(p - 0.5) < 0.02 || (p > 0.5) === inside; };
+      return ok(by, j < 3) && ok(po, j < 5) && ok(lb, j === 5); }); }); };
+    let sc = null; { let bl = '', bn = -1, fl = '', fn = -1; Object.keys(LS).forEach(function(k){ if(LS[k].n > bn){ bn = LS[k].n; bl = k; } if(LS[k].n > fn && fits(k)){ fn = LS[k].n; fl = k; } });
+      const fit = !!fl; if(fl){ bl = fl; bn = fn; }
       if(bl){ const L1 = LS[bl]; let br = '', brn = -1; Object.keys(L1.r).forEach(function(k){ if(L1.r[k].n > brn){ brn = L1.r[k].n; br = k; } });
         const L2 = L1.r[br]; let bd = '', bdn = -1; Object.keys(L2.d).forEach(function(k){ if(L2.d[k] > bdn){ bdn = L2.d[k]; bd = k; } });
         const rv = br.split(','), rec = {}; ids.forEach(function(id, k){ rec[id] = +rv[k]; });
         const dv = {}; bl.split('|').forEach(function(x, k){ dv[dks[k]] = x.split(','); });
-        sc = { divs: dv, rec: rec, draft: bd.split(','), share: Math.round(bn / N * 10000) / 10000 }; } }
+        sc = { divs: dv, rec: rec, draft: bd.split(','), share: Math.round(bn / N * 10000) / 10000, fit: fit }; } }
     return { sc: sc, ord: ord, wm: wm, po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), nxw: f(nxw), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW };
   }
   let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
