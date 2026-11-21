@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark">
 <style>html,body{background:#060b16}</style>
+<script>try{if(localStorage.getItem('fgt-gsm'))document.documentElement.className+=' gsm';}catch(e){}</script>
 <meta name="theme-color" content="#060b16">
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1244,6 +1245,34 @@ svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
   .pqtc>b{font-size:44px}.pqstrip b{font-size:23px}.pqstrip small{font-size:10.5px}.pqdc{padding:13px 10px}.pqdc .pr{grid-template-columns:50px 1fr 32px;font-size:12.5px}}
 @media (prefers-reduced-motion:reduce){.pqsb > .pqglow{display:none}}
 
+/* ---- v1.23.0 (Wes, Nov 21): Grandpa Safe Mode. Everything here is behind html.gsm, which only a phone with the
+   Safe Mode code entered has. Without it the app looks and works exactly as before. ---- */
+.gsmsheet .em svg{width:24px;height:24px}
+.gsmsheet .cin:disabled{opacity:.6}
+html.gsm .tabbtn[data-tab="chat"]{display:none}
+html.gsm .tabbar{height:72px;background:#000;border:1px solid var(--acc)}
+html.gsm .tabbar .lens{display:none}
+html.gsm .tabbtn{height:64px;gap:4px;padding:8px 2px 0}
+html.gsm .tabicon,html.gsm .tabicon svg{width:29px;height:29px}
+html.gsm .tabicon svg{stroke-width:1.9}
+html.gsm .tablabel{font-size:14px;font-weight:800;line-height:17px;letter-spacing:.1px}
+@media (max-width:300px){html.gsm .tablabel{font-size:12.5px;letter-spacing:0}}
+html.gsm .wrap{padding-bottom:calc(102px + env(safe-area-inset-bottom,0px))}
+html.gsm .toast{bottom:calc(94px + env(safe-area-inset-bottom))}
+.wkplain{display:flex;align-items:center;height:42px;padding:0 4px;font-size:15px;font-weight:800;color:#fff;white-space:nowrap}
+.mhead .wkplain{height:38px;padding:0 2px;font-size:12.5px}
+@media (max-width:345px){html.gsm .mhead{gap:4px}html.gsm .mhead .back{padding:0 7px;font-size:12px}html.gsm .mhead .mtitle{font-size:12px;letter-spacing:.8px}html.gsm .mhead .wkplain{font-size:12px}}
+@media (max-width:285px){html.gsm .mhead .mtitle{visibility:hidden}}   /* very big text: no room for the title (the tab bar still says Matchup) */
+.lasec.gsml{cursor:default}
+.gear.gsmg{position:relative;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.gear.gsmg > svg:first-child{opacity:.75}
+.gear.gsmg .gx{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;color:var(--red);pointer-events:none}
+.gear.gsmg .gring{position:absolute;left:-4px;top:-4px;width:calc(100% + 8px);height:calc(100% + 8px);transform:rotate(-90deg);pointer-events:none;overflow:visible}
+.gear.gsmg .gring circle{fill:none;stroke:var(--acc);stroke-width:3.2;stroke-linecap:round;stroke-dasharray:138.3;stroke-dashoffset:138.3;opacity:0}
+.gear.gsmg.hold .gring circle{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset 5s linear}
+.fp .pj.gsmpj span{color:#8b9bb4;transition:color .6s ease}
+.fp .pj.gsmpj.pjb span{color:#dce8f5}
+
 </style>
 </head>
 <body>
@@ -1270,6 +1299,7 @@ svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
     <button class="setrow" id="setTeam"><span class="setlabel">Your team</span><span class="setval" id="setTeamVal"></span></button>
     <button class="setrow" id="installBtn" hidden><span class="setlabel">Add to Home Screen</span></button>
     <button class="setrow" id="admBtn"><span class="setlabel">Admin</span><span class="setval" id="admVal"></span></button>
+    <button class="setrow" id="gsmBtn"><span class="setlabel">Grandpa Safe Mode</span><span class="setval" id="gsmVal"></span></button>
     <button class="setrow" id="newsBtn"><span class="setlabel">What&rsquo;s new</span><span class="setval" id="verVal"></span></button>
   </div>
   <p class="setnote" id="setData"></p>
@@ -1293,6 +1323,14 @@ svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
   <div class="confirmrow"><button class="confirmyes" id="admGo">Unlock</button><button class="confirmcancel" data-close="admCode">Cancel</button></div>
 </div></div>
 
+<div class="overlay" id="gsmCode"><div class="sheet adm gsmsheet" role="dialog" aria-label="Grandpa Safe Mode" id="gsmSheet">
+  <div class="hd"><span class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6z"/><path d="m8.8 12.2 2.3 2.3 4.3-4.6"/></svg></span><div><div class="eb">Safe mode</div><h2>Grandpa Safe Mode</h2></div></div>
+  <p class="ld" id="gsmLead"></p>
+  <input class="cin" id="gsmInput" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="8" aria-label="Grandpa Safe Mode code">
+  <p class="hint" id="gsmHint"></p>
+  <div class="confirmrow"><button class="confirmyes" id="gsmGo">Turn On</button><button class="confirmcancel" data-close="gsmCode">Cancel</button></div>
+</div></div>
+
 
 <div class="gate" id="gate" hidden><div class="gatein" id="gateIn"></div></div>
 <div class="toast" id="toast"></div>
@@ -1306,10 +1344,11 @@ svg.pqcn{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.22.0';
+const APP_VERSION = '1.23.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.23.0', 'Grandpa Safe Mode: a simpler, tap-proof version of the app for one phone. Turn it on in Settings with its own code. While it’s on, the Settings gear has a red X and does nothing on a tap (hold it 5 seconds to turn Safe Mode off with the code), there’s no Online card or Chat tab, the tab bar is bigger and solid black, the week always shows the current week, there are no pins, Indianapolis’s game sits right after your own, and the matchup projections show in gray. Phones without Safe Mode don’t change.'],
   ['1.22.0', 'Small behind-the-scenes improvements to the Playoff Engine.'],
   ['1.21.4', 'Playoff Engine: one consistent end-of-season picture. Projected seeds, the records next to them, each team’s Proj. seed at the top and the Draft # (here and in Standings) all come from the same most likely finish across all the simulated seasons, so they always agree with each other. The odds (playoffs, bye, title, each team’s seed %) are still each team’s own chances. Current records are marked “now”. Visual changes: “Likely seed” reads “Proj. seed”; the seeds card says “most likely finish”; records next to the team name say “now”.'],
   ['1.21.3', 'Projected seeds now show the most common final standings across all the simulated seasons — the whole division as it most often ends up, not each team sorted by its average seed. Each team’s % is still its own odds of the seed it’s listed at, and it updates live. The Playoff Engine page is shorter: Projected seeds now go straight to All teams.'],
@@ -1935,6 +1974,22 @@ let ADMIN = getLocal('adm') === ADM_KEY;
 // v1.21.0 (Wes, Nov 20): every lock is off — projections, playoff odds, draft odds and the Playoff Engine are for
 // everyone. ADMIN (code in Settings) is kept for the admin version of the Playoff Engine (Phase 2).
 const ADV = true;
+/* v1.23.0 (Wes, Nov 21): Grandpa Safe Mode — a tap-proof version for Grandpa's phone. Settings → Grandpa Safe Mode → code.
+   While it's on: the gear does nothing on a tap (red X; hold it 5 s to turn Safe Mode off with the code), no Online card,
+   no Chat tab (bigger, bolder, solid black tab bar), week is plain text and always the current week, "Team Dallas" label
+   (not a button), no pins or drag order, Indianapolis's game first after your own (Scoreboard and the Matchup swipe),
+   no Current / Optimal, matchup projections gray in parentheses. With it off, nothing in the app changes.
+   Only a scrambled code is kept here (not security, just so the code isn't sitting in the page). */
+const GSM_KEY = 'ek7n5ti1hb', GSM_INDY = '8';
+function gsmHash(t){
+  const str = 'fgt-gsm:' + t, seed = 7; let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for(let i = 0, ch; i < str.length; i++){ ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+let GSM = getLocal('gsm') === GSM_KEY;
+document.documentElement.classList.toggle('gsm', GSM);
 const LOCKI = '<span class="lockic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5"/></svg></span>';
 let PJB = false;   // v1.9.0: matchup not begun yet → player projections bright
 let DIMF = false;  // v1.10.0: this matchup still has players left → finished players' name + logo dimmed
@@ -1966,6 +2021,12 @@ function orderedMatchups(m){
   const pinIdx = function(x){ const ids = [x.home && x.home.id, x.away && x.away.id]; let b = 1e9; ids.forEach(function(id){ const i = S.pins.indexOf(id); if(i >= 0 && i < b) b = i; }); return b; };
   const ordIdx = function(x){ const ids = [x.home && x.home.id, x.away && x.away.id]; let b = 1e9; ids.forEach(function(id){ const i = S.order.indexOf(id); if(i >= 0 && i < b) b = i; }); return b; };
   rest.forEach(function(x, i){ x._pin = pinIdx(x) < 1e9; x._p = pinIdx(x); x._o = ordIdx(x); x._i = i; });
+  if(GSM){   // v1.23.0 Safe Mode: no pins; Indianapolis's game right after your own, then the usual order
+    const indy = function(x){ return !!((x.home && String(x.home.id) === GSM_INDY) || (x.away && String(x.away.id) === GSM_INDY)); };
+    rest.forEach(function(x){ x._pin = false; x._gi = indy(x); });
+    rest.sort(function(a, b){ if(a._gi !== b._gi) return a._gi ? -1 : 1; if(a._o !== b._o) return a._o - b._o; return a._i - b._i; });
+    return { mine: mine, rest: rest, all: mine ? [mine].concat(rest) : rest };
+  }
   rest.sort(function(a, b){
     if(a._pin !== b._pin) return a._pin ? -1 : 1;
     if(a._pin) return a._p - b._p;
@@ -2065,9 +2126,11 @@ function morph(el, html){ const tpl = document.createElement('template'); tpl.in
 
 let holdRender = 0, renderQueued = false;
 let lastView = null;
+const GH = { on: false, t: 0, id: null, x: 0, y: 0, el: null, lift: 0 };   // v1.23.0: Safe Mode gear hold (screen holds still while the ring fills)
 function render(){
-  if(holdRender > Date.now() || (press && press.active) || swipe.active){ renderQueued = true; return; }
+  if(holdRender > Date.now() || (press && press.active) || swipe.active || GH.on){ renderQueued = true; return; }
   renderQueued = false;
+  if(GSM && S.curWeek && S.week !== S.curWeek) setTimeout(snapToCurrentWeek, 0);   // v1.23.0: Safe Mode stays on the current week
   if(S.view !== lastView){ if(S.view === 'standings'){ S.stOpen = {}; recOnEnter(); } else S.recBanner = null; if(S.view !== 'match') OPT.v = null; lastView = S.view; }
   const v = $('#view');
   let html;
@@ -2084,7 +2147,7 @@ function render(){
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
   if(chatHook){ try{ chatHook(); }catch(e){} }
 }
-setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press && press.active) && !swipe.active) render(); }, 250);
+setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press && press.active) && !swipe.active && !GH.on) render(); }, 250);
 
 const TGA = '<svg class="tg" viewBox="0 0 14 12" width="13" height="11" aria-hidden="true"><path d="M2 6h8.2M7 2.2 10.8 6 7 9.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ICON = {
@@ -2121,11 +2184,20 @@ function engNote(){
   return 'Prediction Engine · calculating';
 }
 
+// week pill + gear (top right on every tab). v1.23.0 Safe Mode: the week is plain text (always the current week) and
+// the gear has a red X; it ignores taps and a 5-second hold (ring fills) opens the turn-off sheet.
+const GSM_X = '<svg class="gx" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>';
+const GSM_RING = '<svg class="gring" viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r="22"/></svg>';
+function weekGear(cur){
+  if(GSM) return (S.week ? '<span class="wkplain">Week ' + S.week + '</span>' : '') +
+    '<button class="gear gsmg" id="gearBtn" aria-label="Settings locked. Hold for 5 seconds to turn off Grandpa Safe Mode">' + ICON.gear + GSM_X + GSM_RING + '</button>';
+  return (S.week ? '<button class="pill' + (cur ? ' now' : '') + '" id="weekBtn" aria-label="Choose week">Week ' + S.week + ' ' + ICON.chev + '</button>' : '') +
+    '<button class="gear" id="gearBtn" aria-label="Settings">' + ICON.gear + '</button>';
+}
 function header(title){
   const cur = isCurrentWeek();
   return '<header class="top"><div><div class="kick">New Franchise League</div><h1>' + esc(title) + '</h1></div>' +
-    '<div class="hbtns">' + (S.week ? '<button class="pill' + (cur ? ' now' : '') + '" id="weekBtn" aria-label="Choose week">Week ' + S.week + ' ' + ICON.chev + '</button>' : '') +
-    '<button class="gear" id="gearBtn" aria-label="Settings">' + ICON.gear + '</button></div></header>';
+    '<div class="hbtns">' + weekGear(cur) + '</div></header>';
 }
 function anyLive(){ const sb = curSb(); if(!sb) return false; return Object.keys(sb.events).some(function(k){ return sb.events[k].state === 'in'; }); }
 function nextKick(){
@@ -2182,7 +2254,7 @@ function card(mt, mine, LM){
   const A = mine && mt.away && mt.away.id === S.team ? mt.away : mt.home, B = A === mt.home ? mt.away : mt.home;
   const la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
-  const pinned = !mine && !!mt._pin;
+  const pinned = !mine && !!mt._pin && !GSM;
   const E = isCurrentWeek() ? engMatch(mt.key) : null, flip = E && A !== mt.home;
   const done = left === 0 && (la && la.any);
   const fw = done && B ? finalWa(la, lb) : null;
@@ -2192,7 +2264,7 @@ function card(mt, mine, LM){
   const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span><span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done && ADV ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
-    (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '<span></span><span class="tag">' + left + ' players left</span>' :
+    (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '<span></span><span class="tag">' + left + ' players left</span>' : GSM ? '' :   // v1.23.0 Safe Mode: no pin
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
     (mine ? '' : '<span class="tag left">' + left + ' left</span>') +
     '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
@@ -2205,7 +2277,8 @@ function homeView(){
   if(S.team && stTeams().length){
     const d = divRank(S.team), lr = leagueRank(S.team), po = ENG.res && engineReady() && ENG.res.po ? ENG.res.po[S.team] : null, po0 = ENG.res && ENG.res.po0 ? ENG.res.po0[S.team] : null;
     const delta = po != null && po0 != null ? Math.round(po * 100) - Math.round(po0 * 100) : null;
-    h += '<button class="lasec" id="laBtn">League Analysis<span>›</span></button><section class="la' + (dw ? ' dw' : '') + '" data-key="la">' + (dw ? DWB : '') + '<div class="lagrid">' +
+    h += (GSM ? '<div class="lasec gsml">Team ' + esc(teamName(S.team)) + '</div>' :   // v1.23.0 Safe Mode: a label, not a button
+      '<button class="lasec" id="laBtn">League Analysis<span>›</span></button>') + '<section class="la' + (dw ? ' dw' : '') + '" data-key="la">' + (dw ? DWB : '') + '<div class="lagrid">' +
       '<div class="lacell"><small>Division</small><b>' + (d ? ordSup(d.rank) : '–') + '</b><em>' + esc(d ? d.div : '') + '</em></div><hr>' +
       '<div class="lacell"><small>League</small><b>' + (lr ? ordSup(lr.rank) : '–') + '</b><em>of ' + (lr ? lr.of : 12) + '</em></div><hr>' +
       (!ADV ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? 'top 5 in div' : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
@@ -2217,9 +2290,9 @@ function homeView(){
   const O = orderedMatchups(LM.model);
   if(O.mine) h += card(O.mine, true, LM);
   else h += '<button class="pick" id="pick"><span class="ic">' + ICON.plus + '</span><span><strong>Select your team</strong><small>Your matchup stays up here every week</small></span></button>';
-  h += '<div class="sec"><h2>League · Week ' + S.week + '</h2><span>Tap a game · pin to keep it up top</span></div>';
+  h += '<div class="sec"><h2>League · Week ' + S.week + '</h2><span>' + (GSM ? 'Tap a game' : 'Tap a game · pin to keep it up top') + '</span></div>';
   h += '<div id="cards">' + O.rest.map(function(mt){ return card(mt, false, LM); }).join('') + '</div>';
-  h += '<p class="note">Press and hold a game to drag it into your own order.</p>';
+  if(!GSM) h += '<p class="note">Press and hold a game to drag it into your own order.</p>';   // v1.23.0 Safe Mode: no pins or drag order
   return h;
 }
 
@@ -2501,8 +2574,7 @@ function matchView(){
   const X = matchList();
   const cw = isCurrentWeek();
   let h = '<div class="mhead"><button class="back" id="back">‹ Scoreboard</button><span class="mtitle">Matchup</span><div class="hbtns">' +
-    (S.week ? '<button class="pill' + (cw ? ' now' : '') + '" id="weekBtn" aria-label="Choose week">Week ' + S.week + ' ' + ICON.chev + '</button>' : '') +
-    '<button class="gear" id="gearBtn" aria-label="Settings">' + ICON.gear + '</button></div></div>' + onStrip() + keyStrip();
+    weekGear(cw) + '</div></div>' + onStrip() + keyStrip();
   if(!X || !X.list.length) return h + '<div class="empty">Getting this week’s lineups…</div>';
   let idx = X.list.findIndex(function(x){ return x.key === S.curKey; });
   if(idx < 0){ idx = 0; S.curKey = X.list[0].key; }
@@ -2511,7 +2583,7 @@ function matchView(){
   let la = LM.live[A.id], lb = B ? LM.live[B.id] : null;
   // v1.17.0: Current / Optimal (starts on Current for every game; admin, this week, game not final)
   if(!OPT.v || OPT.v.k !== mt.key) OPT.v = { k: mt.key, ids: {} };
-  const canOpt = ADV && isCurrentWeek() && !!B && !!(ENG.res && ENG.res.m && ENG.res.m[mt.key]);
+  const canOpt = ADV && !GSM && isCurrentWeek() && !!B && !!(ENG.res && ENG.res.m && ENG.res.m[mt.key]);   // v1.23.0: no Current / Optimal in Safe Mode
   if(canOpt && optOn(A.id)){ const o = optSide(A, la); A = o.T; la = o.L; }
   if(canOpt && optOn(B.id)){ const o = optSide(B, lb); B = o.T; lb = o.L; }
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
@@ -2536,7 +2608,8 @@ function matchView(){
   const ON = mBegun(A, la, B, lb); PJB = isCurrentWeek() && !ON; DIMF = left > 0;
   h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
-    (E && ADV && status !== 'Final' ? '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
+    (E && ADV && status !== 'Final' ? (GSM ? '<div class="pj gsmpj' + (PJB ? ' pjb' : '') + '"><span>(' + pa.toFixed(1) + ')</span><span>(' + pb.toFixed(1) + ')</span></div>' :   // v1.23.0 Safe Mode: gray, in parentheses (same color as the player projections)
+      '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>') : '') + '</div>' + fl(B, true) + '</div>' +
     '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : '') + '</div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : '') + '</div></div>' +
     '<div class="lstat">' + status + '</div>' +
     (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
@@ -3392,7 +3465,7 @@ function snapToCurrentWeek(){
   if(!S.curWeek || S.week === S.curWeek || overlayStack.length || press) return;
   S.week = S.curWeek; S.open = null; modelMemo = { src: null, m: null }; liveMemo.sig = '';
   last.sb = 0; last.cbs = 0; tick(); render(); saveView();
-  toast('Back to Current Week \u00B7 Week ' + S.curWeek);
+  if(!GSM) toast('Back to Current Week \u00B7 Week ' + S.curWeek);   // v1.23.0: Safe Mode never leaves the current week, so no toast
 }
 // v1.4.4: CBS moved to a new week while you were on the current one -> go with it (waits out a tap or open sheet)
 function followNewWeek(){ setTimeout(function(){ if(overlayStack.length || press){ followNewWeek(); return; } snapToCurrentWeek(); }, overlayStack.length || press ? 1500 : 0); }
@@ -3552,6 +3625,7 @@ function openSettings(){
   $('#installBtn').hidden = isInstalled();
   $('#verVal').textContent = 'v' + APP_VERSION;
   $('#admVal').textContent = ADMIN ? 'On' : 'Off';
+  $('#gsmVal').textContent = GSM ? 'On' : 'Off';
   const c = S.cbs[S.curWeek];
   $('#setData').innerHTML = 'Lineups and standings come from CBS (through our relay, about once a minute). Live stats come from ESPN every 10 seconds during games and are scored with our league’s rules; CBS’s own points are the cross-check.' +
     (c && c.err === 'cbs_key' ? '<br><b style="color:var(--amber)">The CBS key has expired. Lineups can’t refresh until it’s renewed.</b>' : '');
@@ -3601,6 +3675,79 @@ if(ADMIN && getLocal('adm-ok') !== ADM_KEY) put('adm-ok', ADM_KEY);
 $('#admBtn').addEventListener('click', function(){
   if(ADMIN || getLocal('adm-ok') === ADM_KEY){ const on = !ADMIN; admSet(on); $('#admVal').textContent = on ? 'On' : 'Off'; toast(on ? 'Advanced features on' : 'Advanced features off'); return; }
   closeOverlay($('#setOverlay')); setTimeout(openAdmCode, 260); });
+/* v1.23.0 (Wes, Nov 21): Settings → Grandpa Safe Mode (its own code, separate from Admin). The right code turns it on and
+   you're back in the app. While it's on, the only way out is holding the gear 5 seconds → code → Turn Off.
+   A wrong code says "Wrong code" and closes the sheet. */
+const gsmCode = $('#gsmCode'), gsmInput = $('#gsmInput'), gsmHint = $('#gsmHint'), gsmGo = $('#gsmGo');
+let gsmWrongT = 0;
+function openGsmCode(){
+  clearTimeout(gsmWrongT);
+  const off = GSM;
+  $('#gsmLead').textContent = off ? 'Enter the code to turn off Grandpa Safe Mode.' : 'Enter the code to turn on Grandpa Safe Mode for this phone.';
+  gsmGo.textContent = off ? 'Turn Off' : 'Turn On';
+  gsmInput.value = ''; gsmInput.disabled = false; gsmGo.disabled = false; gsmInput.classList.remove('bad');
+  gsmHint.className = 'hint'; gsmHint.textContent = off ? '' : 'To turn it off later, hold the gear for 5 seconds.';
+  openOverlay(gsmCode);
+  setTimeout(function(){ try{ gsmInput.focus(); }catch(e){} }, 360);
+}
+function gsmSet(on){
+  GSM = !!on;
+  if(on) put('gsm', GSM_KEY); else { try{ localStorage.removeItem('fgt-gsm'); }catch(e){} delete memStore['fgt-gsm']; }
+  document.documentElement.classList.toggle('gsm', GSM);
+  if(GSM && S.view === 'chat') S.view = 'home';          // no Chat tab in Safe Mode
+  if(GSM && S.curWeek && S.week !== S.curWeek) snapToCurrentWeek();   // always the current week
+  render(); placeRail(S.view === 'ppe' ? 'standings' : S.view, true); saveView();
+}
+function gsmTry(){
+  if(gsmInput.disabled) return;
+  const v = (gsmInput.value || '').trim(); if(!v) return;
+  if(gsmHash(v) === GSM_KEY){
+    const on = !GSM; try{ gsmInput.blur(); }catch(e){}
+    closeOverlay(gsmCode); gsmSet(on); toast(on ? 'Grandpa Safe Mode on' : 'Grandpa Safe Mode off'); return;
+  }
+  gsmInput.classList.remove('bad'); void gsmInput.offsetWidth; gsmInput.classList.add('bad');
+  gsmHint.className = 'hint bad'; gsmHint.textContent = 'Wrong code'; gsmInput.value = '';
+  gsmInput.disabled = true; gsmGo.disabled = true; try{ gsmInput.blur(); }catch(e){}
+  gsmWrongT = setTimeout(function(){ closeOverlay(gsmCode); }, 1300);
+}
+gsmGo.addEventListener('click', gsmTry);
+gsmInput.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); gsmTry(); } });
+$('#gsmBtn').addEventListener('click', function(){ closeOverlay($('#setOverlay')); setTimeout(openGsmCode, 260); });
+// the 5-second hold on the gear (Safe Mode only): a ring fills around it; lift or slide off early and it resets
+function gsmHoldStart(g, e){
+  if(GH.on) return;
+  GH.on = true; GH.id = e.pointerId; GH.x = e.clientX; GH.y = e.clientY; GH.el = g;
+  g.classList.add('hold');
+  GH.t = setTimeout(gsmHoldDone, 5000);
+}
+function gsmHoldEnd(){
+  if(!GH.on) return;
+  clearTimeout(GH.t); GH.on = false; GH.id = null;
+  if(GH.el) GH.el.classList.remove('hold');
+  GH.el = null;
+  if(renderQueued) render();
+}
+// the sheet opens while the finger is still down; lifting it would "tap" the backdrop and close the sheet, so the
+// backdrop ignores taps until just after the finger lifts
+function gsmHoldDone(){
+  gsmHoldEnd();
+  if(navigator.vibrate) try{ navigator.vibrate(30); }catch(e){}
+  if(!GSM || overlayStack.length) return;
+  gsmCode.dataset.locked = '1'; GH.lift = Date.now();
+  openGsmCode();
+  setTimeout(gsmUnlift, 8000);   // in case the lift is never seen
+}
+function gsmUnlift(){ if(!GH.lift) return; GH.lift = 0; setTimeout(function(){ if(!GH.lift) delete gsmCode.dataset.locked; }, 450); }
+document.addEventListener('pointerdown', function(e){
+  if(!GSM || !e.target || !e.target.closest) return;
+  const g = e.target.closest('#gearBtn'); if(!g || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  gsmHoldStart(g, e);
+});
+document.addEventListener('pointermove', function(e){ if(GH.on && e.pointerId === GH.id && Math.hypot(e.clientX - GH.x, e.clientY - GH.y) > 28) gsmHoldEnd(); });
+document.addEventListener('pointerup', function(e){ if(GH.on && e.pointerId === GH.id) gsmHoldEnd(); if(GH.lift) gsmUnlift(); });
+document.addEventListener('pointercancel', function(e){ if(GH.on && e.pointerId === GH.id) gsmHoldEnd(); if(GH.lift) gsmUnlift(); });
+document.addEventListener('contextmenu', function(e){ if(GSM && e.target && e.target.closest && e.target.closest('#gearBtn')) e.preventDefault(); });
+document.addEventListener('visibilitychange', function(){ if(document.hidden) gsmHoldEnd(); });
 document.addEventListener('click', function(e){
   const c = e.target.closest('[data-close]'); if(c){ closeOverlay(document.getElementById(c.dataset.close)); return; }
   const ov = e.target.classList && e.target.classList.contains('overlay') ? e.target : null;
@@ -3613,7 +3760,7 @@ $('#view').addEventListener('click', function(e){
   if(Date.now() - justDragged < 450) return;
   const t = e.target;
   if(t.closest('#weekBtn')){ openWeekSheet(); return; }
-  if(t.closest('#gearBtn')){ openSettings(); return; }
+  if(t.closest('#gearBtn')){ if(GSM) return; openSettings(); return; }   // v1.23.0 Safe Mode: a tap does nothing (hold 5 s)
   if(t.closest('#laBtn')){ if(Date.now() - S.stAt > 120000) loadStandings(); setView('standings'); return; }
   if(t.closest('#pick')){ openTeamSheet(!S.team); return; }
   const pn = t.closest('[data-pin]'); if(pn){ togglePin(pn.dataset.pin); return; }
@@ -3641,6 +3788,7 @@ $('#view').addEventListener('keydown', function(e){ if(e.key === 'Enter' && e.ta
 $('#tabBar').addEventListener('click', function(e){
   const b = e.target.closest('.tabbtn'); if(!b) return;
   const v = b.dataset.tab;
+  if(v === 'chat' && GSM) return;   // v1.23.0: the Chat tab is hidden in Safe Mode
   if(v === 'match'){
     const X = matchList();
     const mine = X && X.list.find(function(x){ return (x.home && x.home.id === S.team) || (x.away && x.away.id === S.team); });
@@ -3688,7 +3836,7 @@ function togglePin(key){
 let press = null;
 document.addEventListener('touchmove', function(e){ if(press && press.active && e.cancelable) e.preventDefault(); }, { passive: false });
 function pressStart(card, y){
-  if(press) return;
+  if(press || GSM) return;   // v1.23.0: no drag-to-reorder in Safe Mode (Indianapolis stays first)
   press = { card: card, y0: y, last: y, active: false };
   press.timer = setTimeout(pressActivate, 380);
 }
@@ -4846,6 +4994,7 @@ function stripName(id){ const n = teamName(id); return n === 'Indianapolis' ? 'I
 function isOnline(id){ return !!onlineTeams()[String(id)]; }
 function odot(id){ return isOnline(id) ? '<i class="odot" aria-label="online"></i>' : ''; }
 function onStrip(){
+  if(GSM) return '';   // v1.23.0: no Online card in Grandpa Safe Mode
   // v1.7.2: the bar is always drawn at full height (nothing jumps down on open). Your own team is in it right away;
   // its dot is gray when this phone is offline. Others fill in as they're seen.
   const on = onlineTeams(), ids = Object.keys(on), me = S.team ? String(S.team) : '';
@@ -5043,17 +5192,18 @@ var chatHook = function(){ placePane(); paintBadge(); };
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; }, PPE: PPE, isAdmin: function(){ return ADMIN; } };
+window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; }, PPE: PPE, isAdmin: function(){ return ADMIN; }, isGsm: function(){ return GSM; } };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){
   const lv = getLocal('view'); if(!lv || !S.team || Date.now() - lv.t > VIEW_MAX_AGE) return;
   const away = Date.now() - lv.t;
-  if(lv.w && S.curWeek && lv.w !== S.curWeek){
+  if(lv.w && S.curWeek && lv.w !== S.curWeek && !GSM){   // v1.23.0: Safe Mode always opens on the current week
     if(away < OFFWEEK_MAX){ S.week = lv.w; setTimeout(function(){ loadWeek(true); }, 0); }
     else setTimeout(function(){ toast('Back to Current Week \u00B7 Week ' + S.curWeek); }, 600);
   }
   if(lv.v === 'ppe') lv.v = 'standings';   // v1.16.0
+  if(GSM && lv.v === 'chat') lv.v = 'home';   // v1.23.0: no Chat tab in Safe Mode
   if(['match', 'standings', 'chat'].indexOf(lv.v) >= 0){ S.view = lv.v; S.curKey = away >= OFFWEEK_MAX ? null : (lv.k || null); try{ history.pushState({ v: lv.v }, ''); }catch(e){} if(lv.v === 'standings') loadStandings(); }   // v1.7.0: 10+ min away -> your own game
   if(S.view === 'match' && away >= OFFWEEK_MAX) setTimeout(function(){ window.scrollTo(0, 0); }, 0);
 })();
