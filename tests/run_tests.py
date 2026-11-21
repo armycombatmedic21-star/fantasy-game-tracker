@@ -755,6 +755,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] no code: Standings playoff odds show', page.evaluate("document.querySelectorAll('.stpo.lk').length") == 0 and page.evaluate("document.querySelectorAll('.lockic').length") == 0)
         page.click('#ppeBtn'); page.wait_for_timeout(800)
         check(f'[{tag}] no code: Playoff Engine opens', page.evaluate("!!document.querySelector('.ppe.pq')"))
+        check(f'[{tag}] no code: no Loser Bowl / bracket cards (admin only, v1.21.3); seeds then All teams', page.evaluate("!document.querySelector('.pqlb') && !document.querySelector('.pqbk') && !!document.querySelector('.pqseeds') && document.querySelector('.pqseeds').nextElementSibling === document.querySelector('.pqat')"))
         page.click('#ppeBack'); page.wait_for_timeout(600)
         page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(400)
         page.click('.gear'); page.wait_for_timeout(600)
@@ -814,6 +815,13 @@ with sync_playwright() as pw:
             check(f'[{tag}] ppe v1.21: draft card top pick = engine most likely pick', dpr and dpr[0][0] == f'Pick {mlp}', (dpr[:1], mlp))
         check(f'[{tag}] ppe v1.21: strip = Playoffs, Bye, Proj. seed, Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Likely seed|Loser Bowl')
         check(f'[{tag}] ppe v1.21: road to the title = 5 rounds, last one gold', page.evaluate("document.querySelectorAll('.pqroad .rr').length === 5 && document.querySelectorAll('.pqroad .rr.gold').length === 1 && /road to the title/.test(document.querySelector('.pqroad .pqch b').textContent)"))
+        so = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, out = { ok: true, why: [] };
+          const rows = [...document.querySelectorAll('.pqseeds .sr')].map(r => r.querySelector('.nm').textContent);
+          const nameOf = id => { const m = window.__fgt.weekModel(); return m.teams[id] ? m.teams[id].name.trim() : id; };
+          const want = Object.keys(pp.ord || {}).map(d => pp.ord[d][0].map(nameOf));
+          want.forEach(w => { const i = rows.indexOf(w[0]); if(i < 0 || rows.slice(i, i + w.length).join('|') !== w.join('|')){ out.ok = false; out.why.push([w, rows]); } });
+          out.ok = out.ok && want.length === 2; out.p = Object.keys(pp.ord || {}).map(d => pp.ord[d][1]); return out; })()""")
+        check(f'[{tag}] seeds v1.21.3: card order = the most common final standings from the simulations', so['ok'] and all(0 < x <= 1 for x in so['p']), so)
         check(f'[{tag}] ppe v1.21: projected seeds = one card, 12 teams, colored seed dots', page.evaluate("document.querySelectorAll('.pqseeds .sr').length === 12 && document.querySelectorAll('.pqseeds .rk.zby').length === 6 && document.querySelectorAll('.pqseeds .rk.zwc').length === 4 && document.querySelectorAll('.pqseeds .rk.zlb').length === 2"))
         games = page.evaluate("[...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt b')].map(b => parseInt(b.textContent)))")
         check(f'[{tag}] bracket v1.21: 8 games (wild card, 2 semis, final per division), each side adds to 100%', len(games) == 8 and all(len(g) == 2 and g[0] + g[1] == 100 for g in games), games)
