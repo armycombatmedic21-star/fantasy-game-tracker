@@ -810,15 +810,37 @@ with sync_playwright() as pw:
         check(f'[{tag}] ppe: button fits the screen', page.evaluate("document.querySelector('#ppeBtn').getBoundingClientRect().right <= innerWidth"))
         page.click('#ppeBtn'); page.wait_for_timeout(1500)
         check(f'[{tag}] ppe: opens a page (not a sheet) with a back button', page.evaluate("!!document.querySelector('.ppe #ppeBack') && !document.querySelector('.overlay.show')"))
-        check(f'[{tag}] ppe v1.21: no tank switch, no tank call, no tank runs', page.evaluate("!document.querySelector('#ppeTank') && !document.querySelector('.ppre') && !document.querySelector('.ppcm') && Object.keys(window.__fgt.PPE.res).length === 0"))
-        check(f'[{tag}] ppe v1.21: banner with the team + Best lineups tag', page.evaluate("/Dallas/.test(document.querySelector('.pqban .pn b').textContent) && /Best lineups/i.test(document.querySelector('.pqban .pl').textContent)"))
+        # v1.22.0 (admin): Strategic Tank Engine — switch under the banner, tank card right under the heads-up display
+        check(f'[{tag}] tank v1.22: old tank switch gone; Win / Live / Loss switch under the banner, Live on', page.evaluate("!document.querySelector('#ppeTank') && document.querySelectorAll('.tksw [data-tkm]').length === 3 && document.querySelector('.tksw [data-tkm=\"live\"]').classList.contains('on') && document.querySelector('.pqban').nextElementSibling.classList.contains('tksw')"))
+        check(f'[{tag}] ppe v1.21: banner with the team + Tank-aware tag (admin)', page.evaluate("/Dallas/.test(document.querySelector('.pqban .pn b').textContent) && /Tank-aware/i.test(document.querySelector('.pqban .pl').textContent)"))
+        for _ in range(60):
+            if page.evaluate("!!(window.__fgt.PPE.res['11'] && window.__fgt.PPE.res['11'].full)"): break
+            page.wait_for_timeout(500)
+        tk = page.evaluate("""(() => { const c = document.querySelector('.tktk'), h = window.__fgt.PPE.res['11'], r = h && h.r;
+          return { card: !!c, under: !!c && c.previousElementSibling && c.previousElementSibling.classList.contains('pqstrip'), head: c ? c.querySelector('.tkhd').textContent : '',
+            pill: c ? c.querySelector('.tkpill').textContent : '', cls: c ? c.className : '', full: !!(h && h.full), win: !!(r && r.win && r.win.ti), loss: !!(r && r.loss && r.loss.ti),
+            lossTi: r && r.loss && r.loss.ti ? r.loss.ti['11'] : null, winTi: r && r.win && r.win.ti ? r.win.ti['11'] : null, mo: !!(window.__fgt.ENG.res.pp.mo) }; })()""")
+        check(f'[{tag}] tank v1.22: STRATEGIC TANK ENGINE card right under the heads-up with a red / green / gray pill', tk['card'] and tk['under'] and 'strategic tank engine' in tk['head'].lower() and tk['pill'] in ('DON\u2019T TANK', 'TANK NOW', 'TOO LATE'), tk)
+        check(f'[{tag}] tank v1.22: Win and Loss runs for the selected team; losing never helps title odds more than winning', tk['full'] and tk['win'] and tk['loss'] and tk['winTi'] + 1e-9 >= tk['lossTi'] - 0.02, tk)
+        check(f'[{tag}] tank v1.22: money race odds in every run (top-2 records: 2 per season)', tk['mo'] and abs(sum(page.evaluate("Object.values(window.__fgt.ENG.res.pp.mo)")) - 2) < 0.003)
+        page.click('#tkHead'); page.wait_for_timeout(300)
+        tko = page.evaluate("(() => { const c = document.querySelector('.tktk'); return { open: c.classList.contains('open'), rows: [...c.querySelectorAll('.tkrow > span:first-child')].map(e => e.textContent), ft: c.querySelector('.ft').textContent }; })()")
+        check(f'[{tag}] tank v1.22: tap opens the why — Title, Bye, Draft pick, Playoffs + the rules and lock status', tko['open'] and tko['rows'][:4] == ['Title', 'Bye', 'Draft pick', 'Playoffs'] and ('starters' in tko['ft'] or 'Next game' in tko['ft']), tko)
+        page.click('#tkHead'); page.wait_for_timeout(200)
+        page.click('.tksw [data-tkm="loss"]'); page.wait_for_timeout(600)
+        lv = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, L = window.__fgt.PPE.res['11'].r.loss; const t = document.querySelector('.pqtc > b').textContent;
+          const pct = v => { const r = v * 100; return r >= 10 ? Math.round(r) : r.toFixed(1); };
+          return { shown: t, want: String(pct(L.ti['11'])), ripple: !!document.querySelector('.tkrp'), on: document.querySelector('.tksw [data-tkm=\"loss\"]').classList.contains('on'), arrows: document.querySelectorAll('.pqroad .ppd').length }; })()""")
+        check(f'[{tag}] tank v1.22: Loss shows the Loss run (title chance), arrows on the road, ripple card', lv['on'] and lv['shown'].replace('%', '').replace('<', '').replace('>', '').startswith(lv['want'].split('.')[0]) and lv['ripple'], lv)
+        page.click('.tksw [data-tkm="live"]'); page.wait_for_timeout(400)
+        check(f'[{tag}] tank v1.22: back to Live = no ripple, no arrows', page.evaluate("!document.querySelector('.tkrp') && !document.querySelector('.pqroad .ppd')"))
         check(f'[{tag}] ppe v1.21: title card shows title + Reach Super Bowl', page.evaluate("/%/.test(document.querySelector('.pqtc > b').textContent) && /Reach Super Bowl/.test(document.querySelector('.pqtc em').textContent)"))
         dpr = page.evaluate("[...document.querySelectorAll('.pqdc .pr')].map(r => [r.children[0].textContent, parseFloat(r.children[2].textContent.replace(/[<>]/g, '')) || 0, r.classList.contains('ml')])")
         check(f'[{tag}] ppe v1.21: draft card = up to 4 most likely picks, most likely first and highlighted', 1 <= len(dpr) <= 4 and dpr[0][2] and all(dpr[i][1] >= dpr[i + 1][1] for i in range(len(dpr) - 1)), dpr)
         if pp:
             mlp = max(range(12), key=lambda k: pp['dp']['11'][k]) + 1
             check(f'[{tag}] ppe v1.21: draft card top pick = engine most likely pick', dpr and dpr[0][0] == f'Pick {mlp}', (dpr[:1], mlp))
-        check(f'[{tag}] ppe v1.21: strip = Playoffs, Bye, Proj. seed, Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Proj. seed|Loser Bowl')
+        check(f'[{tag}] ppe v1.22: strip = Playoffs, Bye, Likely seed (admin), Loser Bowl', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Likely seed|Loser Bowl')
         check(f'[{tag}] ppe v1.21: road to the title = 5 rounds, last one gold', page.evaluate("document.querySelectorAll('.pqroad .rr').length === 5 && document.querySelectorAll('.pqroad .rr.gold').length === 1 && /road to the title/.test(document.querySelector('.pqroad .pqch b').textContent)"))
         so = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, out = { ok: true, why: [] };
           const rows = [...document.querySelectorAll('.pqseeds .sr')].map(r => r.querySelector('.nm').textContent);
@@ -839,31 +861,35 @@ with sync_playwright() as pw:
           const dn = {}; [...document.querySelectorAll('.pqat .tr')].forEach(r => dn[nm[r.querySelector('.nm b').textContent]] = parseInt(r.querySelector('.pk').textContent.slice(1)));
           Object.keys(card).forEach(d => card[d].forEach((x, k) => { const p = dn[x[0]]; const ok = k === 0 ? p >= 11 : k === 1 ? (p === 9 || p === 10) : k === 5 ? p <= 2 : (p >= 3 && p <= 8); if(!ok) out.bad.push(['draft # vs seed', x[0], k + 1, p]); }));
           const t = '11', me = card[Object.keys(card).find(d => card[d].some(x => x[0] === t))].findIndex(x => x[0] === t);
-          if(document.querySelectorAll('.pqstrip b')[2].textContent !== '#' + (me + 1)) out.bad.push(['strip seed', document.querySelectorAll('.pqstrip b')[2].textContent, me + 1]);
+          const sdv = pp.seed[t], ml = sdv.indexOf(Math.max.apply(null, sdv));   // v1.22.0 admin: Likely seed = most likely seed from the team's own odds
+          if(document.querySelectorAll('.pqstrip b')[2].textContent !== '#' + (ml + 1)) out.bad.push(['strip seed', document.querySelectorAll('.pqstrip b')[2].textContent, ml + 1]);
           const road = [...document.querySelectorAll('.pqroad .rr b')].map(b => parseInt(b.textContent)), hud = [...document.querySelectorAll('.pqstrip b')].map(b => b.textContent);
           if(parseInt(hud[0]) !== road[0] && !/>/.test(hud[0])) out.bad.push(['playoffs heads-up vs road', hud[0], road[0]]);
           for(let k = 1; k < road.length; k++) if(road[k] > road[k - 1]) out.bad.push(['road not decreasing', road]);
           return out; })()""")
-        check(f'[{tag}] coherence v1.21.4: records never go up down a division, seed % = own odds, Draft # fits the seed, strip = card, road decreasing', not coh['bad'], coh)
+        check(f'[{tag}] coherence v1.21.4: records never go up down a division, seed % = own odds, Draft # fits the seed, strip = own most likely seed, road decreasing', not coh['bad'], coh)
         check(f'[{tag}] ppe v1.21: projected seeds = one card, 12 teams, colored seed dots', page.evaluate("document.querySelectorAll('.pqseeds .sr').length === 12 && document.querySelectorAll('.pqseeds .rk.zby').length === 6 && document.querySelectorAll('.pqseeds .rk.zwc').length === 4 && document.querySelectorAll('.pqseeds .rk.zlb').length === 2"))
-        games = page.evaluate("[...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt b')].map(b => parseInt(b.textContent)))")
-        check(f'[{tag}] bracket v1.21: 8 games (wild card, 2 semis, final per division), each side adds to 100%', len(games) == 8 and all(len(g) == 2 and g[0] + g[1] == 100 for g in games), games)
-        sbp = page.evaluate("[...document.querySelectorAll('#pqsb .st > span:last-child')].map(e => parseInt(e.textContent))")
-        check(f'[{tag}] bracket v1.21: Super Bowl card with 2 teams adding to 100%', len(sbp) == 2 and sum(sbp) == 100, sbp)
+        # v1.22.0 (admin): every bracket number = odds to land there (wild card = that seed, semis / final = reach that round)
+        bk = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, m = window.__fgt.weekModel(), code = {}; Object.keys(m.teams).forEach(id => { code[document.querySelector('.ppsel') ? id : id] = id; });
+          const T = window.__fgt.PPE; const bad = []; const byCode = {}; [...document.querySelectorAll('.pqseeds .sr')].forEach(r => {});
+          const G = [...document.querySelectorAll('.pqbk .pqg')].map(g => ({ id: g.id, rows: [...g.querySelectorAll('.gt')].map(t => ({ c: t.querySelector('.c').textContent, s: +t.querySelector('.s').textContent, v: t.querySelector('b').firstChild.textContent })) }));
+          return { n: G.length, G: G }; })()""")
+        check(f'[{tag}] bracket v1.22: 8 boxes (wild card, 2 semis, final per division), 2 teams each, every number a %', bk['n'] == 8 and all(len(g['rows']) == 2 and all(r['v'].endswith('%') for r in g['rows']) for g in bk['G']), bk)
+        sbp = page.evaluate("[...document.querySelectorAll('#pqsb .st > span:last-child')].map(e => e.firstChild.textContent)")
+        check(f'[{tag}] bracket v1.22: Super Bowl card with 2 teams and their odds to get there', len(sbp) == 2 and all(x.endswith('%') for x in sbp) and 'reach the super bowl' in page.evaluate("document.querySelector('#pqsb .h2').textContent").lower(), sbp)
         check(f'[{tag}] bracket v1.21: Loser Bowl card + bye boxes with 3 teams each', page.evaluate("!!document.querySelector('.pqlb .pqvs') && document.querySelectorAll('.pqbye').length === 2 && [...document.querySelectorAll('.pqbye')].every(b => b.querySelectorAll(':scope > div > span').length === 3)"))
         check(f'[{tag}] bracket v1.21: lines drawn between rounds', page.evaluate("(document.querySelector('svg.pqcn path') || { getAttribute: () => '' }).getAttribute('d').split('M').length - 1") == 8)
         check(f'[{tag}] bracket v1.21: Super Bowl has the moving light (unless Reduce Motion)', page.evaluate("!!document.querySelector('#pqsb > .pqglow svg rect')"))
         check(f'[{tag}] bracket v1.21: Super Bowl teams = each division final favorite', page.evaluate("document.querySelectorAll('#pqsb .st').length") == 2)
-        adv = page.evaluate("""(() => { const G = [...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt')].map(t => [t.querySelector('.c').textContent, parseInt(t.querySelector('b').textContent)]));
-          const win = g => g[0][1] >= g[1][1] ? g[0][0] : g[1][0], has = (g, c) => g.some(x => x[0] === c);
-          const sb = [...document.querySelectorAll('#pqsb .st')].map(s => s.querySelector('b').textContent);
-          // top lane: [wc, s1, s2, f]; bottom lane (mirrored): [f, s1, s2, wc]
-          const A = G.slice(0, 4), N = G.slice(4, 8);
-          return { a: has(A[1], win(A[0])) && has(A[3], win(A[1])) && has(A[3], win(A[2])), n: has(N[1], win(N[3])) && has(N[0], win(N[1])) && has(N[0], win(N[2])), fa: win(A[3]), fn: win(N[0]), sb: sb }; })()""")
-        check(f'[{tag}] bracket v1.21.2: the winner of every box moves on (wild card -> semis -> final)', adv['a'] and adv['n'], adv)
-        sbn = page.evaluate("[...document.querySelectorAll('#pqsb .st')].map(s => s.querySelector('b').textContent)")
-        names = page.evaluate("Object.fromEntries([...document.querySelectorAll('.pqseeds .sr')].map(r => [r.querySelector('.badge img') ? r.querySelector('.badge img').dataset.alt : r.querySelector('.badge').textContent, r.querySelector('.nm').textContent]))")
-        check(f'[{tag}] bracket v1.21.2: Super Bowl = the two division final winners', len(sbn) == 2 and names.get(adv['fa'], adv['fa']) == sbn[0] and names.get(adv['fn'], adv['fn']) == sbn[1], (adv['fa'], adv['fn'], sbn, names))
+        adv = page.evaluate("""(() => { const pp = window.__fgt.ENG.res.pp, m = window.__fgt.weekModel(), id = {};
+          Object.keys(m.teams).forEach(k => { const b = [...document.querySelectorAll('.pqat .tr')].find(r => r.querySelector('.nm b').textContent.trim() === m.teams[k].name.trim()); if(b) id[b.querySelector('.badge').textContent.trim() || k] = k; });
+          const G = [...document.querySelectorAll('.pqbk .pqg')].map(g => [...g.querySelectorAll('.gt .c')].map(c => c.textContent.trim()));
+          const A = G.slice(0, 4), N = G.slice(4, 8), bad = [];
+          const nxt = (box, k) => { const a = id[box[0]], b = id[box[1]]; if(!a || !b) return null; return pp[k][a] >= pp[k][b] ? box[0] : box[1]; };
+          if(nxt(A[0], 'semi') && A[1].indexOf(nxt(A[0], 'semi')) < 0) bad.push('afc wc'); if(nxt(A[1], 'fin') && A[3].indexOf(nxt(A[1], 'fin')) < 0) bad.push('afc s1'); if(nxt(A[2], 'fin') && A[3].indexOf(nxt(A[2], 'fin')) < 0) bad.push('afc s2');
+          if(nxt(N[3], 'semi') && N[1].indexOf(nxt(N[3], 'semi')) < 0) bad.push('nfc wc'); if(nxt(N[1], 'fin') && N[0].indexOf(nxt(N[1], 'fin')) < 0) bad.push('nfc s1'); if(nxt(N[2], 'fin') && N[0].indexOf(nxt(N[2], 'fin')) < 0) bad.push('nfc s2');
+          return { bad: bad, ids: Object.keys(id).length }; })()""")
+        check(f'[{tag}] bracket v1.22: who moves on = the team more likely to reach the next round', not adv['bad'] and adv['ids'] >= 10, adv)
         if pp:
             pp2 = page.evaluate("window.__fgt.ENG.res.pp")
             hv = (pp2.get('sc') or {}).get('rec', {}).get('11')
@@ -881,7 +907,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] ppe: nothing wider than the screen', page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
         check(f'[{tag}] ppe v1.21: Standings button and team chip 42 px tall', page.evaluate("Math.round(document.querySelector('#ppeBack').getBoundingClientRect().height)") == 42 and page.evaluate("Math.round(document.querySelector('#ppeSelBtn').getBoundingClientRect().height)") == 42)
         page.click('#ppeSelBtn'); page.wait_for_timeout(400)
-        check(f'[{tag}] dd: drop-down lists 12 teams with logos, no TANK pills', page.evaluate("document.querySelectorAll('.ppdd .ppddr').length === 12 && [...document.querySelectorAll('.ppdd .ppddr')].every(r => r.querySelector('.badge')) && !document.querySelector('.tkpl')"))
+        check(f'[{tag}] dd: drop-down lists 12 teams with logos and a tank pill each (admin)', page.evaluate("document.querySelectorAll('.ppdd .ppddr').length === 12 && [...document.querySelectorAll('.ppdd .ppddr')].every(r => r.querySelector('.badge') && r.querySelector('.tkdp'))"))
         check(f'[{tag}] dd: your team highlighted with a YOU tag', page.evaluate("(() => { const r = document.querySelector('.ppdd .ppddr.sel'); return !!r && r.dataset.pt === '11' && !!r.querySelector('.ddme'); })()"))
         check(f'[{tag}] dd: menu fits the screen', page.evaluate("(() => { const r = document.querySelector('.ppdd').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; })()"))
         page.evaluate("document.querySelector('#ppeDdBg').click()"); page.wait_for_timeout(300)
@@ -892,7 +918,7 @@ with sync_playwright() as pw:
         check(f'[{tag}] ppe: drop-down shows another team', 'Miami' in page.evaluate("document.querySelector('.pqban').innerText"))
         check(f'[{tag}] ppe: drop-down never changes your team', page.evaluate("JSON.parse(localStorage.getItem('fgt-team'))") == '11')
         page.wait_for_timeout(1500)
-        check(f'[{tag}] ppe v1.21: still no tank runs', page.evaluate("Object.keys(window.__fgt.PPE.res).length") == 0)
+        check(f'[{tag}] tank v1.22: runs for the teams (admin)', page.evaluate("Object.keys(window.__fgt.PPE.res).length") >= 1)
         page.click('#ppeBack'); page.wait_for_timeout(800)
         check(f'[{tag}] ppe: back returns to Standings', page.evaluate("!!document.querySelector('#ppeBtn') && !document.querySelector('.ppe')"))
         check(f'[{tag}] ppe: no page errors', not errs, errs)
@@ -910,6 +936,10 @@ with sync_playwright() as pw:
     check('ppe no code: button has no lock', not page.evaluate("!!document.querySelector('#ppeBtn .lockic')"))
     page.click('#ppeBtn'); page.wait_for_timeout(900)
     check('ppe no code: tap opens the page', page.evaluate("!!document.querySelector('.ppe.pq') && !document.querySelector('#ppeLock')"))
+    page.wait_for_timeout(1500)
+    check('tank v1.22 no code: no switch, no tank card, no seed row, no bracket, no flags, no tank runs, Best lineups tag', page.evaluate("!document.querySelector('.tksw') && !document.querySelector('.tktk') && !document.querySelector('.tksd') && !document.querySelector('.pqbk') && !document.querySelector('.tkfl') && Object.keys(window.__fgt.PPE.res).length === 0 && /Best lineups/i.test(document.querySelector('.pqban .pl').textContent)"))
+    check('tank v1.22 no code: engine pass has no flags (public numbers = best lineups)', page.evaluate("!window.__fgt.ENG.res.pp.flags"))
+    check('tank v1.22 no code: strip still says Proj. seed', page.evaluate("[...document.querySelectorAll('.pqstrip small')].map(e => e.textContent).join('|')") == 'Playoffs|Bye|Proj. seed|Loser Bowl')
     page.click('#ppeBack'); page.wait_for_timeout(700)
     page.evaluate("localStorage.setItem('fgt-adm-ok', JSON.stringify('98e8bf72b79761fc524508f1f7fb7b544081abbf34206beb60dd9077a0f3aa91'))")
     page.click('.tabbtn[data-tab="home"]'); page.wait_for_timeout(400)
@@ -935,15 +965,19 @@ with sync_playwright() as pw:
     br = pw.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
     for mode in ('normal', 'tank'):
         F.build_live = _orig_live if mode == 'normal' else _tank
-        ctx = br.new_context(viewport={'width': 393, 'height': 852}); ctx.route('**/*', route); ctx.add_init_script(ADM_INIT)
-        ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
-        page = ctx.new_page(); page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_fresh(page)
-        _exp[mode] = page.evaluate("window.__fgt.ENG.res.dp['11'].reduce((a, v, k) => a + v * (k + 1), 0)")
-        ctx.close()
+        for adm in (False, True):
+            ctx = br.new_context(viewport={'width': 393, 'height': 852}); ctx.route('**/*', route)
+            if adm: ctx.add_init_script(ADM_INIT)
+            ctx.add_init_script("localStorage.setItem('fgt-team', JSON.stringify('11')); localStorage.setItem('fgt-gate', '1');")
+            page = ctx.new_page(); page.goto(f'http://127.0.0.1:{PORT}/index.html'); wait_fresh(page)
+            _exp[mode + ('A' if adm else '')] = page.evaluate("window.__fgt.ENG.res.dp['11'].reduce((a, v, k) => a + v * (k + 1), 0)")
+            if adm: _exp[mode + 'F'] = page.evaluate("JSON.stringify((window.__fgt.ENG.res.pp.flags || {})['11'] || null)")
+            ctx.close()
     br.close()
 F.build_live = _orig_live
 # v1.16.1: odds use every team's best lineup this week, so benching starters in CBS doesn't move them (Strategic Tank does)
-check('draft: benched CBS lineup does not move draft odds (best lineups, v1.16.1)', abs(_exp['tank'] - _exp['normal']) < 0.05, _exp)
+check('draft: benched CBS lineup does not move draft odds for everyone else (best lineups, v1.16.1)', abs(_exp['tank'] - _exp['normal']) < 0.05, _exp)
+check('tank v1.22 admin: benching healthy starters = red flag, and the odds use the lineup actually set', _exp['tankF'] != 'null' and _exp['normalF'] == 'null' and abs(_exp['tankA'] - _exp['normalA']) >= 0.05, _exp)
 
 # ---- v1.17.0: Matchup Current / Optimal toggle (admin) + average pick on the Playoff Engine page ----
 with sync_playwright() as pw:
