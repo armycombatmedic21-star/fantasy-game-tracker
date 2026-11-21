@@ -3892,7 +3892,7 @@ function engineWorker(){
     }
     return tier(k.ry + yds(R, c.ry * sc * f, c.rv), SK) + tier(k.cy + yds(R, c.cy * sc * f, c.cv), SK) + (k.py >= 75 ? tier(k.py, PA) : 0) + k.tdp + k.oth + tds(R, c.rt * sc * f, 'rush') + tds(R, c.ct * sc * f, 'rec') - flr;
   }
-  let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {};
+  let P = {}, LG = 22, BYES = {}, cache = {}, REPL = {}, REPLN = {}, FUT = {}, NMS = {}, REPLF = {};
   // v1.5.3 (Wes, Nov 10): playoff odds assume every owner fills a position nobody healthy can play with a waiver pickup.
   // Conservative: the player just past what 12 teams typically roster at that position (this week and neutral).
   const REPL_RANK = { QB: 26, RB: 62, WR: 62, TE: 20, K: 14, DST: 14 };
@@ -3903,8 +3903,22 @@ function engineWorker(){
       const wk = players.filter(function(r){ return r.p === pos && !r.bye && r.m > 0 && r.c && r.c.length; }).sort(function(a, b){ return b.m - a.m; });
       if(wk.length) REPL[pos] = wk[Math.min(n, wk.length - 1)].k;
       const nt = players.filter(function(r){ return r.p === pos && r.nm > 0; }).sort(function(a, b){ return b.nm - a.nm; });
-      if(nt.length){ const r = nt[Math.min(n, nt.length - 1)]; REPLN[pos] = { m: r.nm, v: Math.pow(r.ns || 0, 2) }; }
+      if(nt.length){ const r = nt[Math.min(n, nt.length - 1)], sc = NMS[pos] || 1; REPLN[pos] = { m: r.nm * sc, v: Math.pow((r.ns || 0) * sc, 2) }; }
     });
+    // v1.21.1: waiver fill for each future week from that week's site projections
+    REPLF = {};
+    Object.keys(FUT).forEach(function(w){ const f = FUT[w] && FUT[w].p; if(!f) return; const by = {};
+      Object.keys(f).forEach(function(k){ const r = P[k], e = f[k]; if(!r || !e || !(e[0] > 0)) return; (by[r.p] || (by[r.p] = [])).push(e); });
+      REPLF[w] = {}; Object.keys(REPL_RANK).forEach(function(pos){ const a = (by[pos] || []).sort(function(x, y){ return y[0] - x[0]; });
+        if(a.length >= 8){ const e = a[Math.min(REPL_RANK[pos] - 1, a.length - 1)]; REPLF[w][pos] = { m: e[0], v: e[1] * e[1] }; } }); });
+  }
+  // v1.21.1 (Wes, Nov 21): a player's number for a future week = the sites' consensus for THAT week (Sleeper + ESPN post
+  // every remaining week), so injuries, roles and matchups they know about count. Not listed -> our own model's neutral
+  // number, calibrated to this week's consensus by position (nm_scale).
+  function futVal(q, r, wk){
+    const f = FUT[wk] && FUT[wk].p, e = f ? f[q.key] : null;
+    if(e) return { m: e[0] || 0, v: Math.pow(e[1] || 0, 2) };
+    const sc = NMS[q.pos] || 1; return { m: (r.nm || 0) * sc, v: Math.pow((r.ns || 0) * sc, 2) };
   }
   function simPlayer(q){
     // q = { pid, key, pos, mode: pre|live|final|none, pts, live }
@@ -3987,9 +4001,10 @@ function engineWorker(){
   // best lineup by neutral mean for a future week (Drop 1 §4.5)
   function futureTeam(T, wk){
     const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
-    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push({ m: r.nm || 0, v: Math.pow(r.ns || 0, 2) }); });
+    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push(futVal(q, r, wk)); });
     Object.keys(pool).forEach(function(k){ pool[k].sort(function(a, b){ return b.m - a.m; }); });
-    const take = function(k){ return pool[k].length ? pool[k].shift() : (REPLN[k] || { m: 0, v: 0 }); };
+    const rf = REPLF[wk] || {};
+    const take = function(k){ return pool[k].length ? pool[k].shift() : (rf[k] || REPLN[k] || { m: 0, v: 0 }); };
     const L = [take('QB'), take('RB'), take('WR'), take('WR'), take('TE'), take('K'), take('DST')];
     const fx = (pool.RB[0] || { m: -1 }).m >= (pool.WR[0] || { m: -1 }).m ? take('RB') : take('WR'); L.push(fx);
     let m = 0, v = 0; L.forEach(function(x){ m += x.m; v += x.v; });
@@ -4164,7 +4179,7 @@ function engineWorker(){
   let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
   self.onmessage = function(e){
     const msg = e.data;
-    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
+    if(msg.type === 'proj'){ P = {}; (msg.proj.players || []).forEach(function(r){ P[r.k] = r; }); FUT = msg.proj.fut || {}; NMS = msg.proj.nm_scale || {}; setRepl(msg.proj.players || []); LG = msg.proj.lg_ppg || 22; BYES = msg.proj.byes || {}; const k = +msg.proj.spread_k; SPREAD_K = (k >= 0.8 && k <= 2.5) ? k : 1.35;
       const sp = msg.proj.spread_pos; SPOS = Object.assign({}, SPOS0); if(sp && typeof sp === 'object') Object.keys(SPOS0).forEach(function(p){ const v = +sp[p]; if(v >= 0.8 && v <= 2) SPOS[p] = v; });
       const rh = msg.proj.spread_rho; SRHO = (rh != null && +rh >= 0 && +rh <= 0.3) ? +rh : 0.06; cache = {}; return; }
     if(msg.type === 'one'){   // v1.17.0: Matchup Current / Optimal toggle — one game with the lineups the screen shows

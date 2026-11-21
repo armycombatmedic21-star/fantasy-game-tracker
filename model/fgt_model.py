@@ -706,6 +706,9 @@ def src_points(pos, st):
     return fp_to_league(pos, *(st.get(k, 0) or 0 for k in ("pyd", "ptd", "ints", "ryd", "rtd", "cyd", "ctd"))) - (st.get("fl") or 0)
 
 
+LAST_SD = [0.0]
+
+
 def consensus_rec(pos, srcs, opp, prob, flags):
     """Average every raw stat over the sites that have the player, then simulate it with our scoring (summ() fields)."""
     names = "+".join(SRC_LABEL.get(k, k) for k in sorted(srcs))
@@ -738,6 +741,7 @@ def consensus_rec(pos, srcs, opp, prob, flags):
                      f"TD {c['rt'] + c['ct']:.2f}; vs {opp}")
         comps = [c]
         sim = np.round(sim_player(RNG, pos, comps, prob))
+    LAST_SD[0] = float(np.std(sim))          # future weeks keep the simulation's own spread (same as our model's ns)
     return summ(sim, comps, 1.0, basis, flags)
 
 
@@ -845,6 +849,54 @@ def apply_consensus(out, dst, src_file, opp_of=None, playing=None):
             "added_from_sites": added, "added_4plus": sorted(unmatched)[:40],
             "sources_per_player": {str(k): v for k, v in sorted(counts.items())},
             "min_sources": CONSENSUS_MIN, "status": {k: {kk: vv for kk, vv in v.items() if kk != "info"} for k, v in status.items()}}
+
+
+def future_proj(players, src_file):
+    """v1.21.1 (Wes, Nov 21): future weeks (12-17: playoff odds, bracket, draft odds) from the sites that post them.
+    Sleeper and ESPN post every remaining week (tested Nov 20); CBS and FantasyPros only this week. Same converter as
+    this week's consensus: average each raw stat over the sites that have the player, then our scoring. Returns
+    {"srcs": [...], "p": {player key: [mean, sd, sites]}} for the players in this week's list (same keys the app uses).
+    No site projects him while 2 sites answered -> [0, 0, 0] (backup / out / on IR that week). The engine falls back to
+    our own model (calibrated with nm_scale) for anyone missing."""
+    idx, by_name, by_last, inj, status = load_sources(src_file)
+    healthy = sorted(k for k, v in status.items() if isinstance(v, dict) and v.get("ok"))
+
+    def find(key):
+        if key in idx:
+            return key
+        same = by_name.get((key[0], key[2]), set())
+        if len(same) == 1:
+            return next(iter(same))
+        last = key[0].split(" ")[-1] if key[0] else ""
+        same = by_last.get((last, key[1], key[2]), set())
+        return next(iter(same)) if len(same) == 1 else None
+
+    out = {}
+    for rec in players:
+        pos = rec.get("p")
+        if pos not in ("QB", "RB", "WR", "TE", "K", "DST") or not rec.get("k"):
+            continue
+        k_ = ("DST", rec["t"]) if pos == "DST" else find((fold(rec["n"]), rec["t"], pos))
+        srcs = {k: v for k, v in (idx.get(k_, {}) if k_ else {}).items() if v}
+        if not srcs:
+            if len(healthy) >= CONSENSUS_MIN and pos != "DST":
+                out[rec["k"]] = [0, 0, 0]
+            continue
+        r = consensus_rec(pos, srcs, "", 1.0, [])
+        m = max(0.0, r["m"])
+        out[rec["k"]] = [round(m, 2), round(LAST_SD[0], 2) if m > 0 else 0, len(srcs)]
+    return {"srcs": healthy, "p": out}
+
+
+def nm_scale(players):
+    """Calibration for our own model's neutral numbers (future-week fallback only): this week's consensus / our model,
+    by position, over players with 2+ sites and a real projection. Clamped to 0.8-1.6."""
+    out = {}
+    for pos in ("QB", "RB", "WR", "TE", "K", "DST"):
+        xs = [p for p in players if p.get("p") == pos and len(p.get("cs") or []) >= CONSENSUS_MIN and p.get("m", 0) > 2 and p.get("nm", 0) > 0]
+        if len(xs) >= 8:
+            out[pos] = round(min(1.6, max(0.8, sum(p["m"] for p in xs) / sum(p["nm"] for p in xs))), 3)
+    return out
 
 
 def summ(sim, comps, scale, basis, flags):

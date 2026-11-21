@@ -1,0 +1,26 @@
+# TEMPORARY (Nov 21): test run of the v1.21.1 future-week projections on a branch. Never commits; uploads the result.
+name: Future-week test
+on:
+  push:
+    branches: [fut-test]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r model/requirements.txt
+      - name: Run model (no commit)
+        env:
+          FP_API_KEY: ${{ secrets.FP_API_KEY }}
+        run: python model/run_projections.py || true
+      - run: python -c "import json;s=json.load(open('projections-status.json'));print(json.dumps(s.get('future'),indent=1));print(s.get('ok'),s.get('error'))"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fut
+          path: |
+            projections.json
+            projections-status.json
