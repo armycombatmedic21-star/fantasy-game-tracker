@@ -1,5 +1,5 @@
 {
- "at": "2026-11-21T19:52:41+00:00",
+ "at": "2026-11-21T20:55:50+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 405,
-   "secs": 3.2,
+   "secs": 3.4,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -60,7 +60,7 @@
   "espn": {
    "ok": true,
    "records": 345,
-   "secs": 0.4,
+   "secs": 0.5,
    "info": {
     "players": 1061,
     "kept": 345,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 139,
-   "secs": 21.7,
+   "secs": 29.8,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Joe Milton III PHI",
-  "Jacoby Brissett BAL",
-  "Cam Ward TEN",
-  "Aaron Rodgers PIT",
-  "Jaylen Waddle DEN",
-  "Kirk Cousins MIN",
-  "DJ Moore BUF",
-  "Daniel Jones IND",
-  "Khalil Shakir BUF",
-  "Rashee Rice KC",
-  "Jaylen Warren PIT",
-  "Xavier Hutchinson HOU",
-  "Tyler Shough NO",
-  "Ollie Gordon II MIA",
-  "Braelon Allen NYJ",
-  "Jared Goff DET",
+  "Deebo Samuel Sr. SF",
+  "Jameson Williams DET",
   "Rome Odunze CHI",
-  "Jalen Coker CAR",
-  "Cam Skattebo NYG",
-  "Ladd McConkey LAC",
   "Travis Etienne NO",
-  "Zay Flowers BAL",
-  "Tony Pollard TEN",
+  "Jaylen Waddle DEN",
+  "Chris Olave NO",
+  "Carnell Tate TEN",
+  "David Montgomery HOU",
+  "Elic Ayomanor TEN",
+  "Khalil Shakir BUF",
+  "Breece Hall NYJ",
+  "Jared Goff DET",
+  "DJ Moore BUF",
+  "Josh Downs KC",
+  "Kirk Cousins MIN",
+  "Jalen Coker CAR",
+  "Bryce Young CAR",
+  "Kyle McCord MIA",
   "Malik Nabers NYG",
-  "Josh Downs KC"
+  "Emeka Egbuka TB",
+  "Emari Demercado HOU",
+  "Geno Smith NYJ",
+  "Ashton Jeanty LV",
+  "Saquon Barkley PHI",
+  "Omarion Hampton LAC"
  ],
  "fp_unmatched_5plus_count": 63,
  "future": {
@@ -169,29 +169,29 @@
    "projected": 490
   },
   "nm_scale": {
-   "QB": 1.072,
-   "RB": 0.945,
-   "WR": 1.07,
-   "TE": 1.131,
-   "K": 1.05,
-   "DST": 1.026
+   "QB": 1.069,
+   "RB": 0.947,
+   "WR": 1.076,
+   "TE": 1.136,
+   "K": 1.052,
+   "DST": 1.027
   }
  },
  "scorecard": "week 11: 492 pre-kickoff projections saved",
  "consensus": {
-  "used": 334,
+  "used": 333,
   "fallback": 64,
   "single_source_blend": 53,
-  "out_by_injury": 58,
+  "out_by_injury": 59,
   "no_source_zero": 74,
   "added_from_sites": 3,
   "added_4plus": [
-   "Josh Johnson ARI QB 6.4"
+   "Josh Johnson ARI QB 7.2"
   ],
   "sources_per_player": {
    "0": 130,
-   "1": 65,
-   "2": 195,
+   "1": 66,
+   "2": 194,
    "3": 100,
    "4": 40
   },
