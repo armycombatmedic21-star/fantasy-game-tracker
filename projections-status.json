@@ -1,5 +1,5 @@
 {
- "at": "2026-11-22T21:26:56+00:00",
+ "at": "2026-11-22T22:06:00+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -54,27 +54,27 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 273
+    "injury_flags": 276
    }
   },
   "espn": {
    "ok": true,
    "records": 342,
-   "secs": 0.4,
+   "secs": 0.7,
    "info": {
-    "players": 1062,
+    "players": 1063,
     "kept": 342,
     "dropped": {
      "pos": 0,
      "team": 323,
-     "no_week_proj": 397
+     "no_week_proj": 398
     }
    }
   },
   "cbs": {
    "ok": true,
    "records": 142,
-   "secs": 32.9,
+   "secs": 38.7,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Jakobi Meyers JAX",
-  "Geno Smith NYJ",
-  "Jordan Mason MIN",
-  "Tyler Shough NO",
-  "Braelon Allen NYJ",
-  "Jameis Winston NYG",
-  "Cam Ward TEN",
-  "DJ Moore BUF",
-  "Tank Dell HOU",
-  "Saquon Barkley PHI",
   "Emeka Egbuka TB",
-  "Fernando Mendoza LV",
-  "Kyle Monangai CHI",
-  "Bhayshul Tuten JAX",
-  "Omarion Hampton LAC",
-  "Zay Flowers BAL",
-  "Jacoby Brissett BAL",
+  "Courtland Sutton DEN",
+  "Jameson Williams DET",
   "Jaylen Warren PIT",
-  "Adonai Mitchell NYJ",
-  "Jacory Croskey-Merritt WAS",
-  "Rome Odunze CHI",
-  "Kyle McCord MIA",
-  "Deebo Samuel Sr. SF",
-  "Carnell Tate TEN",
-  "Breece Hall NYJ"
+  "Kirk Cousins MIN",
+  "Bhayshul Tuten JAX",
+  "Aaron Rodgers PIT",
+  "David Montgomery HOU",
+  "Chris Olave NO",
+  "Elic Ayomanor TEN",
+  "Stefon Diggs WAS",
+  "Jordyn Tyson NO",
+  "Javonte Williams DAL",
+  "Saquon Barkley PHI",
+  "Justin Herbert LAC",
+  "Breece Hall NYJ",
+  "Kyle Monangai CHI",
+  "Tyler Shough NO",
+  "Malik Nabers NYG",
+  "Joe Milton III PHI",
+  "Daniel Jones IND",
+  "Jonathan Taylor IND",
+  "J.J. McCarthy NYG",
+  "DJ Moore BUF",
+  "Carnell Tate TEN"
  ],
  "fp_unmatched_5plus_count": 64,
  "future": {
@@ -171,9 +171,9 @@
   "nm_scale": {
    "QB": 1.076,
    "RB": 0.963,
-   "WR": 1.082,
-   "TE": 1.18,
-   "K": 1.051,
+   "WR": 1.088,
+   "TE": 1.184,
+   "K": 1.052,
    "DST": 1.027
   }
  },
