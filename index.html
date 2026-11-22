@@ -1310,6 +1310,101 @@ html.gsm .mc.lg .rows{padding-top:0}
 html.gsm body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
 
+
+/* ===== v1.27.0 (Wes, Nov 22): loading animations =====
+   A shimmer      = a number whose spot is known (projections, odds, draft #)  -> gray glass bar with a light sweep
+   B sweep bar    = win probability bars                                         -> the bar's own track, a blue glow sliding across
+   C progress ring= the big season sim (Playoff Engine)                          -> real % from the worker (it reports every 1,000 seasons)
+   D spinner pill = rows that finish one by one (TANK / DON'T TANK)              -> each pill spins until its own result lands
+   E refresh      = re-running numbers you can already see (Win / Live / Loss)   -> old numbers stay, dimmed, with a sweep; spinner on the button you tapped
+   F skeleton     = chat before the first messages arrive                        -> gray message bubbles */
+@keyframes ldShim{0%{transform:translateX(-110%)}100%{transform:translateX(110%)}}
+@keyframes ldSweep{0%{left:-40%}100%{left:100%}}
+@keyframes ldSpin{to{transform:rotate(360deg)}}
+@keyframes ldDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+@keyframes ldPop{0%{opacity:0;transform:translateY(5px) scale(.92);filter:blur(3px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:none;filter:none}}
+@keyframes ldRise{from{opacity:.3;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ldClip{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes ldGlow{0%{box-shadow:0 0 0 0 rgba(79,141,255,.0)}35%{box-shadow:0 0 18px 2px rgba(79,141,255,.45)}100%{box-shadow:0 0 0 0 rgba(79,141,255,0)}}
+@keyframes ldOrbit{to{transform:rotate(360deg)}}
+@keyframes ldBreath{0%,100%{opacity:.55}50%{opacity:1}}
+.ld{display:inline-block;vertical-align:middle;position:relative;overflow:hidden;border-radius:6px;background:rgba(147,174,200,.14);box-shadow:inset 0 0 0 1px rgba(147,174,200,.06)}
+.ld::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(150,190,255,.10) 30%,rgba(190,215,255,.30) 50%,rgba(150,190,255,.10) 70%,transparent 100%);animation:ldShim 1.5s cubic-bezier(.45,.05,.55,.95) infinite;animation-delay:var(--d,0s);transform:translateX(-110%)}
+.chip2.ldchip{border-color:rgba(147,174,200,.16);padding:3px 5px;line-height:0}
+.trow .sc small.ldsm{display:block;margin-top:5px;line-height:0}
+.ppt small.pj .ld{margin-top:1px}
+.fp .pj.ldpj span{display:flex;justify-content:center}
+.lacell b .ld{margin:2px 0}
+.ldwp .wpl{align-items:center}
+.ldlab{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;letter-spacing:.3px;color:#8fb6ff}
+.lddots{display:inline-flex;gap:3px;font-style:normal}
+.lddots i{width:4px;height:4px;border-radius:50%;background:#8fb6ff;animation:ldDot 1.1s ease-in-out infinite}
+.lddots i:nth-child(2){animation-delay:.15s}.lddots i:nth-child(3){animation-delay:.3s}
+.ldbar{position:relative;height:8px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(79,141,255,.12)}
+.ldbar i{position:absolute;top:0;bottom:0;left:-40%;width:40%;border-radius:9px;background:linear-gradient(90deg,rgba(79,141,255,0),#4f8dff 55%,#9cc2ff 80%,rgba(156,194,255,0));box-shadow:0 0 12px rgba(79,141,255,.7);animation:ldSweep 1.35s cubic-bezier(.55,.1,.45,.9) infinite}
+.ldbar.sm{height:3px;border-radius:0;background:rgba(79,141,255,.08);box-shadow:none}
+.ldbar.sm i{border-radius:0;box-shadow:0 0 8px rgba(79,141,255,.8)}
+.ldseg{display:block;margin-top:8px;line-height:0}.nm.r .ldseg{text-align:right}
+.ldspin{display:inline-block;flex:none;width:11px;height:11px;border-radius:50%;border:2px solid rgba(143,182,255,.22);border-top-color:#8fb6ff;border-right-color:#8fb6ff;animation:ldSpin .75s linear infinite;vertical-align:-1px}
+.tkdp.ldp{display:inline-flex;align-items:center;gap:6px;color:#8fb6ff;border-color:rgba(79,141,255,.35);background:rgba(79,141,255,.08)}
+.tkpill.ldtp{display:inline-flex;align-items:center;gap:7px;background:rgba(79,141,255,.16);color:#a9c8ff;box-shadow:inset 0 0 0 1px rgba(79,141,255,.45)}
+.tktk.ldtk{border-color:rgba(79,141,255,.35);position:relative}
+.tktk.ldtk .tkhd{color:#8fb6ff}
+.tktk.ldtk .tx small b{color:#cfe0ff}
+.tkseg button i.ldspin{width:12px;height:12px;background:none;margin-right:2px}
+.tkseg button.on.x .ldspin{border-color:rgba(255,107,122,.25);border-top-color:#ff6b7a;border-right-color:#ff6b7a}
+.tkseg button.on.w .ldspin{border-color:rgba(61,220,132,.25);border-top-color:#3ddc84;border-right-color:#3ddc84}
+.tksw .n .lddots{margin-left:4px;vertical-align:2px}.tksw .n .lddots i{background:currentColor}
+.ldpend .pqtc,.ldpend .pqdc,.ldpend .pqstrip,.ldpend .tksd,.ldpend .pqroad{position:relative;overflow:hidden}
+.ldpend .pqtc>*,.ldpend .pqdc>*,.ldpend .pqstrip>*,.ldpend .tksd>*,.ldpend .pqroad>*{opacity:.42;filter:saturate(.5);transition:opacity .25s,filter .25s}
+.ldpend .pqtc::after,.ldpend .pqdc::after,.ldpend .pqstrip::after,.ldpend .tksd::after,.ldpend .pqroad::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 25%,rgba(143,182,255,.13) 45%,rgba(190,215,255,.22) 50%,rgba(143,182,255,.13) 55%,transparent 75%);animation:ldShim 1.5s cubic-bezier(.45,.05,.55,.95) infinite}
+/* C: progress ring */
+.pqtc.ldtc{gap:0}
+.ldring{position:relative;width:96px;height:96px;margin:10px 0 8px}
+.ldring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ldring .tr{fill:none;stroke:rgba(147,174,200,.12);stroke-width:7}
+.ldring .pg{fill:none;stroke:url(#ldg);stroke-width:7;stroke-linecap:round;stroke-dasharray:213.63;filter:drop-shadow(0 0 5px rgba(79,141,255,.75))}
+.ldring .orb{position:absolute;inset:-6px;border-radius:50%;border:1.5px dashed rgba(244,196,61,.28);animation:ldOrbit 9s linear infinite}
+.ldring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.ldring b sup{font-size:.5em;vertical-align:top;position:relative;top:.1em;margin-left:1px}
+.pqtc.ldtc em{font-size:11.5px;line-height:1.35}.pqtc.ldtc em b{font-size:12.5px;font-variant-numeric:tabular-nums}
+.ldsk .pqdc .pr .br{background:none}
+.ldsk .pqstrip>div{display:flex;flex-direction:column;align-items:center;gap:7px;padding:2px 0}
+.ldsk .tksg>div{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
+.ldsk .pqroad .rl{display:flex;align-items:center;justify-content:space-between;padding:9px 2px}
+/* F: chat skeleton */
+.ldchat{display:flex;flex-direction:column;gap:10px;padding:14px 4px}
+.ldchat .b{display:flex;flex-direction:column;gap:5px}
+.ldchat .b.r{align-items:flex-end}
+.ldchat .b .ld:last-child{border-radius:16px 16px 16px 4px}
+.ldchat .b.r .ld:last-child{border-radius:16px 16px 4px 16px;background:rgba(79,141,255,.16)}
+.ldchat .cap{align-self:center;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.3px;color:#8fb6ff;margin-bottom:4px}
+/* row waves */
+.stcard .strow:nth-of-type(2) .ld{--d:.08s}.stcard .strow:nth-of-type(3) .ld{--d:.16s}.stcard .strow:nth-of-type(4) .ld{--d:.24s}.stcard .strow:nth-of-type(5) .ld{--d:.32s}.stcard .strow:nth-of-type(6) .ld{--d:.40s}
+#cards .mc:nth-child(2) .ld{--d:.1s}#cards .mc:nth-child(3) .ld{--d:.2s}#cards .mc:nth-child(4) .ld{--d:.3s}#cards .mc:nth-child(5) .ld{--d:.4s}
+/* reveals: only while the data has just landed */
+.ldjust .wpbar{animation:ldClip .9s cubic-bezier(.2,.8,.2,1) both}
+.ldjust .wpl b,.ldjust .chip2,.ldjust .trow .sc small,.ldjust .ppt small.pj,.ldjust .fp .pj span,.ldjust .lacell:nth-of-type(n+3) b,.ldjust .lacell:nth-of-type(n+3) em,.ldjust .stpo,.ldjust .stdp{animation:ldPop .5s cubic-bezier(.2,.9,.3,1.15) both}
+.ldjust .stcard .strow:nth-of-type(2) .stpo,.ldjust .stcard .strow:nth-of-type(2) .stdp{animation-delay:.05s}
+.ldjust .stcard .strow:nth-of-type(3) .stpo,.ldjust .stcard .strow:nth-of-type(3) .stdp{animation-delay:.1s}
+.ldjust .stcard .strow:nth-of-type(4) .stpo,.ldjust .stcard .strow:nth-of-type(4) .stdp{animation-delay:.15s}
+.ldjust .stcard .strow:nth-of-type(5) .stpo,.ldjust .stcard .strow:nth-of-type(5) .stdp{animation-delay:.2s}
+.ldjust .stcard .strow:nth-of-type(6) .stpo,.ldjust .stcard .strow:nth-of-type(6) .stdp{animation-delay:.25s}
+.ldjust .stpo i u{animation:ldClip .8s .15s cubic-bezier(.2,.8,.2,1) both}
+.ldjust .optg{animation:ldPop .45s ease-out both}
+.ldjust .ppe .pqhud{animation:ldRise .5s ease-out both}
+.ldjust .ppe .pqstrip{animation:ldRise .5s .08s ease-out both}
+.ldjust .ppe .tktk{animation:ldRise .5s .16s ease-out both}
+.ldjust .ppe .tksd{animation:ldRise .5s .24s ease-out both}
+.ldjust .ppe .pqroad{animation:ldRise .5s .32s ease-out both}
+.ldjust .pqtc>b{animation:ldPop .6s .05s cubic-bezier(.2,.9,.3,1.2) both}
+.ldjust .pqdc .pr .br i{animation:ldClip .8s .2s cubic-bezier(.2,.8,.2,1) both}
+.ldpops .tkdp:not(.ldp),.ldpops .tkmo{animation:ldPop .45s cubic-bezier(.2,.9,.3,1.2) both}
+.ldpops .tktk:not(.ldtk){animation:ldPop .5s cubic-bezier(.2,.9,.3,1.1) both}
+.ldfresh .pqtc,.ldfresh .pqdc,.ldfresh .pqstrip,.ldfresh .tksd{animation:ldGlow 1.1s ease-out both}
+.ldfresh .tkdl,.ldfresh .ppd,.ldfresh .pqtc>b,.ldfresh .pqstrip b,.ldfresh .tksg b{animation:ldPop .5s cubic-bezier(.2,.9,.3,1.15) both}
+.ldjust .chatmsg{animation:ldRise .4s ease-out both}
+.ldjust .chatmsg:nth-child(2){animation-delay:.05s}.ldjust .chatmsg:nth-child(3){animation-delay:.1s}.ldjust .chatmsg:nth-child(4){animation-delay:.15s}.ldjust .chatmsg:nth-child(5){animation-delay:.2s}.ldjust .chatmsg:nth-child(6){animation-delay:.25s}.ldjust .chatmsg:nth-child(7){animation-delay:.3s}
 </style>
 </head>
 <body>
@@ -1381,10 +1476,11 @@ html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.26.0';
+const APP_VERSION = '1.27.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.27.0', 'Loading animations everywhere the app makes you wait. Win odds, projections, playoff %, draft picks and the Playoff Engine show a moving shimmer or a sweeping bar instead of going blank, then the numbers pop in. The Playoff Engine shows a progress ring with the real % of the season sim. Chat shows gray message bubbles until it loads. Visual changes: loading states on Scoreboard, Matchup, Standings, Playoff Engine and Chat.'],
   ['1.26.0', 'Android: the league game cards on the Scoreboard are shorter and don’t wrap anymore. Team and win % on top, record and owner underneath, and the players-left count is gone.'],
   ['1.25.0', 'Bigger, easier-to-read player drop-downs: bigger point boxes with the yards (or distance) right under each one, three to a row for yards and points allowed, one row for touchdowns and field goals, and bigger text throughout.'],
   ['1.24.0', 'Cards go closer to the edges of the screen, so everything is a little wider. Grandpa Safe Mode: shorter game cards with no wrapping (team and win % on top, record and owner underneath), bigger bucket boxes in the player drop-down, and no text highlighting on a long press.'],
@@ -2219,6 +2315,37 @@ function wpRow(wa, full, fin){
   if(!full) return bar;
   return '<div class="wp"><div class="wpl"><b class="' + (a >= b ? 'lead' : '') + '">' + fmtPct(wa, fin) + '</b><span>Win Probability</span><b class="' + (b > a ? 'lead' : '') + '">' + fmtPct(1 - wa, fin) + '</b></div>' + bar + '</div>';
 }
+
+// ===== v1.27.0 (Wes, Nov 22): loading animations (CSS kit at the end of the style block) =====
+function LDG(){ return ADV && isCurrentWeek() && !(ENG.res && engineReady()); }
+function ldB(w, h, r){ return '<i class="ld" style="width:' + w + 'px;height:' + h + 'px' + (r ? ';border-radius:' + r + 'px' : '') + '"></i>'; }
+const LD_DOTS = '<em class="lddots"><i></i><i></i><i></i></em>';
+function ldWp(){ return '<div class="wp ldwp"><div class="wpl">' + ldB(46, 16, 6) + '<span class="ldlab">Calculating win odds' + LD_DOTS + '</span>' + ldB(46, 16, 6) + '</div><div class="ldbar"><i></i></div></div>'; }
+function ldSpin(){ return '<i class="ldspin" aria-hidden="true"></i>'; }
+function ldRingHtml(){ const p = Math.max(0, Math.min(1, ENG.prog || 0)), n = Math.round(p * 20) * 1000;
+  return '<div class="ldring"><span class="orb"></span><svg viewBox="0 0 80 80"><defs><linearGradient id="ldg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f8dff"/><stop offset="1" stop-color="#9cd8ff"/></linearGradient></defs><circle class="tr" cx="40" cy="40" r="34"/><circle class="pg" cx="40" cy="40" r="34" style="stroke-dashoffset:' + (213.63 * (1 - p)).toFixed(2) + '"/></svg><b>' + Math.round(p * 100) + '<sup>%</sup></b></div>' +
+    '<em>Simulating seasons<br><b>' + n.toLocaleString() + '</b> of 20,000</em>'; }
+function ldRingTick(){ const r = document.querySelector('.ldtc'); if(!r) return; const p = Math.max(0, Math.min(1, ENG.prog || 0));
+  r.querySelector('.pg').style.strokeDashoffset = (213.63 * (1 - p)).toFixed(2); r.querySelector('.ldring b').innerHTML = Math.round(p * 100) + '<sup>%</sup>';
+  r.querySelector('em b').textContent = (Math.round(p * 20) * 1000).toLocaleString(); }
+function ppeSkel(t, TM, me){
+  const divIdx = TM.divs.findIndex(function(d){ return d.ids.indexOf(t) >= 0; }), rk = divIdx >= 0 ? TM.divs[divIdx].ids.indexOf(t) + 1 : 0;
+  const ord = ['', '1st', '2nd', '3rd', '4th', '5th', '6th'];
+  let h = '<div class="ldsk">';
+  h += '<div class="pqban" data-key="pqban">' + badge(me.T) + '<div class="pn"><b>' + esc(me.name) + '</b><span>Now ' + esc(me.rec) + (rk ? ' · ' + ord[rk] + ' in ' + esc(me.div) : '') + '</span></div><span class="pl"><i></i>' + (ADMIN ? 'Tank-aware' : 'Best lineups') + '</span></div>';
+  if(ADMIN) h += '<div class="tksw" data-key="tksw"><div class="l"><span>This week’s game</span>' + ldB(130, 14, 5) + '</div><div class="tkseg"><button class="w" disabled>Win</button><button class="v on" disabled><i></i>Live</button><button class="x" disabled>Loss</button></div><div class="n">Win and Loss unlock when the season sim finishes.</div></div>';
+  const row = function(i){ return '<div class="pr' + (i === 0 ? ' ml' : '') + '"><span>' + ldB(40, 12, 4) + '</span><span class="br">' + ldB(i === 0 ? 70 : 54 - i * 8, 7, 4) + '</span><span>' + ldB(28, 12, 4) + '</span></div>'; };
+  h += '<div class="pqhud" data-key="pqhud"><div class="pqtc ldtc"><small>' + PQI.trophy(14) + 'Title chance</small>' + ldRingHtml() + '</div>' +
+    '<div class="pqdc"><div class="dh"><small>Draft pick</small><em>' + ldB(42, 11, 4) + '</em></div>' + [0, 1, 2, 3].map(row).join('') + '</div></div>';
+  const cell = function(l, s2){ return '<div><small>' + l + '</small>' + ldB(46, 24, 7) + '<em>' + s2 + '</em></div>'; };
+  h += '<div class="pqstrip" data-key="pqstrip">' + cell('Playoffs', 'Top 5') + cell('Bye', 'Top 3') + cell(ADMIN ? 'Likely seed' : 'Proj. seed', ldB(54, 9, 4)) + cell('Loser Bowl', '6th place') + '</div>';
+  if(ADMIN) h += '<section class="tktk wait ldtk" data-key="tktk"><div class="tkhd">' + TK_IC + 'Strategic Tank Engine</div><div class="h"><span class="tkpill ldtp">' + ldSpin() + 'WAITING</span><span class="tx"><b>Starts after the season sim</b><small>Then it runs Win and Loss for ' + esc(me.name) + '</small></span></div></section>';
+  h += '<section class="pqcard tksd" data-key="tksd"><div class="pqst"><b>Where ' + esc(me.name) + ' finishes</b><span>(odds of each seed)</span></div><div class="tksg">' + ['1st', '2nd', '3rd', '4th', '5th', '6th'].map(function(x, i){ return '<div class="' + (i < 3 ? 'mzb' : i < 5 ? 'mzw' : 'mzl') + '"><small>' + x + '</small>' + ldB(34, 18, 6) + '</div>'; }).join('') + '</div></section>';
+  return h + '</div>';
+}
+function chatSkel(){ const b = function(r, w1, w2){ return '<div class="b' + (r ? ' r' : '') + '">' + ldB(w1, 9, 4) + ldB(w2, 34, 16) + '</div>'; };
+  return '<div class="ldchat"><span class="cap">' + ldSpin() + 'Loading league chat' + LD_DOTS + '</span>' + b(0, 92, 210) + b(0, 0, 150) + b(1, 70, 190) + b(0, 104, 236) + b(1, 0, 120) + b(0, 84, 170) + '</div>'; }
+function ldReveal(c, on){ if(!on) return; document.body.classList.add(c); clearTimeout(ldReveal[c]); ldReveal[c] = setTimeout(function(){ document.body.classList.remove(c); }, 1600); }
 function engNote(){
   if(!isCurrentWeek()) return '';
   if(!S.proj) return 'Prediction Engine · loading';
@@ -2301,19 +2428,19 @@ function card(mt, mine, LM){
   const done = left === 0 && (la && la.any);
   const fw = done && B ? finalWa(la, lb) : null;
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
-  const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : ''; };
+  const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : !mine && !done && LDG() ? '<span class="chip2 ldchip">' + ldB(22, 9, 4) + '</span>' : ''; };
   const on = mBegun(A, la, B, lb);
   const gl = (GSM || ANDROID) && !mine;   // v1.24.0 Safe Mode / v1.26.0 all Android: line 1 name + win %, line 2 record · owner (nothing wraps)
   const tn = function(t, w){ return gl ? '<span class="tn gsmtn"><span class="gl1"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '</span><small class="gl2"><span class="gr">' + esc(t ? recOf(t) : '') + '</span>' + (ownerOf(t) ? ' · <span class="go">' + esc(ownerOf(t)) + '</span>' : '') + '</small></span>' :
     '<span class="tn"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '<small>' + esc(t ? recOf(t) : '') + '</small>' + (ownerOf(t) ? '<small class="own">' + esc(ownerOf(t)) + '</small>' : '') + '</span>'; };
-  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + tn(t, w) + '<span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done && ADV ? '<small>' + pj.toFixed(1) + '</small>' : '') + '</span></div>'; };
+  const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + tn(t, w) + '<span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done && ADV ? '<small>' + pj.toFixed(1) + '</small>' : !done && LDG() ? '<small class="ldsm">' + ldB(28, 9, 4) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
     (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '<span></span><span class="tag">' + left + ' players left</span>' : GSM ? '' :   // v1.23.0 Safe Mode: no pin
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
     (mine || GSM || ANDROID ? '' : '<span class="tag left">' + left + ' left</span>') +   // v1.24.0: no "N left" on league cards in Safe Mode
     '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
-    (wa != null && B && mine ? wpRow(wa, true, done) : (mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
+    (wa != null && B && mine ? wpRow(wa, true, done) : (mine && LDG() && B ? ldWp() : mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
 }
 function homeView(){
   let h = header('Game Tracker') + onStrip() + statusStrip();
@@ -2326,9 +2453,9 @@ function homeView(){
       '<button class="lasec" id="laBtn">League Analysis<span>›</span></button>') + '<section class="la' + (dw ? ' dw' : '') + '" data-key="la">' + (dw ? DWB : '') + '<div class="lagrid">' +
       '<div class="lacell"><small>Division</small><b>' + (d ? ordSup(d.rank) : '–') + '</b><em>' + esc(d ? d.div : '') + '</em></div><hr>' +
       '<div class="lacell"><small>League</small><b>' + (lr ? ordSup(lr.rank) : '–') + '</b><em>of ' + (lr ? lr.of : 12) + '</em></div><hr>' +
-      (!ADV ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? 'top 5 in div' : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
+      (!ADV ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : LDG() ? ldB(62, 30, 8) : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? (LDG() ? ldB(58, 9, 4) : 'top 5 in div') : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
       // v1.15.0 (Wes): 4th box — most likely draft pick and its odds
-      (function(){ const x = engineReady() ? dpOf(S.team) : null; return '<hr><div class="lacell dpc"><small>Draft Pick</small><b>' + (!ADV ? LOCKI : x ? (x.ml + 1) : '–') + '</b><em>' + (ADV && x ? '(' + dpPct(x.d[x.ml]) + ')' : '&nbsp;') + '</em></div>'; })() +
+      (function(){ const x = engineReady() ? dpOf(S.team) : null; return '<hr><div class="lacell dpc"><small>Draft Pick</small><b>' + (!ADV ? LOCKI : x ? (x.ml + 1) : LDG() ? ldB(40, 30, 8) : '–') + '</b><em>' + (ADV && x ? '(' + dpPct(x.d[x.ml]) + ')' : LDG() ? ldB(36, 9, 4) : '&nbsp;') + '</em></div>'; })() +
       '</div></section>';
   }
   if(!LM){ return h + '<div class="empty">Getting this week’s lineups…</div>'; }
@@ -2359,7 +2486,7 @@ function side(p, L, r){
   const gone = cbsGone(p, L), ci = cbsInj(p);
   const ep0 = ADV && (st === 'pre' || st === 'in') && isCurrentWeek() ? engPlayer(p.id) : null, ep = ep0 && gone ? [0, 0, 0] : ep0;
   return '<div class="pside' + (r ? ' r' : '') + (st === 'in' ? ' lv' : '') + (st === 'post' && DIMF ? ' fn' : '') + (gone ? ' io' : '') + '"' + (st === 'in' ? ' data-pos="' + esc(p.pos) + '"' : '') + '>' +
-    '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj' + (PJB ? ' pjb' : '') + '">' + ep[0].toFixed(1) + '</small>' : '')) + '</span></div>' +
+    '<div class="ptop"><span class="nfl">' + img(nflLogo(p.nfl), p.nfl) + '</span><span class="ppos ' + esc(p.pos) + '">' + esc(p.pos) + '</span><span class="ppt"><b class="' + zero + (L.glow ? ' glow' : '') + '">' + show + '</b>' + (L.mismatch ? '<small class="cbsx">CBS ' + p.cbsPts + '</small>' : (ep ? '<small class="pj' + (PJB ? ' pjb' : '') + '">' + ep[0].toFixed(1) + '</small>' : ADV && (st === 'pre' || st === 'in') && LDG() ? '<small class="pj">' + ldB(26, 10, 4) + '</small>' : '')) + '</span></div>' +
     pnmHtml(p, ci, r) +
     (L.evt && L.evt.kind !== 'td' ? '<span class="evt ' + L.evt.kind + (L.evt.pulse ? ' pulse' : '') + '">' + esc(L.evt.lab) + '</span>' : '') +
     pillRow(L, cls) + hot(p, L) + '</div>';
@@ -2656,10 +2783,10 @@ function matchView(){
   h += '<section class="hero' + (dw ? ' dw' : '') + (ISM ? ' my' : '') + '" id="hero" data-key="hero">' + (dw ? DWB : '') + (ISM ? '<span class="ymx"><b>My matchup</b></span>' : '') +
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
     (E && ADV && status !== 'Final' ? (GSM ? '<div class="pj gsmpj' + (PJB ? ' pjb' : '') + '"><span>(' + pa.toFixed(1) + ')</span><span>(' + pb.toFixed(1) + ')</span></div>' :   // v1.23.0 Safe Mode: gray, in parentheses (same color as the player projections)
-      '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>') : '') + '</div>' + fl(B, true) + '</div>' +
-    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : '') + '</div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : '') + '</div></div>' +
+      '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>') : ADV && status !== 'Final' && LDG() ? '<div class="pj ldpj"><span>' + ldB(44, 13, 5) + '</span><span>' + ldB(44, 13, 5) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
+    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : ADV && !GSM && B && status !== 'Final' && LDG() ? '<span class="ldseg">' + ldB(118, 28, 14) + '</span>' : '') + '</div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : ADV && !GSM && B && status !== 'Final' && LDG() ? '<span class="ldseg">' + ldB(118, 28, 14) + '</span>' : '') + '</div></div>' +
     '<div class="lstat">' + status + '</div>' +
-    (wa != null && B ? wpRow(wa, true, status === 'Final') : (note ? '<div class="engine">' + note + '</div>' : '')) +
+    (wa != null && B ? wpRow(wa, true, status === 'Final') : LDG() && B ? ldWp() : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x, j){ return HASM && j === 0 ? '<i class="star' + (x === mt ? ' on' : '') + '">' + ICON.star + '</i>' : '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
   h += '<div id="mrows" data-key="rows-' + mt.key + '">';
   h += '<div class="plist"><div class="bnr st"><span class="sd l"></span><span class="mid"><h3>Starters</h3></span><span class="sd r"></span></div>';
@@ -2888,7 +3015,7 @@ function dpOf(id){
 function dpPct(v){ const r = v * 100; return r >= 99.5 && r < 100 ? '>99%' : r > 0 && r < 0.5 ? '<1%' : Math.round(r) + '%'; }
 function dpCell(id){
   if(!ADV) return '<span class="stdp lk" aria-label="Locked">' + LOCKI + '</span>';
-  const n = dpRank()[id]; return n ? '<span class="stdp" aria-label="Projected draft order ' + n + '">' + n + '</span>' : '<span class="stdp na">—</span>';
+  const n = dpRank()[id]; return n ? '<span class="stdp" aria-label="Projected draft order ' + n + '">' + n + '</span>' : (LDG() ? '<span class="stdp">' + ldB(16, 13, 4) + '</span>' : '<span class="stdp na">—</span>');
 }
 // v1.21.0 (Wes, Nov 20): league tables (Standings DRAFT #, Playoff Engine All teams) show the PROJECTED DRAFT ORDER:
 // every team ranked by average pick, a unique #1-#12. One team's own view (Home box, drop-down tile, heads-up card)
@@ -2913,7 +3040,7 @@ function dpTile(id){
 function poCell(id){
   if(!ADV) return '<span class="stpo lk" aria-label="Locked">' + LOCKI + '</span>';
   const po = ENG.res && ENG.res.po ? ENG.res.po[id] : null;
-  if(po == null) return '<span class="stpo na">—</span>';
+  if(po == null) return LDG() ? '<span class="stpo ldpo">' + ldB(28, 12, 4) + '<i></i></span>' : '<span class="stpo na">—</span>';
   const v = po * 100;
   if(v >= 99.95) return '<span class="stpo hi" aria-label="Clinched a playoff spot"><b>100<sup>%</sup></b><i><u style="width:100%"></u></i></span>';
   if(v < 0.05) return '<span class="stpo vlo" aria-label="Eliminated"><b>0<sup>%</sup></b><i><u style="width:4%"></u></i></span>';
@@ -3049,7 +3176,7 @@ function ppeAsk(force){
 function ppeMsg(d){
   if(d.type === 'tankp'){ PPE.prog = d.f; return; }
   PPE.busy = null;
-  if(d.type === 'scen' && d.res){ const o = PPE.res[d.team]; if(d.full || !o || !o.full || o.run !== d.run) PPE.res[d.team] = { r: d.res, run: d.run, at: Date.now(), full: !!d.full }; }
+  if(d.type === 'scen' && d.res){ const o = PPE.res[d.team]; ldReveal('ldpops', !o || !tkCall(d.team)); ldReveal('ldfresh', !!d.full && (!o || !o.full) && d.team === ppeTeam() && PPE.mode && PPE.mode !== 'live'); if(d.full || !o || !o.full || o.run !== d.run) PPE.res[d.team] = { r: d.res, run: d.run, at: Date.now(), full: !!d.full }; }
   if(S.view === 'ppe'){ render(); ppeAsk(); }
 }
 // ---- the tank call (rules agreed with Wes, Nov 21). Checked in order; the first that fits decides.
@@ -3235,14 +3362,14 @@ function tkRank(D){ const r = {}; if(D.sc && D.sc.draft && D.sc.draft.length){ D
   Object.keys(D.dp).sort(function(a, b){ return (ppEP(D.dp[a]) - ppEP(D.dp[b])) || (a < b ? -1 : 1); }).forEach(function(id, i){ r[id] = i + 1; }); return r; }
 function tkPill(id){ const c = tkCall(id), f = tkFlags()[id];
   return (f ? TK_FLAG : '') + (c && c.k === 'money' ? '<i class="tkmo">$</i>' : '') +
-    (c ? '<span class="tkdp ' + (c.yes ? 'yes' : c.k === 'late' ? 'late' : 'no') + '">' + (c.yes ? 'TANK NOW' : c.k === 'late' ? 'TOO LATE' : 'DON’T TANK') + '</span>' : '<span class="tkdp wait">…</span>'); }
+    (c ? '<span class="tkdp ' + (c.yes ? 'yes' : c.k === 'late' ? 'late' : 'no') + '">' + (c.yes ? 'TANK NOW' : c.k === 'late' ? 'TOO LATE' : 'DON’T TANK') + '</span>' : '<span class="tkdp wait ldp">' + ldSpin() + 'Checking</span>'); }
 function tkVs(t, TM){ const L0 = ENG.res.pp, nx = L0.nx || {}, o = nx.opp && nx.opp[t] && TM.by[nx.opp[t]];
   return { w: nx.w, name: o ? esc(o.name) : nx.w === RANK_WEEK ? 'position-night opponent' : 'next opponent', lab: 'Wk ' + nx.w + (o ? ' vs ' + esc(o.name) : nx.w === RANK_WEEK ? ' · position night' : '') }; }
 function tkSwitch(t, TM, MODE, PEND){
   const v = tkVs(t, TM), me = esc(TM.by[t].name);
-  const note = PEND ? 'Working out the ' + (MODE === 'win' ? 'Win' : 'Loss') + ' numbers…' : MODE === 'live' ? 'Live = real lineups and live scores. Red-flagged teams play the lineup they set.' :
+  const note = PEND ? 'Working out the ' + (MODE === 'win' ? 'Win' : 'Loss') + ' numbers' + LD_DOTS : MODE === 'live' ? 'Live = real lineups and live scores. Red-flagged teams play the lineup they set.' :
     'Showing: <b>if ' + me + ' ' + (MODE === 'win' ? 'beats ' : 'loses to ') + v.name + '</b> · ▲▼ = change vs Live';
-  const b = function(k, lab){ return '<button class="' + ({ win: 'w', live: 'v', loss: 'x' })[k] + (MODE === k ? ' on' : '') + '" data-tkm="' + k + '" aria-pressed="' + (MODE === k) + '">' + lab + '</button>'; };
+  const b = function(k, lab){ return '<button class="' + ({ win: 'w', live: 'v', loss: 'x' })[k] + (MODE === k ? ' on' : '') + '" data-tkm="' + k + '" aria-pressed="' + (MODE === k) + '">' + (PEND && MODE === k ? ldSpin() : '') + lab + '</button>'; };
   return '<div class="tksw" data-key="tksw"><div class="l"><span>This week’s game</span><b>' + v.lab + '</b></div><div class="tkseg">' + b('win', 'Win') + b('live', '<i></i>Live') + b('loss', 'Loss') + '</div><div class="n">' + note + '</div></div>';
 }
 const TK_CHEV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
@@ -3250,7 +3377,7 @@ const TK_IC = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" strok
 function tkCard(t, TM){
   const c = tkCall(t), me = TM.by[t], v = tkVs(t, TM);
   const hd = '<div class="tkhd">' + TK_IC + 'Strategic Tank Engine</div>';
-  if(!c) return '<section class="tktk wait" data-key="tktk">' + hd + '<div class="h"><span class="tkpill">…</span><span class="tx"><b>Working it out</b><small>Running Win and Loss for ' + esc(me.name) + '…</small></span></div></section>';
+  if(!c) return '<section class="tktk wait ldtk" data-key="tktk">' + hd + '<div class="h"><span class="tkpill ldtp">' + ldSpin() + 'CHECKING</span><span class="tx"><b>Should ' + esc(me.name) + ' tank?</b><small>Running Win and Loss · 40,000 seasons</small></span></div><div class="ldbar sm"><i></i></div></section>';
   const cls = c.yes ? 'yes' : c.k === 'late' ? 'late' : 'no', open = !!PPE.tko;
   const title = c.yes ? (c.same ? 'Keep the tank lineup vs ' : 'Lose to ') + v.name : c.k === 'late' ? 'Week ' + v.w + ' vs ' + v.name : 'Play to win vs ' + v.name;
   let h = '<section class="tktk ' + cls + (open ? ' open' : '') + '" data-key="tktk"><button class="h" id="tkHead" aria-expanded="' + open + '">' + hd + '<span class="tkrw"><span class="tkpill">' + (c.yes ? 'TANK NOW' : c.k === 'late' ? 'TOO LATE' : 'DON’T TANK') + '</span>' +
@@ -3313,9 +3440,10 @@ function ppeView(){
   const ddm = !PPE.dd ? '' : '<div class="ppddbg" id="ppeDdBg" data-key="ppddbg"></div><div class="ppdd" role="listbox" aria-label="Show team" data-key="ppdd">' + TM.divs.map(function(d){
     return '<div class="ppddh">' + esc(d.id) + '</div>' + d.ids.map(function(id){ const x = TM.by[id];
       return '<button class="ppddr' + (id === t ? ' sel' : '') + '" role="option" aria-selected="' + (id === t) + '" data-pt="' + esc(id) + '">' + badge(x.T) + '<span class="ddn"><span class="ddnm">' + esc(x.name) + '</span>' + (id === S.team ? '<i class="ddme">YOU</i>' : '') + '</span>' + (ADMIN ? tkPill(id) : '') + '</button>'; }).join(''); }).join('') + '</div>';
-  let h = '<div class="ppe pq">' +
+  let h = '<div class="ppe pq' + (PEND ? ' ldpend' : '') + '">' +
     '<div class="mhead pqtop"><button class="back" id="ppeBack">‹ Standings</button><span class="mtitle pqtt">Playoff Engine</span>' +
     '<button class="ppsel' + (PPE.dd ? ' open' : '') + '" id="ppeSelBtn" aria-haspopup="listbox" aria-expanded="' + !!PPE.dd + '" data-key="ppsel">' + (me ? badge(me.T) + '<span>' + esc(me.T.code) + '</span>' : '<span>Team</span>') + ICON.chev + '</button></div>' + ddm;
+  if(!D && me && ADV){ return h.replace('<div class="ppe pq">', '<div class="ppe pq ldpage">') + ppeSkel(t, TM, me) + '</div>'; }
   if(!D || !me || !D.po || D.po[t] == null){ return h + '<div class="empty">' + (D ? 'No playoff data for this team yet.' : 'Prediction Engine is calculating…') + '</div></div>'; }
   const ord = ['', '1st', '2nd', '3rd', '4th', '5th', '6th'];
   const divIdx = TM.divs.findIndex(function(d){ return d.ids.indexOf(t) >= 0; }), rk = divIdx >= 0 ? TM.divs[divIdx].ids.indexOf(t) + 1 : 0;
@@ -4801,7 +4929,7 @@ function engineWorker(){
         // injured player over a healthy one) is red-flagged and plays the lineup it actually set this week.
         const flags = msg.admin ? tankFlags(msg, live) : null;
         const om = flags ? optMsgKeep(msg, flags) : optMsg(msg), best = runWeek(om, true);
-        pp = seasonSim(msg, best, null); if(pp){ po = pp.po; dp = pp.dp; pp.flags = flags; }
+        pp = seasonSim(msg, best, null, function(f){ self.postMessage({ type: 'runp', id: msg.id, f: f }); }); if(pp){ po = pp.po; dp = pp.dp; pp.flags = flags; }
         po0 = playoff(msg, runWeek(om, false));   // same best lineups before kickoff -> the weekly change line
         LAST = { msg: msg, live: best, id: msg.id, flags: flags, pp: pp };
       }
@@ -4812,7 +4940,7 @@ function engineWorker(){
 
 const NV_TEAM = { WSH: 'WAS', LAR: 'LA' };
 function nvTeam(ab){ return NV_TEAM[ab] || ab; }
-const ENG = { worker: null, busy: false, sig: '', id: 0, res: null, projAt: 0, err: '', fut: {}, futAt: {} };
+const ENG = { prog: 0, worker: null, busy: false, sig: '', id: 0, res: null, projAt: 0, err: '', fut: {}, futAt: {} };
 S.proj = null;
 function engineStart(){
   if(ENG.worker || typeof Worker !== 'function') return;
@@ -4821,9 +4949,10 @@ function engineStart(){
   ENG.worker.onmessage = function(e){
     const d = e.data;
     if(d.type === 'tankp' || d.type === 'tank' || d.type === 'scen'){ ppeMsg(d); return; }
+    if(d.type === 'runp'){ ENG.prog = d.f; ldRingTick(); return; }   // v1.27.0: Playoff Engine progress ring
     if(d.type === 'one'){ OPT.busy = false; if(d.m) OPT.res[d.sig] = { m: d.m, p: d.p || {} }; if(S.view === 'match') render(); optAsk(); return; }   // v1.17.0   // v1.16.0 Strategic Tank (doesn't touch the run queue)
     ENG.busy = false;
-    if(d.type === 'done' && d.id === ENG.id){ ENG.res = d; ENG.at = Date.now(); saveEngSnap(false); tkFlagCheck(d.pp); render(); if(S.view === 'ppe') ppeAsk(); }
+    if(d.type === 'done' && d.id === ENG.id){ ldReveal('ldjust', !ENG.res); ENG.prog = 0; ENG.res = d; ENG.at = Date.now(); saveEngSnap(false); tkFlagCheck(d.pp); render(); if(S.view === 'ppe') ppeAsk(); }
     else if(d.type === 'error') ENG.err = d.err;
     engineTick();
   };
@@ -5085,7 +5214,7 @@ function openStream(which){
   const on = function(patch){ return function(e){
     if(CH.streams[which] !== es) return;
     let m = null; try{ m = JSON.parse(e.data); }catch(err){} if(!m || typeof m.path !== 'string') return;
-    if(which === 'pres') CH.pres = applyAt(CH.pres, m.path, m.data, patch); else CH.msgs = applyAt(CH.msgs, m.path, m.data, patch);
+    if(which === 'pres') CH.pres = applyAt(CH.pres, m.path, m.data, patch); else { CH.msgs = applyAt(CH.msgs, m.path, m.data, patch); CH.got = true; }
     CH.live[which] = true; changed(which);
   }; };
   es.addEventListener('put', on(false)); es.addEventListener('patch', on(true));
@@ -5102,7 +5231,7 @@ function poll(which){
   CH.lastPoll[which] = Date.now();
   const url = DB + (which === 'pres' ? '/fgt/presence.json' : '/fgt/chat/' + ROOM + '.json' + CHAT_Q);
   fetch(url, { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
-    if(which === 'pres') CH.pres = j || {}; else CH.msgs = j || {};
+    if(which === 'pres') CH.pres = j || {}; else { CH.msgs = j || {}; CH.got = true; }
     changed(which);
   }).catch(function(){});
 }
@@ -5155,14 +5284,15 @@ document.body.appendChild(delOv);
 var chatList = pane.querySelector('#chatList'), chatInput = pane.querySelector('#chatInput'), chatSend = pane.querySelector('#chatSend');
 function chatTime(t){ try{ return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }catch(e){ return ''; } }
 function chatDay(t){ try{ return new Date(t).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }); }catch(e){ return ''; } }
-var chatSig = '';
+var chatSig = ''; setTimeout(function(){ if(!CH.got){ CH.got = true; paintChat(); } }, 12000);   // v1.27.0
 function paintChat(keepBottom){
   if(pane.hidden) return;
   const list = Object.keys(CH.msgs).map(function(id){ const m = CH.msgs[id]; return m ? Object.assign({ id: id }, m) : null; })
     .filter(function(m){ return m && typeof m.t === 'number' && typeof m.text === 'string'; }).sort(function(a, b){ return a.t - b.t; }).slice(-200);
-  const sig = list.map(function(m){ return m.id; }).join(',') + '|' + S.team;
+  const sig = list.map(function(m){ return m.id; }).join(',') + '|' + S.team + (CH.got ? '' : '|ld');
   if(sig === chatSig) return; chatSig = sig;
   const near = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 80;
+  if(!list.length && !CH.got){ chatList.innerHTML = chatSkel(); return; }
   if(!list.length){ chatList.innerHTML = '<div class="chatempty">No messages yet. Say something to the league.</div>'; return; }
   let prev = null, day = '', h = '';
   list.forEach(function(m){
