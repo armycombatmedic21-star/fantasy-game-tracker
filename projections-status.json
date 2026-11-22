@@ -1,5 +1,5 @@
 {
- "at": "2026-11-22T20:03:22+00:00",
+ "at": "2026-11-22T21:26:56+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -10,9 +10,9 @@
    "requests": 4,
    "total_available": {
     "QB": "71",
-    "RB": "134",
-    "WR": "219",
-    "TE": "132"
+    "RB": "133",
+    "WR": "215",
+    "TE": "129"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 400,
-   "secs": 3.3,
+   "records": 393,
+   "secs": 3.4,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,13 +54,13 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 263
+    "injury_flags": 273
    }
   },
   "espn": {
    "ok": true,
    "records": 342,
-   "secs": 0.6,
+   "secs": 0.4,
    "info": {
     "players": 1062,
     "kept": 342,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 142,
-   "secs": 37.5,
+   "secs": 32.9,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -93,30 +93,30 @@
  },
  "fp_unmatched_5plus": [
   "Jakobi Meyers JAX",
-  "Jameis Winston NYG",
-  "Cam Skattebo NYG",
-  "Javonte Williams DAL",
-  "Emari Demercado HOU",
-  "Jalen Coker CAR",
-  "DK Metcalf PIT",
-  "Carnell Tate TEN",
-  "Breece Hall NYJ",
-  "Braelon Allen NYJ",
-  "Elic Ayomanor TEN",
-  "Adonai Mitchell NYJ",
-  "Joe Milton III PHI",
-  "Chris Olave NO",
-  "Ladd McConkey LAC",
-  "Omarion Hampton LAC",
-  "J.J. McCarthy NYG",
-  "Tre Tucker LV",
+  "Geno Smith NYJ",
+  "Jordan Mason MIN",
   "Tyler Shough NO",
-  "Jared Goff DET",
-  "Kirk Cousins MIN",
+  "Braelon Allen NYJ",
+  "Jameis Winston NYG",
+  "Cam Ward TEN",
+  "DJ Moore BUF",
   "Tank Dell HOU",
+  "Saquon Barkley PHI",
+  "Emeka Egbuka TB",
+  "Fernando Mendoza LV",
+  "Kyle Monangai CHI",
+  "Bhayshul Tuten JAX",
+  "Omarion Hampton LAC",
+  "Zay Flowers BAL",
+  "Jacoby Brissett BAL",
+  "Jaylen Warren PIT",
+  "Adonai Mitchell NYJ",
+  "Jacory Croskey-Merritt WAS",
   "Rome Odunze CHI",
-  "Khalil Shakir BUF",
-  "Jonathan Taylor IND"
+  "Kyle McCord MIA",
+  "Deebo Samuel Sr. SF",
+  "Carnell Tate TEN",
+  "Breece Hall NYJ"
  ],
  "fp_unmatched_5plus_count": 64,
  "future": {
@@ -134,7 +134,7 @@
     "espn"
    ],
    "players": 652,
-   "projected": 426
+   "projected": 425
   },
   "14": {
    "sites": [
@@ -170,30 +170,30 @@
   },
   "nm_scale": {
    "QB": 1.076,
-   "RB": 0.961,
-   "WR": 1.087,
+   "RB": 0.963,
+   "WR": 1.082,
    "TE": 1.18,
-   "K": 1.053,
+   "K": 1.051,
    "DST": 1.027
   }
  },
- "scorecard": "week 11: 203 pre-kickoff projections saved",
+ "scorecard": "week 11: 82 pre-kickoff projections saved",
  "consensus": {
-  "used": 333,
-  "fallback": 52,
-  "single_source_blend": 40,
-  "out_by_injury": 76,
+  "used": 334,
+  "fallback": 49,
+  "single_source_blend": 37,
+  "out_by_injury": 78,
   "no_source_zero": 69,
   "added_from_sites": 5,
   "added_4plus": [
    "Josh Johnson ARI QB 7.4"
   ],
   "sources_per_player": {
-   "0": 140,
-   "1": 57,
-   "2": 190,
-   "3": 104,
-   "4": 39
+   "0": 145,
+   "1": 51,
+   "2": 191,
+   "3": 103,
+   "4": 40
   },
   "min_sources": 2
  },
