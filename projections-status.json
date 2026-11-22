@@ -1,5 +1,5 @@
 {
- "at": "2026-11-22T22:06:00+00:00",
+ "at": "2026-11-22T22:40:48+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -60,7 +60,7 @@
   "espn": {
    "ok": true,
    "records": 342,
-   "secs": 0.7,
+   "secs": 0.5,
    "info": {
     "players": 1063,
     "kept": 342,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 142,
-   "secs": 38.7,
+   "secs": 37.7,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Emeka Egbuka TB",
-  "Courtland Sutton DEN",
   "Jameson Williams DET",
-  "Jaylen Warren PIT",
-  "Kirk Cousins MIN",
-  "Bhayshul Tuten JAX",
-  "Aaron Rodgers PIT",
-  "David Montgomery HOU",
-  "Chris Olave NO",
-  "Elic Ayomanor TEN",
-  "Stefon Diggs WAS",
-  "Jordyn Tyson NO",
-  "Javonte Williams DAL",
-  "Saquon Barkley PHI",
-  "Justin Herbert LAC",
-  "Breece Hall NYJ",
-  "Kyle Monangai CHI",
-  "Tyler Shough NO",
+  "Rome Odunze CHI",
+  "Zay Flowers BAL",
+  "Deebo Samuel Sr. SF",
+  "Tre Tucker LV",
+  "Adonai Mitchell NYJ",
+  "Cam Ward TEN",
+  "Omarion Hampton LAC",
   "Malik Nabers NYG",
+  "Ladd McConkey LAC",
   "Joe Milton III PHI",
-  "Daniel Jones IND",
-  "Jonathan Taylor IND",
-  "J.J. McCarthy NYG",
-  "DJ Moore BUF",
-  "Carnell Tate TEN"
+  "Cam Skattebo NYG",
+  "Chase Brown CIN",
+  "Ashton Jeanty LV",
+  "Jameis Winston NYG",
+  "Baker Mayfield TB",
+  "Ryan Flournoy DAL",
+  "DeVonta Smith PHI",
+  "DK Metcalf PIT",
+  "Bryce Young CAR",
+  "Emari Demercado HOU",
+  "David Montgomery HOU",
+  "Kyle Monangai CHI",
+  "Breece Hall NYJ",
+  "Justin Herbert LAC"
  ],
  "fp_unmatched_5plus_count": 64,
  "future": {
@@ -170,11 +170,11 @@
   },
   "nm_scale": {
    "QB": 1.076,
-   "RB": 0.963,
-   "WR": 1.088,
+   "RB": 0.961,
+   "WR": 1.081,
    "TE": 1.184,
    "K": 1.052,
-   "DST": 1.027
+   "DST": 1.024
   }
  },
  "scorecard": "week 11: 82 pre-kickoff projections saved",
