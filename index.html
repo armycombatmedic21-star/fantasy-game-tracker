@@ -1405,6 +1405,62 @@ html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
 .ldfresh .tkdl,.ldfresh .ppd,.ldfresh .pqtc>b,.ldfresh .pqstrip b,.ldfresh .tksg b{animation:ldPop .5s cubic-bezier(.2,.9,.3,1.15) both}
 .ldjust .chatmsg{animation:ldRise .4s ease-out both}
 .ldjust .chatmsg:nth-child(2){animation-delay:.05s}.ldjust .chatmsg:nth-child(3){animation-delay:.1s}.ldjust .chatmsg:nth-child(4){animation-delay:.15s}.ldjust .chatmsg:nth-child(5){animation-delay:.2s}.ldjust .chatmsg:nth-child(6){animation-delay:.25s}.ldjust .chatmsg:nth-child(7){animation-delay:.3s}
+
+/* ===== v1.28.0 (Wes, Nov 22): Schedule — full-screen slide-up (everyone, Safe Mode too) ===== */
+.larow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 16px}
+.larow .lasec{margin:0}
+.schbtn{flex:none;display:flex;align-items:center;gap:6px;height:34px;padding:0 12px 0 11px;border-radius:999px;border:1px solid rgba(var(--acc-rgb),.55);background:rgba(var(--acc-rgb),.08);color:#fff;font-size:13.5px;font-weight:800}
+.schbtn svg{color:var(--acc);flex:none}.schbtn i{font-style:normal;color:var(--acc);font-size:18px;line-height:1;margin-top:-2px}
+.pbrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+.pbrow .ppebtn{margin:0;font-size:14px;gap:7px;padding:0 8px;min-width:0}
+.pbrow .ppebtn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schov{background:rgba(2,5,12,.72);align-items:stretch;transition:opacity .24s ease .16s,visibility 0s linear .46s}
+.schov.show{transition:opacity .22s ease,visibility 0s linear 0s}
+.sheet.schsheet{height:100%;max-height:none;border:0;border-radius:0;box-shadow:none;background:#060b16;background-image:linear-gradient(180deg,#0a1426 0,#060b16 260px);background-repeat:no-repeat;
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+  transform:translateY(100%);transition:transform .34s cubic-bezier(.55,0,.8,.3);
+  --schrh:clamp(46px,calc((100vh - 196px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / 12),58px)}
+@supports (height:100dvh){.sheet.schsheet{--schrh:clamp(46px,calc((100dvh - 196px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / 12),58px)}}
+.overlay.show .sheet.schsheet{transform:none;transition:transform .46s cubic-bezier(.16,1,.3,1)}
+.sheet.schsheet::before{display:none}
+.sch{position:relative}
+.sch .mhead{margin-bottom:10px}
+.schsel{height:44px;padding:0 12px 0 5px;gap:8px;font-size:15px}
+.schsel .badge{width:34px;height:34px;border-radius:50%}
+.sch .ppdd{top:52px}
+.schcard{display:flex;align-items:center;gap:11px;padding:7px 14px 7px 8px;border-radius:18px;border:1px solid var(--hair2);background:linear-gradient(135deg,rgba(79,141,255,.16),rgba(79,141,255,.03) 60%),var(--card);box-shadow:0 10px 24px rgba(0,0,0,.42);margin:0 0 8px}
+.schcard .badge{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 2px rgba(79,141,255,.5)}
+.schcard .t{flex:1;min-width:0}.schcard .t small{display:block;font-size:11px;font-weight:800;letter-spacing:1.6px;color:#8fb6ff;text-transform:uppercase}
+.schcard .t b{display:block;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schcard .r{text-align:right}.schcard .r b{display:block;font-size:22px;font-weight:800;color:#fff;line-height:1.1}.schcard .r small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.schtb{border-radius:18px;border:1px solid var(--hair2);background:var(--card);overflow:hidden}
+.schtb .hd{display:grid;grid-template-columns:30px 1fr auto;padding:6px 14px 5px;font-size:10.5px;font-weight:800;letter-spacing:1.2px;color:var(--faint);border-bottom:1px solid var(--hair2)}
+.schtb .rw{display:grid;grid-template-columns:30px 36px minmax(0,1fr) auto;align-items:center;gap:0 10px;height:var(--schrh,47px);padding:0 14px;border-bottom:1px solid var(--hair)}
+.schtb .rw:last-child{border:0}
+.schtb .wk{font-size:15px;font-weight:800;color:var(--muted)}
+.schtb .badge{width:36px;height:36px;border-radius:50%}
+.schtb .nm{min-width:0}.schtb .nm b{display:block;font-size:16px;font-weight:800;color:#fff;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schtb .nm small{display:block;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schtb .rs{text-align:right;line-height:1.15}.schtb .rs b{font-size:16px;font-weight:800;color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}.schtb .rs b i{font-style:normal;margin-right:6px}
+.schtb .rs small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.schtb .rs .ld{display:block;margin-left:auto}.schtb .rs .ld+.ld{margin-top:5px}
+.schtb i.w{color:#3ddc84}.schtb i.l{color:#ff4d5e}.schtb i.t{color:#c9d6e8}
+.schtb .rw.now{background:linear-gradient(90deg,rgba(79,141,255,.16),rgba(79,141,255,.04));box-shadow:inset 3px 0 0 var(--acc)}
+.schtb .rw.now .wk{color:#8fb6ff}
+.schtb .lv{display:flex;align-items:center;justify-content:flex-end;gap:7px;font-size:16px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.schtb .lv em{font-style:normal;display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:800;letter-spacing:1px;color:#ff5a6a;border:1px solid rgba(255,90,106,.55);background:rgba(255,90,106,.1);border-radius:6px;padding:2px 5px}
+.schtb .lv em i{width:5px;height:5px;border-radius:50%;background:#ff5a6a;box-shadow:0 0 6px #ff5a6a}
+.schtb .lv em.pj{color:#8fb6ff;border-color:rgba(79,141,255,.5);background:rgba(79,141,255,.1)}
+.schtb .lv u{text-decoration:none}.schtb .lv u.up{color:#3ddc84}.schtb .lv u.dn{color:#ff6b7a}
+.schtb .wpm{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:3px;font-size:11.5px;font-weight:800;color:#3ddc84}
+.schtb .wpm i{display:block;width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}.schtb .wpm i u{display:block;height:100%;background:currentColor;border-radius:3px}
+.schtb .wpm.lo{color:#ff6b7a}
+.schtb .rw.pos .badge{opacity:.55;box-shadow:0 0 0 1.5px rgba(244,196,61,.7)}
+.schtb .rw.pos.known .badge{opacity:1}
+.schtb .rw.pos .nm b span{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.6px;margin-right:5px}
+.schtb .q1{display:block;font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--gold);line-height:1.3}
+.schtb .up2{font-size:12px;font-weight:800;color:var(--faint);letter-spacing:.4px}
+.schtb .badge.nob{border-style:dashed;border-color:rgba(244,196,61,.5);background:none}
 </style>
 </head>
 <body>
@@ -1476,10 +1532,11 @@ html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.27.0';
+const APP_VERSION = '1.28.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.28.0', 'New Schedule page. Tap Schedule on the Scoreboard (next to League Analysis) or on Standings (next to Playoff Engine) and your season slides up: every week\u2019s opponent with their logo and owner, the score with a green W or red L, and your record after each week. This week shows the live score (or the projection before kickoff) and your win %. Week 12 is position night, so it shows who you\u2019ll most likely face and the odds. Pick any team at the top right; it always opens on your team. Visual changes: Schedule button on the Scoreboard and Standings (the Playoff Engine button is now half width).'],
   ['1.27.0', 'Loading animations everywhere the app makes you wait. Win odds, projections, playoff %, draft picks and the Playoff Engine show a moving shimmer or a sweeping bar instead of going blank, then the numbers pop in. The Playoff Engine shows a progress ring with the real % of the season sim. Chat shows gray message bubbles until it loads. Visual changes: loading states on Scoreboard, Matchup, Standings, Playoff Engine and Chat.'],
   ['1.26.0', 'Android: the league game cards on the Scoreboard are shorter and don’t wrap anymore. Team and win % on top, record and owner underneath, and the players-left count is gone.'],
   ['1.25.0', 'Bigger, easier-to-read player drop-downs: bigger point boxes with the yards (or distance) right under each one, three to a row for yards and points allowed, one row for touchdowns and field goals, and bigger text throughout.'],
@@ -2284,6 +2341,7 @@ function render(){
   paintRecBadge();
   if(S.view === 'standings' && S.recBanner && S.recBanner.anim) runShuffle();
   if(chatHook){ try{ chatHook(); }catch(e){} }
+  schPaintIfOpen();   // v1.28.0
 }
 setInterval(function(){ if(renderQueued && holdRender <= Date.now() && !(press && press.active) && !swipe.active && !GH.on) render(); }, 250);
 
@@ -2449,8 +2507,8 @@ function homeView(){
   if(S.team && stTeams().length){
     const d = divRank(S.team), lr = leagueRank(S.team), po = ENG.res && engineReady() && ENG.res.po ? ENG.res.po[S.team] : null, po0 = ENG.res && ENG.res.po0 ? ENG.res.po0[S.team] : null;
     const delta = po != null && po0 != null ? Math.round(po * 100) - Math.round(po0 * 100) : null;
-    h += (GSM ? '<div class="lasec gsml">Team ' + esc(teamName(S.team)) + '</div>' :   // v1.23.0 Safe Mode: a label, not a button
-      '<button class="lasec" id="laBtn">League Analysis<span>›</span></button>') + '<section class="la' + (dw ? ' dw' : '') + '" data-key="la">' + (dw ? DWB : '') + '<div class="lagrid">' +
+    h += '<div class="larow" data-key="larow">' + (GSM ? '<div class="lasec gsml">Team ' + esc(teamName(S.team)) + '</div>' :   // v1.23.0 Safe Mode: a label, not a button
+      '<button class="lasec" id="laBtn">League Analysis<span>›</span></button>') + schBtn() + '</div>' + '<section class="la' + (dw ? ' dw' : '') + '" data-key="la">' + (dw ? DWB : '') + '<div class="lagrid">' +
       '<div class="lacell"><small>Division</small><b>' + (d ? ordSup(d.rank) : '–') + '</b><em>' + esc(d ? d.div : '') + '</em></div><hr>' +
       '<div class="lacell"><small>League</small><b>' + (lr ? ordSup(lr.rank) : '–') + '</b><em>of ' + (lr ? lr.of : 12) + '</em></div><hr>' +
       (!ADV ? '<div class="lacell"><small>Playoff Odds</small><b>' + LOCKI + '</b><em>&nbsp;</em></div>' : '<div class="lacell"><small>Playoff Odds</small><b>' + (po != null ? Math.round(po * 100) + '<sup>%</sup>' : LDG() ? ldB(62, 30, 8) : '–') + '</b><em class="' + (delta > 0 ? 'up' : delta < 0 ? 'down' : '') + '">' + (delta == null ? (LDG() ? ldB(58, 9, 4) : 'top 5 in div') : delta > 0 ? '▲ ' + delta + ' this wk' : delta < 0 ? '▼ ' + (-delta) + ' this wk' : 'even this wk') + '</em></div>') +
@@ -3147,8 +3205,121 @@ function standingsView(){
    3) title odds already under 3% -> whatever gives the better pick; 4) otherwise -> don't tank. */
 const PPE = { team: null, on: false, id: 0, busy: null, prog: 0, res: {}, y: 0 };
 const PPE_IC = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/></svg>';
+
+// ===== v1.28.0 (Wes, Nov 22): Schedule — regular season Weeks 1-12, a full-screen sheet that slides up (back slides it
+// down). Everyone gets it (admin or not, Safe Mode too). The picker always opens on your own team. Past weeks = CBS's
+// official finals (the same week-by-week scores the standings use), this week = live (or projected) + win %, Week 12 =
+// position night: the opponent the season sim lands on most, until CBS posts the real one.
+var SCH = { team: null, from: 'Scoreboard', dd: false }, schOv = null, schSheet = null;
+const SCH_IC = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M7.5 14h2M11 14h2M14.5 14h2M7.5 17.2h2M11 17.2h2"/></svg>';
+function schBtn(){ return '<button class="schbtn" id="schBtn" data-key="schbtn">' + SCH_IC + '<span>Schedule</span><i aria-hidden="true">›</i></button>'; }
+function schInit(){
+  if(schOv) return;
+  schOv = document.createElement('div'); schOv.className = 'overlay schov'; schOv.id = 'schOverlay';
+  schOv.innerHTML = '<div class="sheet schsheet" role="dialog" aria-label="Schedule"></div>';
+  document.body.appendChild(schOv); schSheet = schOv.querySelector('.schsheet');
+  schOv.addEventListener('click', function(e){
+    const t = e.target;
+    if(t.closest('#schBack')){ schClose(); return; }
+    if(t.closest('#schSel')){ SCH.dd = !SCH.dd; schPaint(); return; }
+    if(t.closest('#schDdBg')){ SCH.dd = false; schPaint(); return; }
+    const p = t.closest('[data-sch]'); if(p){ SCH.team = p.dataset.sch; SCH.dd = false; schPaint(); schSheet.scrollTop = 0; }
+  });
+}
+function schOpen(from){ schInit(); SCH.team = S.team || null; SCH.from = from; SCH.dd = false; schPaint(); openOverlay(schOv); schSheet.scrollTop = 0; }
+function schClose(){ if(!schOv) return; SCH.dd = false; closeOverlay(schOv); }
+function schPaintIfOpen(){ if(schOv && schOv.classList.contains('show')) schPaint(); }
+function schPaint(){ try{ morph(schSheet, schView()); }catch(e){} }
+function schPts(v){ const x = Math.round(num(v) * 10) / 10; return String(x); }
+function schRes(a, b){ if(num(a.pts) > num(b.pts)) return 'W'; if(num(a.pts) < num(b.pts)) return 'L';
+  const x = num(a.bench), y = num(b.bench); return x > y ? 'W' : x < y ? 'L' : 'T'; }   // ties -> more bench points (league rule)
+function schOppOf(w, id){
+  const f = ENG.fut[w]; if(f && f[id]) return String(f[id]);
+  const P = SCHED[w]; if(P){ const pr = P.find(function(x){ return x[0] === id || x[1] === id; }); if(pr) return pr[0] === id ? pr[1] : pr[0]; }
+  return null;
+}
+function schCurFinal(C, played){   // this week's final scores, once the week is over (same sources as the standings)
+  if(played >= C && S.gap[C] && S.gap[C].teams) return S.gap[C].teams;
+  if(CURW && CURW.week === C && CURW.final && CURW.teams) return CURW.teams;
+  const sv = savedFinal(C); return sv && sv.teams ? sv.teams : null;
+}
+function schWeeks(id){
+  const C = num(S.curWeek), st = stTeams().find(function(x){ return String(x.id) === id; });
+  const played = st ? num(st.wins) + num(st.losses) + num(st.ties) : 0;
+  const out = []; let W = 0, L = 0, T = 0;
+  for(let k = 1; k <= REG_END; k++){
+    const r = { w: k, kind: 'next', opp: null };
+    const fin = k < C ? (S.gap[k] && S.gap[k].teams) : k === C ? schCurFinal(C, played) : null;
+    if(k < C || (k === C && fin)){
+      r.kind = 'past';
+      if(k < C && !fin) needGap(k);
+      const a = fin && fin[id], b = a && fin[a.opp];
+      if(a && b){ r.opp = String(a.opp); r.res = schRes(a, b); r.a = a.pts; r.b = b.pts;
+        if(r.res === 'W') W++; else if(r.res === 'L') L++; else T++; r.rec = W + '-' + L + (T ? '-' + T : ''); }
+      else { r.load = true; r.opp = (a && a.opp) ? String(a.opp) : null; }
+    } else if(k === C){
+      r.kind = 'now';
+      const LM = liveModel(), m = LM && LM.model;
+      const mt = m && m.week === C ? m.matchups.find(function(x){ return (x.home && x.home.id === id) || (x.away && x.away.id === id); }) : null;
+      if(mt && mt.home && mt.away){
+        const me = mt.home.id === id ? mt.home : mt.away, op = me === mt.home ? mt.away : mt.home, la = LM.live[me.id], lb = LM.live[op.id];
+        r.opp = String(op.id); r.live = mBegun(me, la, op, lb); r.a = la ? la.pts : 0; r.b = lb ? lb.pts : 0;
+        const E = engMatch(mt.key); if(E){ const fl = mt.home.id !== id; r.wp = fl ? 1 - E.wa : E.wa; r.pa = fl ? E.pb : E.pa; r.pb = fl ? E.pa : E.pb; }
+      } else { r.opp = schOppOf(k, id); r.load = true; }
+    } else {
+      r.opp = schOppOf(k, id);
+      if(!r.opp && k === RANK_WEEK){ r.kind = 'pos';
+        const pp = ENG.res && engineReady() && ENG.res.pp, x = pp && pp.r12 && pp.r12[id];
+        if(x){ r.odds = Object.keys(x).map(function(o){ return [o, x[o]]; }).sort(function(a, b){ return b[1] - a[1]; }); }
+      }
+    }
+    if(k === RANK_WEEK) r.pn = true;
+    out.push(r);
+  }
+  return out;
+}
+function schView(){
+  const TM = ppeTeams(), id = SCH.team && TM.by[SCH.team] ? SCH.team : S.team && TM.by[S.team] ? S.team : (TM.divs[0] && TM.divs[0].ids[0]) || null, me = id && TM.by[id];
+  let h = '<div class="sch"><div class="mhead"><button class="back" id="schBack">‹ ' + esc(SCH.from) + '</button><span class="mtitle">Schedule</span>' +
+    '<button class="ppsel schsel' + (SCH.dd ? ' open' : '') + '" id="schSel" aria-haspopup="listbox" aria-expanded="' + !!SCH.dd + '" data-key="schsel">' + (me ? badge(me.T) + '<span>' + esc(me.name) + '</span>' : '<span>Team</span>') + ICON.chev + '</button></div>';
+  if(SCH.dd) h += '<div class="ppddbg" id="schDdBg" data-key="schddbg"></div><div class="ppdd" role="listbox" aria-label="Show team" data-key="schdd">' + TM.divs.map(function(d){
+    return '<div class="ppddh">' + esc(d.id) + '</div>' + d.ids.map(function(x){ const t = TM.by[x];
+      return '<button class="ppddr' + (x === id ? ' sel' : '') + '" role="option" aria-selected="' + (x === id) + '" data-sch="' + esc(x) + '">' + badge(t.T) + '<span class="ddn"><span class="ddnm">' + esc(t.name) + '</span>' + (x === S.team ? '<i class="ddme">YOU</i>' : '') + '</span></button>'; }).join(''); }).join('') + '</div>';
+  if(!me) return h + '<div class="empty">Getting the standings…</div></div>';
+  h += '<div class="schcard" data-key="schcard">' + badge(me.T) + '<div class="t"><small>' + SEASON + ' Schedule</small><b>' + esc(me.name) + '</b></div><div class="r"><b>' + esc(me.rec) + '</b><small>Record</small></div></div>';
+  const O = function(o){ return o && TM.by[o] ? TM.by[o] : null; };
+  const rows = schWeeks(id).map(function(r){
+    const o = O(r.opp), nmB = o ? esc(o.name) : '', own = o ? esc(ownerOf({ id: o.id })) : '';
+    let cls = '', lg = o ? badge(o.T) : '<span class="badge nob"></span>', nm = '<b>' + (nmB || ldB(110, 14, 5)) + '</b><small>' + (own || '&nbsp;') + '</small>', res = '';
+    if(r.kind === 'past'){
+      res = r.load ? ldB(58, 14, 5) + ldB(28, 10, 4) : '<b><i class="' + r.res.toLowerCase() + '">' + r.res + '</i>' + schPts(r.a) + '-' + schPts(r.b) + '</b><small>' + r.rec + '</small>';
+      if(r.pn) res = res;   // a finished Week 12 reads like any other week
+    } else if(r.kind === 'now'){
+      cls = ' now';
+      const wpc = r.wp != null ? Math.max(1, Math.min(99, Math.round(r.wp * 100))) : null;
+      const wpH = wpc != null ? '<span class="wpm' + (wpc < 50 ? ' lo' : '') + '"><i><u style="width:' + wpc + '%"></u></i>' + wpc + '% win</span>' : (LDG() ? '<span class="wpm">' + ldB(70, 9, 4) + '</span>' : '');
+      if(r.load) res = ldB(70, 14, 5) + ldB(56, 10, 4);
+      else if(r.live) res = '<span class="lv"><em><i></i>LIVE</em><span><u class="' + (num(r.a) > num(r.b) ? 'up' : num(r.a) < num(r.b) ? 'dn' : '') + '">' + schPts(r.a) + '</u>-' + schPts(r.b) + '</span></span>' + wpH;
+      else if(r.pa != null) res = '<span class="lv"><em class="pj">PROJ</em><span>' + Math.round(r.pa) + '-' + Math.round(r.pb) + '</span></span>' + wpH;
+      else res = '<span class="lv"><em class="pj">PROJ</em>' + ldB(48, 13, 5) + '</span>' + wpH;
+    } else if(r.kind === 'pos'){
+      cls = ' pos';
+      const od = r.odds || [], a = od[0], b = od[1];
+      if(a && a[1] >= 0.995){ const t = O(a[0]); cls += ' known'; lg = t ? badge(t.T) : lg; nm = '<b>' + esc(t ? t.name : '') + '</b><small>' + esc(t ? ownerOf({ id: t.id }) : '') + '</small>'; }
+      else if(a){ const t = O(a[0]), u = b && O(b[0]); lg = t ? badge(t.T) : lg;
+        nm = '<b><span>LIKELY</span>' + esc(t ? t.name : '') + '</b><small>' + Math.round(a[1] * 100) + '%' + (u ? ' · or ' + esc(u.name) + ' ' + Math.round(b[1] * 100) + '%' : '') + '</small>'; }
+      else nm = '<b>' + (LDG() ? ldB(120, 14, 5) : 'To be decided') + '</b><small>Set by the Week 11 standings</small>';
+      res = '<span class="q1">POSITION<br>NIGHT</span>';
+    } else {
+      res = r.pn ? '<span class="q1">POSITION<br>NIGHT</span>' : '<span class="up2">Upcoming</span>';
+    }
+    return '<div class="rw' + cls + '" data-key="schw' + r.w + '"><span class="wk">' + r.w + '</span>' + lg + '<span class="nm">' + nm + '</span><span class="rs">' + res + '</span></div>';
+  }).join('');
+  return h + '<section class="schtb" data-key="schtb"><div class="hd"><span>WK</span><span>OPPONENT</span><span>RESULT</span></div>' + rows + '</section></div>';
+}
 function ppeBtn(){
-  return '<button class="ppebtn" id="ppeBtn" data-key="ppebtn">' + PPE_IC + '<span>Playoff Prediction Engine</span>' + '<i class="pbc" aria-hidden="true">›</i>' + '</button>';
+  return '<div class="pbrow" data-key="pbrow"><button class="ppebtn" id="ppeBtn" data-key="ppebtn">' + PPE_IC + '<span>Playoff Engine</span>' + '<i class="pbc" aria-hidden="true">›</i>' + '</button>' +
+    '<button class="ppebtn" id="schBtn2" data-key="schbtn2">' + SCH_IC + '<span>Schedule</span><i class="pbc" aria-hidden="true">›</i></button></div>';   // v1.28.0
 }
 function ppeOpen(){
   PPE.y = window.scrollY || 0; PPE.team = S.team; PPE.on = false; PPE.dd = false; PPE.mode = 'live'; PPE.tko = false;
@@ -3936,6 +4107,8 @@ $('#view').addEventListener('click', function(e){
   const t = e.target;
   if(t.closest('#weekBtn')){ openWeekSheet(); return; }
   if(t.closest('#gearBtn')){ if(GSM) return; openSettings(); return; }   // v1.23.0 Safe Mode: a tap does nothing (hold 5 s)
+  if(t.closest('#schBtn')){ schOpen('Scoreboard'); return; }   // v1.28.0
+  if(t.closest('#schBtn2')){ schOpen('Standings'); return; }
   if(t.closest('#laBtn')){ if(Date.now() - S.stAt > 120000) loadStandings(); setView('standings'); return; }
   if(t.closest('#pick')){ openTeamSheet(!S.team); return; }
   const pn = t.closest('[data-pin]'); if(pn){ togglePin(pn.dataset.pin); return; }
@@ -4788,7 +4961,7 @@ function engineWorker(){
     };
     const z = function(){ const o = {}; ids.forEach(function(id){ o[id] = 0; }); return o; };
     const cnt = z(), bye = z(), lbc = z(), lbw = z(), semi = z(), fin = z(), sbc = z(), ti = z(), wsum = z(), nxw = z(), mo = z();
-    const seed = {}, dp = {}, wd = {}, fo = {}, LS = {}; ids.forEach(function(id){ seed[id] = [0, 0, 0, 0, 0, 0]; dp[id] = new Array(n).fill(0); wd[id] = {}; });
+    const seed = {}, dp = {}, wd = {}, fo = {}, LS = {}, w12 = {}; ids.forEach(function(id){ seed[id] = [0, 0, 0, 0, 0, 0]; dp[id] = new Array(n).fill(0); wd[id] = {}; w12[id] = {}; });
     const fut = {}; S.future.forEach(function(F){ fut[F.w] = {}; ids.forEach(function(id){ fut[F.w][id] = futureTeam(msg.teams[id] || { roster: [] }, F.w); }); });
     const pw = {}; PO_WEEKS.forEach(function(w){ pw[w] = {}; ids.forEach(function(id){ pw[w][id] = futureTeam(msg.teams[id] || { roster: [] }, w); }); });
     const W = {}, DW = {}, PF = {}, PAg = {};
@@ -4819,6 +4992,7 @@ function engineWorker(){
         }
         if(!pairs){ const sh = ids.slice(); for(let k = sh.length - 1; k > 0; k--){ const j = Math.floor(R.u() * (k + 1)); const t = sh[k]; sh[k] = sh[j]; sh[j] = t; } pairs = []; for(let k = 0; k + 1 < sh.length; k += 2) pairs.push([sh[k], sh[k + 1]]); }
         pairs.forEach(function(pr){ const A = fut[F.w][pr[0]], B = fut[F.w][pr[1]]; if(!A || !B) return;
+          if(F.pairs === 'rank'){ w12[pr[0]][pr[1]] = (w12[pr[0]][pr[1]] || 0) + 1; w12[pr[1]][pr[0]] = (w12[pr[1]][pr[0]] || 0) + 1; }   // v1.28.0
           const za = R.n(), zb = R.n();
           let sa = Math.round(A.m + A.s * za), sb = Math.round(B.m + B.s * zb); const ba = A.bm + A.bs * R.n(), bb = B.bm + B.bs * R.n(), u = R.u();
           let x = sa > sb ? 1 : sa < sb ? 0 : (ba > bb ? 1 : ba < bb ? 0 : u < 0.5 ? 1 : 0);
@@ -4885,7 +5059,8 @@ function engineWorker(){
         const rv = br.split(','), rec = {}; ids.forEach(function(id, k){ rec[id] = +rv[k]; });
         const dv = {}; bl.split('|').forEach(function(x, k){ dv[dks[k]] = x.split(','); });
         sc = { divs: dv, rec: rec, draft: bd.split(','), share: Math.round(bn / N * 10000) / 10000, fit: fit }; } }
-    return { sc: sc, ord: ord, wm: wm, po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), nxw: f(nxw), mo: f(mo), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW, ovm: ov ? ov.mode : null };
+    const r12 = {}; ids.forEach(function(id){ const x = w12[id], k = Object.keys(x); if(k.length){ r12[id] = {}; k.forEach(function(o){ r12[id][o] = Math.round(x[o] / N * 1000) / 1000; }); } });   // v1.28.0
+    return { r12: r12, sc: sc, ord: ord, wm: wm, po: f(cnt), bye: f(bye), lb: f(lbc), lbw: f(lbw), semi: f(semi), fin: f(fin), sb: f(sbc), ti: f(ti), nxw: f(nxw), mo: f(mo), w: wa, seed: sd, dp: d, fx: fx, nx: nx, tank: tank || null, tankW: tankW, ovm: ov ? ov.mode : null };
   }
   let LAST = null;   // latest run (for tank requests from the Playoff Prediction Engine page)
   self.onmessage = function(e){
