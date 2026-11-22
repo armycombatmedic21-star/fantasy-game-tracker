@@ -1,5 +1,5 @@
 {
- "at": "2026-11-22T06:42:28+00:00",
+ "at": "2026-11-22T20:03:22+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -9,10 +9,10 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "74",
-    "RB": "140",
-    "WR": "224",
-    "TE": "136"
+    "QB": "71",
+    "RB": "134",
+    "WR": "219",
+    "TE": "132"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 403,
-   "secs": 3.6,
+   "records": 400,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 250
+    "injury_flags": 263
    }
   },
   "espn": {
    "ok": true,
-   "records": 345,
-   "secs": 0.5,
+   "records": 342,
+   "secs": 0.6,
    "info": {
-    "players": 1061,
-    "kept": 345,
+    "players": 1062,
+    "kept": 342,
     "dropped": {
      "pos": 0,
-     "team": 324,
-     "no_week_proj": 392
+     "team": 323,
+     "no_week_proj": 397
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 139,
-   "secs": 27.0,
+   "records": 142,
+   "secs": 37.5,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 52
+    "no_projection": 49
    }
   },
   "fp": {
@@ -87,119 +87,119 @@
   }
  },
  "checks": {
-  "players": 654,
+  "players": 656,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "DK Metcalf PIT",
-  "Jordyn Tyson NO",
-  "Jacoby Brissett BAL",
-  "Justin Herbert LAC",
-  "Derrick Henry BAL",
-  "Stefon Diggs WAS",
-  "Courtland Sutton DEN",
-  "Jameson Williams DET",
-  "Aaron Rodgers PIT",
-  "Saquon Barkley PHI",
-  "Elic Ayomanor TEN",
+  "Jakobi Meyers JAX",
+  "Jameis Winston NYG",
+  "Cam Skattebo NYG",
+  "Javonte Williams DAL",
   "Emari Demercado HOU",
-  "Cam Ward TEN",
-  "Adonai Mitchell NYJ",
-  "Jared Goff DET",
-  "Kyle Monangai CHI",
-  "Zay Flowers BAL",
-  "Ashton Jeanty LV",
-  "Ladd McConkey LAC",
-  "Kyle McCord MIA",
+  "Jalen Coker CAR",
+  "DK Metcalf PIT",
   "Carnell Tate TEN",
-  "DeVonta Smith PHI",
   "Breece Hall NYJ",
-  "Malik Nabers NYG",
-  "Bryce Young CAR"
+  "Braelon Allen NYJ",
+  "Elic Ayomanor TEN",
+  "Adonai Mitchell NYJ",
+  "Joe Milton III PHI",
+  "Chris Olave NO",
+  "Ladd McConkey LAC",
+  "Omarion Hampton LAC",
+  "J.J. McCarthy NYG",
+  "Tre Tucker LV",
+  "Tyler Shough NO",
+  "Jared Goff DET",
+  "Kirk Cousins MIN",
+  "Tank Dell HOU",
+  "Rome Odunze CHI",
+  "Khalil Shakir BUF",
+  "Jonathan Taylor IND"
  ],
- "fp_unmatched_5plus_count": 63,
+ "fp_unmatched_5plus_count": 64,
  "future": {
   "12": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 654,
-   "projected": 478
+   "players": 656,
+   "projected": 479
   },
   "13": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 650,
-   "projected": 424
+   "players": 652,
+   "projected": 426
   },
   "14": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 652,
-   "projected": 456
+   "players": 654,
+   "projected": 458
   },
   "15": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 654,
-   "projected": 489
+   "players": 656,
+   "projected": 490
   },
   "16": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 654,
-   "projected": 488
+   "players": 656,
+   "projected": 490
   },
   "17": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 654,
-   "projected": 490
+   "players": 656,
+   "projected": 493
   },
   "nm_scale": {
-   "QB": 1.073,
-   "RB": 0.949,
-   "WR": 1.081,
-   "TE": 1.146,
-   "K": 1.051,
-   "DST": 1.028
+   "QB": 1.076,
+   "RB": 0.961,
+   "WR": 1.087,
+   "TE": 1.18,
+   "K": 1.053,
+   "DST": 1.027
   }
  },
- "scorecard": "week 11: 492 pre-kickoff projections saved",
+ "scorecard": "week 11: 203 pre-kickoff projections saved",
  "consensus": {
-  "used": 334,
-  "fallback": 63,
-  "single_source_blend": 52,
-  "out_by_injury": 58,
-  "no_source_zero": 75,
-  "added_from_sites": 3,
+  "used": 333,
+  "fallback": 52,
+  "single_source_blend": 40,
+  "out_by_injury": 76,
+  "no_source_zero": 69,
+  "added_from_sites": 5,
   "added_4plus": [
-   "Josh Johnson ARI QB 7.2"
+   "Josh Johnson ARI QB 7.4"
   ],
   "sources_per_player": {
-   "0": 131,
-   "1": 65,
-   "2": 195,
-   "3": 99,
-   "4": 40
+   "0": 140,
+   "1": 57,
+   "2": 190,
+   "3": 104,
+   "4": 39
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 654,
+ "players": 656,
  "spread_k": 1.05,
  "spread_rho": 0.06,
  "no_games_yet": 0
