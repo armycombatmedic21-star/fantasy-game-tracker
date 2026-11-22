@@ -1556,10 +1556,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.28.1';
+const APP_VERSION = '1.28.2';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.28.2', 'RED ZONE only shows when the team with the ball is actually inside the other team\u2019s 20. ESPN sometimes left the red-zone flag on after a drive ended.'],
   ['1.28.1', 'The Schedule now fills the whole screen on iPhone. On narrower phones, team and owner names fit without being cut off.'],
   ['1.28.0', 'New Schedule page. Tap Schedule on the Scoreboard (next to League Analysis) or on Standings (next to Playoff Engine) and your season slides up: every week\u2019s opponent with their logo and owner, the score with a green W or red L, and your record after each week. This week shows the live score (or the projection before kickoff) and your win %. Week 12 is position night, so it shows who you\u2019ll most likely face and the odds. Pick any team at the top right; it always opens on your team. Visual changes: Schedule button on the Scoreboard and Standings (the Playoff Engine button is now half width).'],
   ['1.27.0', 'Loading animations everywhere the app makes you wait. Win odds, projections, playoff %, draft picks and the Playoff Engine show a moving shimmer or a sweeping bar instead of going blank, then the numbers pop in. The Playoff Engine shows a progress ring with the real % of the season sim. Chat shows gray message bubbles until it loads. Visual changes: loading states on Scoreboard, Matchup, Standings, Playoff Engine and Chat.'],
@@ -1889,6 +1890,14 @@ function pickLogo(team){
   const base = plain || team.logo || null;
   return base && base.indexOf('/500/') !== -1 ? base.replace('/500/', '/500-dark/') : base;
 }
+function rzTeam(sit, pos){   // v1.28.2: "BUF 12" (possessionText) or "... at BUF 12" (downDistanceText)
+  if(!pos) return '';
+  const txt = String(sit.possessionText || sit.downDistanceText || '');
+  const all = txt.match(/([A-Z]{2,4})\s+(\d{1,2})/g);
+  if(all && all.length){ const m = all[all.length - 1].match(/([A-Z]{2,4})\s+(\d{1,2})/); return m[1] !== pos && +m[2] <= 20 ? pos : ''; }
+  if(/\b50\b/.test(txt)) return '';   // midfield
+  return sit.isRedZone ? pos : '';
+}
 function parseScoreboard(data){
   const out = { week: data && data.week && data.week.number, events: {}, byTeam: {}, logos: {} };
   (data.events || []).forEach(function(ev){
@@ -1898,15 +1907,18 @@ function parseScoreboard(data){
                 clock: (ev.status && ev.status.displayClock) || '', period: (ev.status && ev.status.period) || 0, neutral: !!comp.neutralSite, home: '', away: '', scores: {},
                 lp: (comp.situation && comp.situation.lastPlay && comp.situation.lastPlay.id) ? String(comp.situation.lastPlay.id) : '', rz: '' };
     // v1.9.0: red zone = ESPN situation.isRedZone + the team with the ball (possession is ESPN's team id)
-    const rzId = comp.situation && comp.situation.isRedZone && comp.situation.possession ? String(comp.situation.possession) : '';
+    // v1.28.2: ESPN's isRedZone can stick after a drive (Nov 22: RED ZONE on Miami at "3rd & 13 at BUF 40"), so the yard
+    // line decides: the team with the ball on the other team's side at the 20 or closer. No yard line -> ESPN's flag.
+    const sit = comp.situation || {}, posId = sit.possession != null ? String(sit.possession) : '', idAbbr = {};
     (comp.competitors || []).forEach(function(c){
       const a = c.team && c.team.abbreviation; if(!a) return;
       g.scores[a] = parseInt(c.score, 10) || 0;
       if(c.homeAway === 'home') g.home = a; else g.away = a;
-      if(rzId && c.team.id != null && String(c.team.id) === rzId) g.rz = a;
+      if(c.team.id != null) idAbbr[String(c.team.id)] = a;
       out.byTeam[a] = g.id;
       const lg = pickLogo(c.team); if(lg) out.logos[a] = lg;
     });
+    g.rz = rzTeam(sit, posId && idAbbr[posId] ? idAbbr[posId] : '');
     out.events[g.id] = g;
   });
   return out;
