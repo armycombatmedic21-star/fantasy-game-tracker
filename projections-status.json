@@ -1,5 +1,5 @@
 {
- "at": "2026-11-21T23:49:07+00:00",
+ "at": "2026-11-22T06:42:28+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 403,
-   "secs": 3.4,
+   "secs": 3.6,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -60,7 +60,7 @@
   "espn": {
    "ok": true,
    "records": 345,
-   "secs": 0.8,
+   "secs": 0.5,
    "info": {
     "players": 1061,
     "kept": 345,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 139,
-   "secs": 26.4,
+   "secs": 27.0,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "DJ Moore BUF",
-  "Jalen Coker CAR",
-  "Ollie Gordon II MIA",
-  "Chris Olave NO",
-  "Jacoby Brissett BAL",
-  "J.J. McCarthy NYG",
-  "Mike Evans SF",
-  "Tank Dell HOU",
-  "Omarion Hampton LAC",
-  "Garrett Wilson NYJ",
-  "Emeka Egbuka TB",
-  "Aaron Rodgers PIT",
-  "Ashton Jeanty LV",
-  "Breece Hall NYJ",
-  "Courtland Sutton DEN",
-  "Emari Demercado HOU",
-  "Deebo Samuel Sr. SF",
-  "Cam Ward TEN",
   "DK Metcalf PIT",
+  "Jordyn Tyson NO",
+  "Jacoby Brissett BAL",
+  "Justin Herbert LAC",
+  "Derrick Henry BAL",
+  "Stefon Diggs WAS",
+  "Courtland Sutton DEN",
+  "Jameson Williams DET",
+  "Aaron Rodgers PIT",
+  "Saquon Barkley PHI",
+  "Elic Ayomanor TEN",
+  "Emari Demercado HOU",
+  "Cam Ward TEN",
+  "Adonai Mitchell NYJ",
+  "Jared Goff DET",
+  "Kyle Monangai CHI",
+  "Zay Flowers BAL",
+  "Ashton Jeanty LV",
+  "Ladd McConkey LAC",
+  "Kyle McCord MIA",
+  "Carnell Tate TEN",
   "DeVonta Smith PHI",
-  "Khalil Shakir BUF",
-  "Jonathan Taylor IND",
-  "Jakobi Meyers JAX",
-  "Josh Downs KC",
-  "Bucky Irving TB"
+  "Breece Hall NYJ",
+  "Malik Nabers NYG",
+  "Bryce Young CAR"
  ],
  "fp_unmatched_5plus_count": 63,
  "future": {
@@ -169,12 +169,12 @@
    "projected": 490
   },
   "nm_scale": {
-   "QB": 1.072,
-   "RB": 0.948,
-   "WR": 1.079,
-   "TE": 1.14,
+   "QB": 1.073,
+   "RB": 0.949,
+   "WR": 1.081,
+   "TE": 1.146,
    "K": 1.051,
-   "DST": 1.025
+   "DST": 1.028
   }
  },
  "scorecard": "week 11: 492 pre-kickoff projections saved",
@@ -186,7 +186,7 @@
   "no_source_zero": 75,
   "added_from_sites": 3,
   "added_4plus": [
-   "Josh Johnson ARI QB 7.0"
+   "Josh Johnson ARI QB 7.2"
   ],
   "sources_per_player": {
    "0": 131,
