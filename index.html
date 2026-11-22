@@ -1461,6 +1461,30 @@ html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
 .schtb .q1{display:block;font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--gold);line-height:1.3}
 .schtb .up2{font-size:12px;font-weight:800;color:var(--faint);letter-spacing:.4px}
 .schtb .badge.nob{border-style:dashed;border-color:rgba(244,196,61,.5);background:none}
+html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped at 88% (line ~235); the Schedule is full screen */
+.schtb .cd{display:none}
+.schtb .lv2{display:none;font-style:normal;align-items:center;gap:3px;font-size:8.5px;font-weight:800;letter-spacing:.6px;color:#ff5a6a;border:1px solid rgba(255,90,106,.55);background:rgba(255,90,106,.1);border-radius:5px;padding:1px 4px}
+.schtb .lv2 b{width:5px;height:5px;border-radius:50%;background:#ff5a6a;box-shadow:0 0 6px #ff5a6a}
+.schtb .lv2.pj{color:#8fb6ff;border-color:rgba(79,141,255,.5);background:rgba(79,141,255,.1)}
+@media (max-width:389px){   /* v1.28.1: narrow phones (under iPhone width, 390+) (Grandpa's Android): full names fit */
+  .schtb .rw{grid-template-columns:22px 32px minmax(0,1fr) auto;gap:0 8px;padding:0 10px}
+  .schtb .hd{grid-template-columns:30px 1fr auto;padding-left:10px;padding-right:10px}
+  .schtb .badge{width:32px;height:32px}
+  .schtb .wk{font-size:14px}
+  .schtb .nm b{font-size:15px}.schtb .nm small{font-size:11.5px}
+  .schtb .rs b{font-size:15px}.schtb .rs b i{margin-right:4px}
+  .schtb .lv{font-size:15px;gap:5px}
+  .schtb .rw.pos .nm b span{font-size:10px;margin-right:4px}
+  .schtb .fn{display:none}.schtb .cd{display:inline}
+}
+@media (max-width:360px){   /* v1.28.1: zoomed-in / small Android */
+  .schtb .rw{grid-template-columns:20px 30px minmax(0,1fr) auto;gap:0 7px;padding:0 9px}
+  .schtb .hd{grid-template-columns:27px 1fr auto;padding-left:9px;padding-right:9px}
+  .schtb .badge{width:30px;height:30px}
+  .schtb .lv em{display:none}
+  .schtb .wpm > i{display:none}
+  .schtb .wpm .lv2{display:inline-flex}
+}
 </style>
 </head>
 <body>
@@ -1532,10 +1556,11 @@ html.gsm input,html.gsm textarea{-webkit-user-select:text;user-select:text}
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.28.0';
+const APP_VERSION = '1.28.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.28.1', 'The Schedule now fills the whole screen on iPhone. On narrower phones, team and owner names fit without being cut off.'],
   ['1.28.0', 'New Schedule page. Tap Schedule on the Scoreboard (next to League Analysis) or on Standings (next to Playoff Engine) and your season slides up: every week\u2019s opponent with their logo and owner, the score with a green W or red L, and your record after each week. This week shows the live score (or the projection before kickoff) and your win %. Week 12 is position night, so it shows who you\u2019ll most likely face and the odds. Pick any team at the top right; it always opens on your team. Visual changes: Schedule button on the Scoreboard and Standings (the Playoff Engine button is now half width).'],
   ['1.27.0', 'Loading animations everywhere the app makes you wait. Win odds, projections, playoff %, draft picks and the Playoff Engine show a moving shimmer or a sweeping bar instead of going blank, then the numbers pop in. The Playoff Engine shows a progress ring with the real % of the season sim. Chat shows gray message bubbles until it loads. Visual changes: loading states on Scoreboard, Matchup, Standings, Playoff Engine and Chat.'],
   ['1.26.0', 'Android: the league game cards on the Scoreboard are shorter and don’t wrap anymore. Team and win % on top, record and owner underneath, and the players-left count is gone.'],
@@ -3297,7 +3322,8 @@ function schView(){
     } else if(r.kind === 'now'){
       cls = ' now';
       const wpc = r.wp != null ? Math.max(1, Math.min(99, Math.round(r.wp * 100))) : null;
-      const wpH = wpc != null ? '<span class="wpm' + (wpc < 50 ? ' lo' : '') + '"><i><u style="width:' + wpc + '%"></u></i>' + wpc + '% win</span>' : (LDG() ? '<span class="wpm">' + ldB(70, 9, 4) + '</span>' : '');
+      const tag2 = r.live ? '<em class="lv2"><b></b>LIVE</em>' : '<em class="lv2 pj">PROJ</em>';   // v1.28.1: narrow phones show the tag here
+      const wpH = wpc != null ? '<span class="wpm' + (wpc < 50 ? ' lo' : '') + '">' + tag2 + '<i><u style="width:' + wpc + '%"></u></i>' + wpc + '% win</span>' : (LDG() ? '<span class="wpm">' + ldB(70, 9, 4) + '</span>' : '');
       if(r.load) res = ldB(70, 14, 5) + ldB(56, 10, 4);
       else if(r.live) res = '<span class="lv"><em><i></i>LIVE</em><span><u class="' + (num(r.a) > num(r.b) ? 'up' : num(r.a) < num(r.b) ? 'dn' : '') + '">' + schPts(r.a) + '</u>-' + schPts(r.b) + '</span></span>' + wpH;
       else if(r.pa != null) res = '<span class="lv"><em class="pj">PROJ</em><span>' + Math.round(r.pa) + '-' + Math.round(r.pb) + '</span></span>' + wpH;
@@ -3307,7 +3333,7 @@ function schView(){
       const od = r.odds || [], a = od[0], b = od[1];
       if(a && a[1] >= 0.995){ const t = O(a[0]); cls += ' known'; lg = t ? badge(t.T) : lg; nm = '<b>' + esc(t ? t.name : '') + '</b><small>' + esc(t ? ownerOf({ id: t.id }) : '') + '</small>'; }
       else if(a){ const t = O(a[0]), u = b && O(b[0]); lg = t ? badge(t.T) : lg;
-        nm = '<b><span>LIKELY</span>' + esc(t ? t.name : '') + '</b><small>' + Math.round(a[1] * 100) + '%' + (u ? ' · or ' + esc(u.name) + ' ' + Math.round(b[1] * 100) + '%' : '') + '</small>'; }
+        nm = '<b><span>LIKELY</span>' + esc(t ? t.name : '') + '</b><small>' + Math.round(a[1] * 100) + '%' + (u ? ' · or <span class="fn">' + esc(u.name) + '</span><span class="cd">' + esc(u.T.code) + '</span> ' + Math.round(b[1] * 100) + '%' : '') + '</small>'; }
       else nm = '<b>' + (LDG() ? ldB(120, 14, 5) : 'To be decided') + '</b><small>Set by the Week 11 standings</small>';
       res = '<span class="q1">POSITION<br>NIGHT</span>';
     } else {
