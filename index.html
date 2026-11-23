@@ -1571,10 +1571,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.30.0';
+const APP_VERSION = '1.31.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.31.0', 'Week 12 position night: as soon as Week 11 is final, the app pairs the teams itself (AFC 1st vs NFC 1st \u2026 6th vs 6th, by the standings), so Matchup, Scoreboard, win % and the Schedule show your Week 12 opponent even before CBS lists the games. When CBS has the Week 12 matchups, CBS\u2019s are used.'],
   ['1.30.0', 'When CBS lists a player as injured (Q, D, O, IR or suspended), his Matchup drop-down now shows the INJURY box during and after his game too, not just before kickoff. It also shows CBS\u2019s latest news headline about him, and the expected return week when CBS has one. Players in your IR slot now show their projection like bench players (their points still don\u2019t count toward your score or bench total).'],
   ['1.29.0', 'Every Scoreboard game now has a \u201cplayers left\u201d pill on its top edge that counts down as players finish and turns into FINAL with a green check. Win odds show >99.9% / <0.1% until a game is really over (100% only once nobody is left). On the Matchup screen each team has its own \u201cleft\u201d count on the Starters bar, and a FINAL badge sits above the VS once the game is over. The Schedule shows the W or L, the score and 100% as soon as that game is done. Playoff odds now count a player coming back from injured reserve from the week CBS lists as his expected return.'],
   ['1.28.2', 'RED ZONE only shows when the team with the ball is actually inside the other team\u2019s 20. ESPN sometimes left the red-zone flag on after a drive ended.'],
@@ -2019,7 +2020,10 @@ function weekModel(){
   const rw = S.ros[S.week];
   if(num(S.week) >= num(S.curWeek) && !(rw && (rw.data || rw.err))) return null;
   const R = rosFor(S.week);
-  if(modelMemo.src === L && modelMemo.ros === R) return modelMemo.m;
+  // v1.31.0: Week 12 with no CBS opponents -> position-night pairs (rankPairs); part of the memo so they appear once known
+  const noOpp = num(L.period) === RANK_WEEK && !L.teams.some(function(t){ return t.opp_team_id; });
+  const RP = noOpp ? rankPairs() : null, rpSig = RP ? JSON.stringify(RP.pairs) : '';
+  if(modelMemo.src === L && modelMemo.ros === R && modelMemo.rp === rpSig) return modelMemo.m;
   const rmap = {};
   if(R) R.data.teams.forEach(function(t){ rmap[String(t.id)] = t; });
   const teams = {};
@@ -2075,6 +2079,7 @@ function weekModel(){
     teams[id] = { id: id, name: trim(t.name) || LEAGUE[id] || 'Team ' + id, code: teamCode(id, t.name), logo: t.logo || '', record: t.record || ((t.w || 0) + '-' + (t.l || 0)),
                   division: t.division || '', order: t.order, cbsPts: num(t.pts), home: t.home_away === 'home', opp: String(t.opp_team_id || ''), lineup: lineup, bench: bench, idx: Object.keys(teams).length };
   });
+  if(RP) Object.keys(teams).forEach(function(id){ const o = RP.pairs[id]; if(o && teams[o]){ teams[id].opp = o; teams[id].home = !!RP.home[id]; teams[id].rankPair = true; } });
   const matchups = [], used = {};
   Object.keys(teams).forEach(function(id){
     const t = teams[id]; if(used[id]) return;
@@ -2084,7 +2089,7 @@ function weekModel(){
     matchups.push({ key: 'm' + [home.id, away ? away.id : 'x'].sort(function(a, b){ return a - b; }).join('-'), home: home, away: away || null });
   });
   const m = { week: num(L.period) || S.week, teams: teams, matchups: matchups };
-  modelMemo = { src: L, ros: R, m: m };
+  modelMemo = { src: L, ros: R, m: m, rp: rpSig };
   return m;
 }
 
@@ -3118,6 +3123,25 @@ function recOf(t){
 }
 // newest week whose results are final (this week once Monday night is over, otherwise last week)
 function lastFinalWeek(){ const C = num(S.curWeek); if(!C) return 0; return ((CURW && CURW.week === C && CURW.final) || savedFinal(C)) ? C : C - 1; }
+// v1.31.0 (Wes, Nov 23): Week 12 "position night" opponents when CBS has none yet: AFC #k vs NFC #k by the
+// standings after Week 11 (same tiebreakers as the Standings tab). Worked out as soon as Week 11 is final, then kept
+// on the phone (fgt-w12pairs) so Week 12's own results never reshuffle them. CBS's own opponents always win.
+function rankPairs(){
+  const C = num(S.curWeek), sv = getLocal('w12pairs');
+  const w12final = C === RANK_WEEK && ((CURW && CURW.week === C && CURW.final) || savedFinal(C));
+  const ready = (C === RANK_WEEK - 1 && lastFinalWeek() === C) || (C === RANK_WEEK && !w12final);
+  if(ready){
+    const A = stAdjust(false), d = A && !A.building && A.divs;
+    if(Array.isArray(d) && d.length === 2 && d[0].teams.length === d[1].teams.length && d[0].teams.length >= 2){
+      const afc = /nfc/i.test(String(d[0].id || d[0].name || '')) ? 1 : 0, pr = {}, home = {};
+      d[afc].teams.forEach(function(t, k){ const a = String(t.id), b = String(d[1 - afc].teams[k].id); pr[a] = b; pr[b] = a; home[a] = 1; });
+      const out = { pairs: pr, home: home };
+      if(!sv || JSON.stringify(sv.pairs) !== JSON.stringify(pr)) put('w12pairs', { pairs: pr, home: home, at: Date.now() });
+      return out;
+    }
+  }
+  return sv && sv.pairs ? { pairs: sv.pairs, home: sv.home || {} } : null;
+}
 function recSeen(){ let v = getLocal('rec-seen'); const lf = lastFinalWeek(); if((v == null || v === '') && lf >= 1 && S.standings){ put('rec-seen', lf); v = lf; } return num(v); }
 function recNew(){ const lf = lastFinalWeek(); return !!(S.standings && lf >= 1 && lf > recSeen()); }
 function recOnEnter(){ if(recNew()){ const lf = lastFinalWeek(); S.recBanner = { w: lf, anim: true }; put('rec-seen', lf); } }
@@ -3336,8 +3360,9 @@ function schWeeks(id){
     } else {
       r.opp = schOppOf(k, id);
       if(!r.opp && k === RANK_WEEK){ r.kind = 'pos';
-        const pp = ENG.res && engineReady() && ENG.res.pp, x = pp && pp.r12 && pp.r12[id];
-        if(x){ r.odds = Object.keys(x).map(function(o){ return [o, x[o]]; }).sort(function(a, b){ return b[1] - a[1]; }); }
+        const pp = ENG.res && engineReady() && ENG.res.pp, x = pp && pp.r12 && pp.r12[id], rp = rankPairs();
+        if(rp && rp.pairs[id]) r.odds = [[rp.pairs[id], 1]];   // v1.31.0: Week 11 final -> the opponent is known
+        else if(x){ r.odds = Object.keys(x).map(function(o){ return [o, x[o]]; }).sort(function(a, b){ return b[1] - a[1]; }); }
       }
     }
     if(k === RANK_WEEK) r.pn = true;
@@ -5618,7 +5643,7 @@ var chatHook = function(){ placePane(); paintBadge(); };
 ['gesturestart', 'gesturechange'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
 document.addEventListener('touchmove', function(e){ if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; }, PPE: PPE, isAdmin: function(){ return ADMIN; }, isGsm: function(){ return GSM; } };
+window.__fgt = { S: S, ENG: ENG, lvFrames: lvFrames, bkCol: bkCol, cbsInj: cbsInj, cbsGone: cbsGone, projFor: projFor, mBegun: mBegun, engState: engState, scoreStats: scoreStats, parseCbsStats: parseCbsStats, parseSummary: parseSummary, espnStats: espnStats, weekModel: weekModel, liveModel: liveModel, parseScoreboard: parseScoreboard, stAdjust: stAdjust, stCheck: function(){ return STCHECK; }, fmtPct: fmtPct, curW: function(){ return CURW; }, _setCurW: function(v){ CURW = v; stMemo.sig = ''; }, version: APP_VERSION, weekStartET: weekStartET, CH: CH, changed: changed, srvNow: srvNow, season: function(){ const m = weekModel(); return m ? seasonInputs(m) : null; }, PPE: PPE, isAdmin: function(){ return ADMIN; }, isGsm: function(){ return GSM; }, rankPairs: rankPairs, schWeeks: schWeeks };
 try{ history.replaceState({}, ''); }catch(e){}
 // reopen where you were (4 h); a week other than the current one only holds 10 minutes (Pick'em 4.5.5)
 (function restoreView(){
