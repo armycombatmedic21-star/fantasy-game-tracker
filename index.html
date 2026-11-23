@@ -1485,6 +1485,19 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
   .schtb .wpm > i{display:none}
   .schtb .wpm .lv2{display:inline-flex}
 }
+
+/* v1.29.0 (Wes, Nov 23): players-left pill / FINAL pill (Scoreboard top edge, Matchup Starters bar, VS badge, Schedule) */
+.lfp{position:absolute;top:-11px;right:12px;z-index:4;height:22px;padding:0 9px;display:inline-flex;align-items:center;gap:4px;border-radius:999px;background:#0c1628;border:1.5px solid rgba(255,170,51,.9);color:#ffb84d;font-size:10px;font-weight:800;letter-spacing:1px;line-height:1;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+.lfp svg{width:12px;height:12px;flex:none}.lfp svg path{fill:none;stroke:#3ddc84;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lfp.fin{border-color:rgba(255,255,255,.85);color:#fff;padding-left:7px}
+.mc.mine .mchead:empty{display:none}
+.mc.lg .rows{padding-top:6px}
+.bnr .lfp.sdp{position:static;height:20px;font-size:9.5px;padding:0 8px}
+.bnr .lfp.sdp.dn{border-color:rgba(147,174,200,.45);color:#c9d6e8;padding-left:6px}
+.fp2 .vsw{flex-direction:column;align-items:center;gap:6px}
+.fp2 .vsw .lfp svg{width:12px;height:12px;filter:none}
+.fp2 .lfp.vsf{position:static;height:20px;font-size:9.5px;padding:0 7px 0 5px;letter-spacing:.8px}
+.schtb .lv i{font-style:normal}
 </style>
 </head>
 <body>
@@ -1556,10 +1569,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.28.2';
+const APP_VERSION = '1.29.0';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.29.0', 'Every Scoreboard game now has a \u201cplayers left\u201d pill on its top edge that counts down as players finish and turns into FINAL with a green check. Win odds show >99.9% / <0.1% until a game is really over (100% only once nobody is left). On the Matchup screen each team has its own \u201cleft\u201d count on the Starters bar, and a FINAL badge sits above the VS once the game is over. The Schedule shows the W or L, the score and 100% as soon as that game is done. Playoff odds now count a player coming back from injured reserve from the week CBS lists as his expected return.'],
   ['1.28.2', 'RED ZONE only shows when the team with the ball is actually inside the other team\u2019s 20. ESPN sometimes left the red-zone flag on after a drive ended.'],
   ['1.28.1', 'The Schedule now fills the whole screen on iPhone. On narrower phones, team and owner names fit without being cut off.'],
   ['1.28.0', 'New Schedule page. Tap Schedule on the Scoreboard (next to League Analysis) or on Standings (next to Playoff Engine) and your season slides up: every week\u2019s opponent with their logo and owner, the score with a green W or red L, and your record after each week. This week shows the live score (or the projection before kickoff) and your win %. Week 12 is position night, so it shows who you\u2019ll most likely face and the odds. Pick any team at the top right; it always opens on your team. Visual changes: Schedule button on the Scoreboard and Standings (the Playoff Engine button is now half width).'],
@@ -2179,6 +2193,9 @@ function cbsInj(p){
   return { code: code, body: body, line: line || (code === 'IR' ? 'Injured Reserve' : ''), ret: rm ? rm[1].replace(/\s+/, ' ') : '', thisWk: thisWk,
            out: code === 'IR' || code === 'SUS' || (code === 'O' && thisWk) };
 }
+// v1.29.0 (Wes, Nov 23): an IR player's CBS "Expected Return - Week N" (the same date the Matchup drop-down shows) ->
+// N, so future weeks (playoff odds, bracket, draft odds) count him from that week on. No CBS date -> 0 (stays out).
+function irRet(p){ const ci = cbsInj(p); if(!ci || ci.code !== 'IR' || !ci.ret) return 0; const w = num(String(ci.ret).replace(/\D+/g, '')); return w > 0 ? w : 0; }
 // Out for this week and not playing: game not started, or started with no stats for him (inactive). Once he has stats
 // or his game is final, his real points rule.
 function liveHas(L){ const s = L && L.s; return !!(s && (s.py || s.ry || s.cy || s.rcar || s.rec || (s.ptd || []).length || (s.rtd || []).length || (s.ctd || []).length || (s.fg || []).length || s.xp)); }
@@ -2403,6 +2420,9 @@ function leagueRank(id){ const all = stTeams().slice().sort(function(a, b){ cons
   const i = all.findIndex(function(t){ return String(t.id) === id; }); return i < 0 ? null : { rank: i + 1, of: all.length }; }
 function recLine(t){ if(!t) return ''; const d = divRank(t.id); return recOf(t) + (d ? ' · ' + ordTxt(d.rank) + ' ' + d.div : ''); }
 function isDivWeek(m){ const ms = m && m.matchups.filter(function(x){ return x.home && x.away; }); return !!(ms && ms.length && ms.every(function(x){ return x.home.division && x.home.division === x.away.division; })); }
+const CHK_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.4 6.3l2.4 2.4 4.8-5.2"/></svg>';
+function sbPct(v, done){ const r = v * 100; if(done) return Math.round(r) + '%'; if(r >= 99.5) return r >= 99.95 ? '>99.9%' : r.toFixed(1) + '%'; if(r < 0.5) return r < 0.05 ? '<0.1%' : r.toFixed(1) + '%'; return Math.round(r) + '%'; }
+function lfPill(left, done, cls){ return done ? '<span class="lfp fin' + (cls || '') + '">' + CHK_SVG + 'FINAL</span>' : '<span class="lfp' + (cls || '') + '">' + left + ' LEFT</span>'; }
 function fmtPct(w, fin){ const v = w * 100; if(fin) return Math.round(v) + '%'; return v >= 99.95 ? '>99.9%' : v < 0.05 ? '<0.1%' : v.toFixed(1) + '%'; }
 function wpRow(wa, full, fin){
   const a = wa * 100, b = 100 - a;
@@ -2523,7 +2543,7 @@ function card(mt, mine, LM){
   const done = left === 0 && (la && la.any);
   const fw = done && B ? finalWa(la, lb) : null;
   const wa = fw != null ? fw : E ? (flip ? 1 - E.wa : E.wa) : null, pa = E ? (flip ? E.pb : E.pa) : null, pb = E ? (flip ? E.pa : E.pb) : null;
-  const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + Math.round(v * 100) + '%</span>' : !mine && !done && LDG() ? '<span class="chip2 ldchip">' + ldB(22, 9, 4) + '</span>' : ''; };
+  const chip = function(v){ return !mine && v != null ? '<span class="chip2' + (v > 0.5 ? ' lead' : '') + '">' + sbPct(v, done) + '</span>' : !mine && !done && LDG() ? '<span class="chip2 ldchip">' + ldB(22, 9, 4) + '</span>' : ''; };
   const on = mBegun(A, la, B, lb);
   const gl = (GSM || ANDROID) && !mine;   // v1.24.0 Safe Mode / v1.26.0 all Android: line 1 name + win %, line 2 record · owner (nothing wraps)
   const tn = function(t, w){ return gl ? '<span class="tn gsmtn"><span class="gl1"><b>' + esc(t ? t.name : 'Open') + (t ? odot(t.id) : '') + '</b>' + chip(w) + '</span><small class="gl2"><span class="gr">' + esc(t ? recOf(t) : '') + '</span>' + (ownerOf(t) ? ' · <span class="go">' + esc(ownerOf(t)) + '</span>' : '') + '</small></span>' :
@@ -2531,9 +2551,9 @@ function card(mt, mine, LM){
   const row = function(t, p, o, L, pj, w){ return '<div class="trow' + (on && L && L.any && p > o ? ' lead' : '') + '">' + badge(t) + tn(t, w) + '<span class="sc"><b>' + (on ? p : '–') + '</b>' + (pj != null && !done && ADV ? '<small>' + pj.toFixed(1) + '</small>' : !done && LDG() ? '<small class="ldsm">' + ldB(28, 9, 4) + '</small>' : '') + '</span></div>'; };
   const note = engNote();
   return '<article class="mc ' + (mine ? 'mine' : 'lg') + (pinned ? ' pinned' : '') + '" data-key="' + mt.key + '" data-grp="' + (mine ? 'mine' : pinned ? 'pin' : 'rest') + '" tabindex="0" aria-label="' + esc(A.name + ' versus ' + (B ? B.name : '')) + '">' +
-    (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '<span></span><span class="tag">' + left + ' players left</span>' : GSM ? '' :   // v1.23.0 Safe Mode: no pin
+    (mine ? '<span class="ymx"><b>My matchup</b></span>' : '') + '<div class="mchead">' + (mine ? '' : GSM ? '' :   // v1.23.0 Safe Mode: no pin
       '<button class="pin" data-pin="' + mt.key + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this game">' + pinSvg() + '</button>') + '</div>' +
-    (mine || GSM || ANDROID ? '' : '<span class="tag left">' + left + ' left</span>') +   // v1.24.0: no "N left" on league cards in Safe Mode
+    (B ? lfPill(left, done) : '') +   // v1.29.0: every card (all modes): "N LEFT" pill on the top edge, then FINAL
     '<div class="rows">' + row(A, a, b, la, pa, wa) + row(B, b, a, lb, pb, wa == null ? null : 1 - wa) + '</div>' +
     (wa != null && B && mine ? wpRow(wa, true, done) : (mine && LDG() && B ? ldWp() : mine && note ? '<div class="engine">' + note + '</div>' : '')) + '</article>';
 }
@@ -2858,7 +2878,7 @@ function matchView(){
   const a = la ? la.pts : 0, b = lb ? lb.pts : 0, left = (la ? la.left : 0) + (lb ? lb.left : 0);
   // v1.6.1: "Live" only once a starter's game has kicked off or finished (a starter on a bye / with no game used to make it say Live early)
   const played = (la ? la.rows : []).concat(lb ? lb.rows : []).filter(function(L){ return L && (L.state === 'in' || L.state === 'post'); }).length;
-  const status = left === 0 && played ? 'Final' : (played ? 'Live · ' + left + ' players left' : 'Not started');
+  const status = left === 0 && played ? 'Final' : (played ? 'Live · ' + left + (left === 1 ? ' player left' : ' players left') : 'Not started');
   let E = isCurrentWeek() ? engMatch(mt.key) : null;
   const HM = mt.home, flip = !!(E && HM && A.id !== HM.id), dw = isDivWeek(LM.model);
   if(E && canOpt && (optOn(A.id) || optOn(B.id))){   // one-game run with the lineups on screen (home team first, like the engine)
@@ -2879,12 +2899,13 @@ function matchView(){
     '<div class="fp">' + fl(A) + '<div class="mid"><div class="scs"><b class="' + (ON && a > b ? 'lead' : '') + '">' + (ON ? a : '–') + '</b><b class="' + (ON && b > a ? 'lead' : '') + '">' + (ON ? b : '–') + '</b></div>' +
     (E && ADV && status !== 'Final' ? (GSM ? '<div class="pj gsmpj' + (PJB ? ' pjb' : '') + '"><span>(' + pa.toFixed(1) + ')</span><span>(' + pb.toFixed(1) + ')</span></div>' :   // v1.23.0 Safe Mode: gray, in parentheses (same color as the player projections)
       '<div class="pj"><span>' + pa.toFixed(1) + '</span><span>' + pb.toFixed(1) + '</span></div>') : ADV && status !== 'Final' && LDG() ? '<div class="pj ldpj"><span>' + ldB(44, 13, 5) + '</span><span>' + ldB(44, 13, 5) + '</span></div>' : '') + '</div>' + fl(B, true) + '</div>' +
-    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : ADV && !GSM && B && status !== 'Final' && LDG() ? '<span class="ldseg">' + ldB(118, 28, 14) + '</span>' : '') + '</div><div class="vsw">' + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : ADV && !GSM && B && status !== 'Final' && LDG() ? '<span class="ldseg">' + ldB(118, 28, 14) + '</span>' : '') + '</div></div>' +
-    '<div class="lstat">' + status + '</div>' +
+    '<div class="fp2"><div class="nm"><b>' + esc(A.name) + odot(A.id) + '</b>' + (ownerOf(A) ? '<span class="own">' + esc(ownerOf(A)) + '</span>' : '') + '<small>' + esc(recLine(A)) + '</small>' + (canOpt && status !== 'Final' ? optSeg(A.id, false) : ADV && !GSM && B && status !== 'Final' && LDG() ? '<span class="ldseg">' + ldB(118, 28, 14) + '</span>' : '') + '</div><div class="vsw">' + (status === 'Final' && B ? '<span class="lfp fin vsf">' + CHK_SVG + 'FINAL</span>' : '') + VS_SVG + '</div><div class="nm r"><b>' + (B ? odot(B.id) : '') + esc(B ? B.name : 'Open') + '</b>' + (ownerOf(B) ? '<span class="own">' + esc(ownerOf(B)) + '</span>' : '') + '<small>' + esc(recLine(B)) + '</small>' + (canOpt && status !== 'Final' && B ? optSeg(B.id, true) : ADV && !GSM && B && status !== 'Final' && LDG() ? '<span class="ldseg">' + ldB(118, 28, 14) + '</span>' : '') + '</div></div>' +
+    (status === 'Final' ? '' : '<div class="lstat">' + status + '</div>') +   // v1.29.0: the FINAL badge above VS says it
     (wa != null && B ? wpRow(wa, true, status === 'Final') : LDG() && B ? ldWp() : (note ? '<div class="engine">' + note + '</div>' : '')) +
     '<div class="swipehint"><button class="arrow" id="prev" aria-label="Previous game">‹</button><div class="dots">' + X.list.map(function(x, j){ return HASM && j === 0 ? '<i class="star' + (x === mt ? ' on' : '') + '">' + ICON.star + '</i>' : '<i class="' + (x === mt ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="arrow" id="next" aria-label="Next game">›</button></div></section>';
   h += '<div id="mrows" data-key="rows-' + mt.key + '">';
-  h += '<div class="plist"><div class="bnr st"><span class="sd l"></span><span class="mid"><h3>Starters</h3></span><span class="sd r"></span></div>';
+  const sdp = function(L){ if(!B || !played || !L) return ''; return L.left ? '<span class="lfp sdp">' + L.left + ' LEFT</span>' : '<span class="lfp sdp dn">' + CHK_SVG + 'DONE</span>'; };
+  h += '<div class="plist"><div class="bnr st"><span class="sd l">' + sdp(la) + '</span><span class="mid"><h3>Starters</h3></span><span class="sd r">' + sdp(lb) + '</span></div>';
   const n = Math.max(A.lineup.length, B ? B.lineup.length : 0);
   for(let i = 0; i < n; i++){
     const pa = A.lineup[i] || null, pb = B ? (B.lineup[i] || null) : null;
@@ -3302,6 +3323,7 @@ function schWeeks(id){
         const me = mt.home.id === id ? mt.home : mt.away, op = me === mt.home ? mt.away : mt.home, la = LM.live[me.id], lb = LM.live[op.id];
         r.opp = String(op.id); r.live = mBegun(me, la, op, lb); r.a = la ? la.pts : 0; r.b = lb ? lb.pts : 0;
         const E = engMatch(mt.key); if(E){ const fl = mt.home.id !== id; r.wp = fl ? 1 - E.wa : E.wa; r.pa = fl ? E.pb : E.pa; r.pb = fl ? E.pa : E.pb; }
+        const fw = finalWa(la, lb); if(fw != null){ r.done = true; r.wp = fw; r.res = fw > 0.5 ? 'W' : fw < 0.5 ? 'L' : 'T'; }
       } else { r.opp = schOppOf(k, id); r.load = true; }
     } else {
       r.opp = schOppOf(k, id);
@@ -3333,10 +3355,11 @@ function schView(){
       if(r.pn) res = res;   // a finished Week 12 reads like any other week
     } else if(r.kind === 'now'){
       cls = ' now';
-      const wpc = r.wp != null ? Math.max(1, Math.min(99, Math.round(r.wp * 100))) : null;
-      const tag2 = r.live ? '<em class="lv2"><b></b>LIVE</em>' : '<em class="lv2 pj">PROJ</em>';   // v1.28.1: narrow phones show the tag here
+      const wpc = r.wp != null ? (r.done ? Math.round(r.wp * 100) : Math.max(1, Math.min(99, Math.round(r.wp * 100)))) : null;
+      const tag2 = r.done ? '' : r.live ? '<em class="lv2"><b></b>LIVE</em>' : '<em class="lv2 pj">PROJ</em>';   // v1.28.1: narrow phones show the tag here
       const wpH = wpc != null ? '<span class="wpm' + (wpc < 50 ? ' lo' : '') + '">' + tag2 + '<i><u style="width:' + wpc + '%"></u></i>' + wpc + '% win</span>' : (LDG() ? '<span class="wpm">' + ldB(70, 9, 4) + '</span>' : '');
       if(r.load) res = ldB(70, 14, 5) + ldB(56, 10, 4);
+      else if(r.done){ cls += ' dn'; res = '<span class="lv"><span><i class="' + r.res.toLowerCase() + '">' + r.res + '</i> ' + schPts(r.a) + '-' + schPts(r.b) + '</span></span>' + wpH; }
       else if(r.live) res = '<span class="lv"><em><i></i>LIVE</em><span><u class="' + (num(r.a) > num(r.b) ? 'up' : num(r.a) < num(r.b) ? 'dn' : '') + '">' + schPts(r.a) + '</u>-' + schPts(r.b) + '</span></span>' + wpH;
       else if(r.pa != null) res = '<span class="lv"><em class="pj">PROJ</em><span>' + Math.round(r.pa) + '-' + Math.round(r.pb) + '</span></span>' + wpH;
       else res = '<span class="lv"><em class="pj">PROJ</em>' + ldB(48, 13, 5) + '</span>' + wpH;
@@ -3389,7 +3412,7 @@ function ppeMsg(d){
   if(S.view === 'ppe'){ render(); ppeAsk(); }
 }
 // ---- the tank call (rules agreed with Wes, Nov 21). Checked in order; the first that fits decides.
-// 1 money race (a real shot at a top-2 record) -> DON'T TANK · 2 every starter locked -> TOO LATE · 3 a loss raises title
+// 1 money race (5%+ to finish 1st in the division; v1.29.0, Wes Nov 23) -> DON'T TANK · 2 every starter locked -> TOO LATE · 3 a loss raises title
 // odds 0.5+ pts and costs <= 2 pts of playoff odds -> TANK (better path) · 4 title odds 3% or less and a loss gains 0.3+
 // picks -> TANK (rebuild) · 5 a loss costs under 0.5 pts of title odds and gains 0.3+ picks -> TANK (almost free) ·
 // 6 costs <= 2 pts of title odds and <= 2 pts of playoff odds and gains a full pick -> TANK · otherwise DON'T TANK.
@@ -3405,7 +3428,7 @@ function tkCall(id){
   const o = { B: B, T: T, dT: dT, dP: dP, g: g, r: r, yes: false, k: 'no' };
   const sw = r.sw || { out: [], in: [], open: 0 };
   o.same = !sw.in.length && sw.open > 0;                                               // the lineup set right now is already the tank lineup
-  if((B.mo || 0) >= TK_MONEY){ o.k = 'money'; o.short = 'In the money race — ' + ppP(B.mo) + ' to finish with a top-2 record'; return o; }
+  if((B.mo || 0) >= TK_MONEY){ o.k = 'money'; o.short = 'In the money race — ' + ppP(B.mo) + ' to finish 1st in the division'; return o; }
   if(!sw.open){ o.k = 'late'; o.short = 'Too late — every starter has locked'; return o; }
   const gs = g.toFixed(1) + (Math.abs(g - 1) < 0.05 ? ' pick' : ' picks');
   if(-dT >= 0.5 && dP <= 2){ o.yes = true; o.k = 'path'; o.short = 'Losing raises title odds ' + t1(B.ti).toFixed(1) + '% → ' + t1(T.ti).toFixed(1) + '% (easier path)'; }
@@ -3605,9 +3628,9 @@ function tkCard(t, TM){
   const row = function(l, a, b, d){ return '<div class="tkrow"><span>' + l + '</span><span>' + a + ' → ' + b + '</span>' + (d || '<i class="ppd z">±0</i>') + '</div>'; };
   h += row('Title', t1(B.ti), t1(T.ti), tkD(T.ti, B.ti, 'pct', 1)) + row('Bye', ppP(B.bye), ppP(T.bye), tkD(T.bye, B.bye, 'pct')) +
     row('Draft pick', 'avg ' + B.ep.toFixed(1), 'avg ' + T.ep.toFixed(1), tkD(T.ep, B.ep, 'pick')) + row('Playoffs', ppP(B.po), ppP(T.po), tkD(T.po, B.po, 'pct')) +
-    ((B.mo || 0) >= 0.005 || (T.mo || 0) >= 0.005 ? row('Money (top 2)', ppP(B.mo), ppP(T.mo), tkD(T.mo, B.mo, 'pct')) : '');
+    ((B.mo || 0) >= 0.005 || (T.mo || 0) >= 0.005 ? row('Money (div. 1st)', ppP(B.mo), ppP(T.mo), tkD(T.mo, B.mo, 'pct')) : '');
   const lk = r.cur ? (sw.open ? '<b>Still time:</b> ' + sw.open + ' of ' + sw.n + ' starters unlocked' : '<b>Locked:</b> every starter has played or kicked off') + (r.lp != null ? ' · the tank lineup loses ' + ppP(r.lp) : '') : '<b>Next game:</b> Week ' + r.w;
-  h += '<div class="ft"><b>Rules:</b> money race → never · better path → tank · title odds ≤3% → take any 0.3+ pick gain · costs under 0.5 pts of title odds → tank · otherwise tank only for ≤2 pts of title and playoff odds and a full pick. ' +
+  h += '<div class="ft"><b>Rules:</b> 5%+ to win the division (money) → never · better path → tank · title odds ≤3% → take any 0.3+ pick gain · costs under 0.5 pts of title odds → tank · otherwise tank only for ≤2 pts of title and playoff odds and a full pick. ' +
     'Swaps follow the lineup rules: healthy players first (Q is fine), no IR moves. · ' + lk + '</div></div>';
   return h + '</section>';
 }
@@ -3618,7 +3641,7 @@ function tkSeedRow(t, D, L0, SW){
   const z = function(i){ return i < 3 ? 'mzb' : i < 5 ? 'mzw' : 'mzl'; };
   return '<section class="pqcard tksd" data-key="tksd"><div class="pqst"><b>Where ' + esc(ppeTeams().by[t].name) + ' finishes</b><span>(odds of each seed)</span></div><div class="tksg">' + sd.map(function(v, i){
     return '<div class="' + z(i) + (i === tg ? ' tg' : '') + '"><small>' + ['1st', '2nd', '3rd', '4th', '5th', '6th'][i] + '</small><b>' + ppP(v) + '</b>' + ((SW && tkD(v, sb[i], 'pct')) || '<i class="tkz"></i>') + '</div>'; }).join('') +
-    '</div><div class="tgl"><span class="tgk">TARGET</span><span><b>' + (money ? 'Top-2 record — 1st / 2nd place money' : TGW[tg]) + '</b></span></div></section>';
+    '</div><div class="tgl"><span class="tgk">TARGET</span><span><b>' + (money ? 'Win the division — 1st place money' : TGW[tg]) + '</b></span></div></section>';
 }
 function tkRipple(t, D, L0, TM, MODE){
   const rows = [];
@@ -4715,9 +4738,12 @@ function engineWorker(){
       f.k.forEach(function(k, i){ const m = v[2 * i]; if(m != null && m >= 0) p[k] = [m, v[2 * i + 1]]; }); out[w] = { p: p }; });
     return out;
   }
+  // v1.29.0: an IR player is out until his CBS expected return week, then counts like anyone else
+  function irOut(q, wk){ return !!q.ir && !(q.ret > 0 && wk >= q.ret); }
   function futVal(q, r, wk){
     const f = FUT[wk] && FUT[wk].p, e = f ? f[q.key] : null;
-    if(e) return { m: e[0] || 0, v: Math.pow(e[1] || 0, 2) };
+    // v1.29.0: back from IR by CBS's date but the sites still have him at 0 for that week -> our own model's number
+    if(e && !(q.ret > 0 && wk >= q.ret && !(e[0] > 0))) return { m: e[0] || 0, v: Math.pow(e[1] || 0, 2) };
     const sc = NMS[q.pos] || 1; return { m: (r.nm || 0) * sc, v: Math.pow((r.ns || 0) * sc, 2) };
   }
   function simPlayer(q){
@@ -4801,7 +4827,7 @@ function engineWorker(){
   // best lineup by neutral mean for a future week (Drop 1 §4.5)
   function futureTeam(T, wk){
     const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
-    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push(futVal(q, r, wk)); });
+    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || irOut(q, wk) || bye.indexOf(q.nfl) >= 0 || !pool[q.pos]) return; pool[q.pos].push(futVal(q, r, wk)); });
     Object.keys(pool).forEach(function(k){ pool[k].sort(function(a, b){ return b.m - a.m; }); });
     const rf = REPLF[wk] || {};
     const take = function(k){ return pool[k].length ? pool[k].shift() : (rf[k] || REPLN[k] || { m: 0, v: 0 }); };
@@ -4865,7 +4891,7 @@ function engineWorker(){
   // a future week's tank lineup (lowest healthy player per slot; 0-projected / bye players only when nobody else)
   function futureTank(T, wk){
     const bye = BYES[wk] || [], pool = { QB: [], RB: [], WR: [], TE: [], K: [], DST: [] };
-    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || q.ir || !pool[q.pos]) return; const v = futVal(q, r, wk); v.ok = bye.indexOf(q.nfl) < 0 && v.m > 0; pool[q.pos].push(v); });
+    T.roster.forEach(function(q){ const r = P[q.key]; if(!r || irOut(q, wk) || !pool[q.pos]) return; const v = futVal(q, r, wk); v.ok = bye.indexOf(q.nfl) < 0 && v.m > 0; pool[q.pos].push(v); });
     const pick = function(a){ if(!a.length) return null; const h = a.filter(function(x){ return x.ok; }), pk = (h.length ? h : a).sort(function(x, y){ return x.m - y.m; })[0]; a.splice(a.indexOf(pk), 1); return pk; };
     const L = [pick(pool.K), pick(pool.DST), pick(pool.QB), pick(pool.TE), pick(pool.RB), pick(pool.WR), pick(pool.WR)];
     const rw = pool.RB.concat(pool.WR), fx = pick(rw); L.push(fx);
@@ -5038,9 +5064,9 @@ function engineWorker(){
           if(F.w === nextW){ nxw[pr[0]] += x; nxw[pr[1]] += 1 - x; }
           apply(pr[0], pr[1], sa, sb, x); });
       });
-      { const mr = ids.slice().sort(function(a, b){ return (W[b] - W[a]) || (PF[b] - PF[a]); }); mo[mr[0]]++; mo[mr[1]]++; }   // v1.22.0: 1st/2nd place money = top-2 records
       const divs = {}, pos = {}; ids.forEach(function(id){ (divs[S.teams[id].div] || (divs[S.teams[id].div] = [])).push(id); wsum[id] += W[id]; const h = Math.round(W[id] * 2); wd[id][h] = (wd[id][h] || 0) + 1; });   // v1.21.2: final record, in half wins (a tie = 0.5)
-      dks.forEach(function(d){ divs[d].sort(rank); divs[d].forEach(function(id, k){ pos[id] = k; if(k < 6) seed[id][k]++; if(k < 5) cnt[id]++; if(k < 3) bye[id]++; });
+      dks.forEach(function(d){ divs[d].sort(rank); if(divs[d][0]) mo[divs[d][0]]++;   // v1.29.0 (Wes, Nov 23): money that counts = 1st in the division (2nd-place money ignored)
+        divs[d].forEach(function(id, k){ pos[id] = k; if(k < 6) seed[id][k]++; if(k < 5) cnt[id]++; if(k < 3) bye[id]++; });
         const fk = divs[d].join(','); (fo[d] || (fo[d] = {}))[fk] = (fo[d][fk] || 0) + 1; });   // v1.21.3: this season's full division finish
       // Week 13: Loser Bowl (6th vs 6th)
       let lbWin = null; const six = dks.map(function(d){ return divs[d][5]; }).filter(Boolean);
@@ -5325,7 +5351,7 @@ function engineTick(){
     const t = m.teams[id], lv = LM.live[id];
     teams[id] = { starters: t.lineup.map(function(p, i){ return p ? engState(p, lv && lv.rows[i]) : null; }).filter(Boolean),
                   bench: t.bench.filter(function(p){ return !p.ir; }).map(function(p){ const i = t.bench.indexOf(p); return engState(p, lv && lv.bench[i]); }),
-                  roster: t.lineup.concat(t.bench).filter(Boolean).map(function(p){ const r = projFor(p); return { key: r ? r.k : '', pos: p.pos, nfl: nvTeam(p.nfl), ir: !!p.ir }; }) };
+                  roster: t.lineup.concat(t.bench).filter(Boolean).map(function(p){ const r = projFor(p); return { key: r ? r.k : '', pos: p.pos, nfl: nvTeam(p.nfl), ir: !!p.ir, ret: irRet(p) }; }) };
   });
   const matchups = m.matchups.map(function(x){ return { key: x.key, a: x.home ? x.home.id : x.away.id, b: x.home && x.away ? x.away.id : null }; });
   const season = seasonInputs(m);
