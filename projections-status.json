@@ -1,5 +1,5 @@
 {
- "at": "2026-11-23T00:48:13+00:00",
+ "at": "2026-11-23T07:21:14+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 392,
-   "secs": 3.4,
+   "secs": 3.8,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 142,
-   "secs": 37.8,
+   "secs": 33.6,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Ladd McConkey LAC",
-  "Travis Etienne NO",
-  "Chris Olave NO",
-  "Elic Ayomanor TEN",
-  "Malik Nabers NYG",
-  "Carnell Tate TEN",
-  "Tyler Shough NO",
-  "DeVonta Smith PHI",
+  "Breece Hall NYJ",
   "Tre Tucker LV",
-  "Jordan Mason MIN",
-  "Javonte Williams DAL",
-  "Mike Evans SF",
-  "Cam Skattebo NYG",
-  "Stefon Diggs WAS",
-  "J.J. McCarthy NYG",
-  "Braelon Allen NYJ",
-  "Daniel Jones IND",
-  "Jacory Croskey-Merritt WAS",
-  "Tank Dell HOU",
-  "Omarion Hampton LAC",
+  "Chase Brown CIN",
+  "Tyler Shough NO",
   "Ryan Flournoy DAL",
-  "Emeka Egbuka TB",
-  "Geno Smith NYJ",
-  "Cam Ward TEN",
-  "Jacoby Brissett BAL"
+  "Joe Milton III PHI",
+  "Jakobi Meyers JAX",
+  "Jonathan Taylor IND",
+  "Chris Olave NO",
+  "Braelon Allen NYJ",
+  "J.J. McCarthy NYG",
+  "Tank Dell HOU",
+  "Courtland Sutton DEN",
+  "Jalen Coker CAR",
+  "Jared Goff DET",
+  "Xavier Hutchinson HOU",
+  "Ollie Gordon II MIA",
+  "DeVonta Smith PHI",
+  "Khalil Shakir BUF",
+  "Carnell Tate TEN",
+  "Saquon Barkley PHI",
+  "Malik Nabers NYG",
+  "Adonai Mitchell NYJ",
+  "Jaylen Warren PIT",
+  "Ladd McConkey LAC"
  ],
  "fp_unmatched_5plus_count": 64,
  "future": {
@@ -126,7 +126,7 @@
     "espn"
    ],
    "players": 656,
-   "projected": 479
+   "projected": 480
   },
   "13": {
    "sites": [
@@ -134,7 +134,7 @@
     "espn"
    ],
    "players": 652,
-   "projected": 425
+   "projected": 427
   },
   "14": {
    "sites": [
@@ -142,7 +142,7 @@
     "espn"
    ],
    "players": 654,
-   "projected": 458
+   "projected": 460
   },
   "15": {
    "sites": [
@@ -150,7 +150,7 @@
     "espn"
    ],
    "players": 656,
-   "projected": 490
+   "projected": 493
   },
   "16": {
    "sites": [
@@ -158,7 +158,7 @@
     "espn"
    ],
    "players": 656,
-   "projected": 490
+   "projected": 492
   },
   "17": {
    "sites": [
@@ -166,18 +166,18 @@
     "espn"
    ],
    "players": 656,
-   "projected": 493
+   "projected": 495
   },
   "nm_scale": {
-   "QB": 1.078,
-   "RB": 0.961,
+   "QB": 1.077,
+   "RB": 0.963,
    "WR": 1.086,
-   "TE": 1.184,
+   "TE": 1.182,
    "K": 1.05,
-   "DST": 1.029
+   "DST": 1.025
   }
  },
- "scorecard": "week 11: 82 pre-kickoff projections saved",
+ "scorecard": "week 11: 42 pre-kickoff projections saved",
  "consensus": {
   "used": 334,
   "fallback": 48,
