@@ -1,5 +1,5 @@
 {
- "at": "2026-11-23T07:21:14+00:00",
+ "at": "2026-11-24T00:28:49+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 11,
@@ -10,9 +10,9 @@
    "requests": 4,
    "total_available": {
     "QB": "71",
-    "RB": "133",
-    "WR": "214",
-    "TE": "129"
+    "RB": "132",
+    "WR": "216",
+    "TE": "128"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 392,
-   "secs": 3.8,
+   "records": 383,
+   "secs": 3.6,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,13 +54,13 @@
     "TE": 646,
     "K": 157,
     "DST": 26,
-    "injury_flags": 279
+    "injury_flags": 285
    }
   },
   "espn": {
    "ok": true,
    "records": 342,
-   "secs": 0.5,
+   "secs": 0.4,
    "info": {
     "players": 1063,
     "kept": 342,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 142,
-   "secs": 33.6,
+   "secs": 34.9,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Breece Hall NYJ",
-  "Tre Tucker LV",
-  "Chase Brown CIN",
-  "Tyler Shough NO",
-  "Ryan Flournoy DAL",
-  "Joe Milton III PHI",
-  "Jakobi Meyers JAX",
-  "Jonathan Taylor IND",
-  "Chris Olave NO",
-  "Braelon Allen NYJ",
-  "J.J. McCarthy NYG",
-  "Tank Dell HOU",
-  "Courtland Sutton DEN",
-  "Jalen Coker CAR",
-  "Jared Goff DET",
-  "Xavier Hutchinson HOU",
+  "Kyle McCord MIA",
   "Ollie Gordon II MIA",
-  "DeVonta Smith PHI",
-  "Khalil Shakir BUF",
-  "Carnell Tate TEN",
-  "Saquon Barkley PHI",
-  "Malik Nabers NYG",
-  "Adonai Mitchell NYJ",
+  "Kirk Cousins MIN",
+  "Zay Flowers BAL",
   "Jaylen Warren PIT",
-  "Ladd McConkey LAC"
+  "Courtland Sutton DEN",
+  "Emeka Egbuka TB",
+  "Baker Mayfield TB",
+  "Omarion Hampton LAC",
+  "Adonai Mitchell NYJ",
+  "Jacory Croskey-Merritt WAS",
+  "Braelon Allen NYJ",
+  "Cam Ward TEN",
+  "Deebo Samuel Sr. SF",
+  "Xavier Hutchinson HOU",
+  "Travis Etienne NO",
+  "Tank Dell HOU",
+  "Justin Herbert LAC",
+  "Breece Hall NYJ",
+  "Rome Odunze CHI",
+  "Kyle Monangai CHI",
+  "DeVonta Smith PHI",
+  "Carnell Tate TEN",
+  "Tyler Shough NO",
+  "Daniel Jones IND"
  ],
  "fp_unmatched_5plus_count": 64,
  "future": {
@@ -126,7 +126,7 @@
     "espn"
    ],
    "players": 656,
-   "projected": 480
+   "projected": 469
   },
   "13": {
    "sites": [
@@ -134,7 +134,7 @@
     "espn"
    ],
    "players": 652,
-   "projected": 427
+   "projected": 423
   },
   "14": {
    "sites": [
@@ -142,7 +142,7 @@
     "espn"
    ],
    "players": 654,
-   "projected": 460
+   "projected": 457
   },
   "15": {
    "sites": [
@@ -150,7 +150,7 @@
     "espn"
    ],
    "players": 656,
-   "projected": 493
+   "projected": 489
   },
   "16": {
    "sites": [
@@ -158,7 +158,7 @@
     "espn"
    ],
    "players": 656,
-   "projected": 492
+   "projected": 489
   },
   "17": {
    "sites": [
@@ -166,32 +166,32 @@
     "espn"
    ],
    "players": 656,
-   "projected": 495
+   "projected": 492
   },
   "nm_scale": {
    "QB": 1.077,
    "RB": 0.963,
-   "WR": 1.086,
-   "TE": 1.182,
-   "K": 1.05,
-   "DST": 1.025
+   "WR": 1.084,
+   "TE": 1.184,
+   "K": 1.052,
+   "DST": 1.026
   }
  },
  "scorecard": "week 11: 42 pre-kickoff projections saved",
  "consensus": {
-  "used": 334,
-  "fallback": 48,
-  "single_source_blend": 36,
-  "out_by_injury": 80,
-  "no_source_zero": 68,
+  "used": 333,
+  "fallback": 46,
+  "single_source_blend": 35,
+  "out_by_injury": 82,
+  "no_source_zero": 69,
   "added_from_sites": 5,
   "added_4plus": [
    "Josh Johnson ARI QB 7.4"
   ],
   "sources_per_player": {
-   "0": 146,
-   "1": 50,
-   "2": 191,
+   "0": 150,
+   "1": 47,
+   "2": 190,
    "3": 103,
    "4": 40
   },
