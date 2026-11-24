@@ -1,18 +1,18 @@
 {
- "at": "2026-11-24T00:28:49+00:00",
+ "at": "2026-11-24T09:41:56+00:00",
  "ok": true,
  "runner": "github-actions",
- "week": 11,
+ "week": 12,
  "fp_fetch": {
   "code": 0,
   "info": {
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "71",
-    "RB": "132",
-    "WR": "216",
-    "TE": "128"
+    "QB": "78",
+    "RB": "144",
+    "WR": "236",
+    "TE": "140"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -30,7 +30,7 @@
     "scrimage_yards_100",
     "scrimage_yards_200"
    ],
-   "api_week": 11,
+   "api_week": 12,
    "by_pos": {
     "QB": 10,
     "RB": 10,
@@ -45,40 +45,40 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 383,
-   "secs": 3.6,
+   "records": 490,
+   "secs": 3.2,
    "info": {
     "QB": 355,
     "RB": 752,
     "WR": 1365,
     "TE": 646,
     "K": 157,
-    "DST": 26,
-    "injury_flags": 285
+    "DST": 32,
+    "injury_flags": 286
    }
   },
   "espn": {
    "ok": true,
-   "records": 342,
-   "secs": 0.4,
+   "records": 434,
+   "secs": 0.9,
    "info": {
     "players": 1063,
-    "kept": 342,
+    "kept": 434,
     "dropped": {
      "pos": 0,
-     "team": 323,
-     "no_week_proj": 398
+     "team": 325,
+     "no_week_proj": 304
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 142,
-   "secs": 34.9,
+   "records": 176,
+   "secs": 21.4,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 49
+    "no_projection": 15
    }
   },
   "fp": {
@@ -87,119 +87,111 @@
   }
  },
  "checks": {
-  "players": 656,
+  "players": 661,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Kyle McCord MIA",
-  "Ollie Gordon II MIA",
-  "Kirk Cousins MIN",
-  "Zay Flowers BAL",
-  "Jaylen Warren PIT",
-  "Courtland Sutton DEN",
-  "Emeka Egbuka TB",
-  "Baker Mayfield TB",
-  "Omarion Hampton LAC",
-  "Adonai Mitchell NYJ",
-  "Jacory Croskey-Merritt WAS",
-  "Braelon Allen NYJ",
-  "Cam Ward TEN",
-  "Deebo Samuel Sr. SF",
-  "Xavier Hutchinson HOU",
+  "Jameson Williams DET",
   "Travis Etienne NO",
-  "Tank Dell HOU",
-  "Justin Herbert LAC",
-  "Breece Hall NYJ",
-  "Rome Odunze CHI",
-  "Kyle Monangai CHI",
-  "DeVonta Smith PHI",
   "Carnell Tate TEN",
-  "Tyler Shough NO",
-  "Daniel Jones IND"
+  "Adonai Mitchell NYJ",
+  "Jonah Coleman DEN",
+  "David Montgomery HOU",
+  "Rashee Rice KC",
+  "Zach Charbonnet SEA",
+  "Fernando Mendoza LV",
+  "Chig Okonkwo WAS",
+  "George Pickens DAL",
+  "Jordan Love GB",
+  "DJ Moore BUF",
+  "Tetairoa McMillan CAR",
+  "Jameis Winston NYG",
+  "Luther Burden III CHI",
+  "Jaylen Waddle DEN",
+  "D'Andre Swift CHI",
+  "Antonio Williams WAS",
+  "Aaron Jones MIN",
+  "Jakobi Meyers JAX",
+  "Breece Hall NYJ",
+  "Tyler Allgeier ARI",
+  "Geno Smith NYJ",
+  "Javonte Williams DAL"
  ],
- "fp_unmatched_5plus_count": 64,
+ "fp_unmatched_5plus_count": 81,
  "future": {
-  "12": {
-   "sites": [
-    "sleeper",
-    "espn"
-   ],
-   "players": 656,
-   "projected": 469
-  },
   "13": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 652,
-   "projected": 423
+   "players": 657,
+   "projected": 425
   },
   "14": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 654,
-   "projected": 457
+   "players": 659,
+   "projected": 460
   },
   "15": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 656,
-   "projected": 489
+   "players": 661,
+   "projected": 491
   },
   "16": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 656,
-   "projected": 489
+   "players": 661,
+   "projected": 492
   },
   "17": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 656,
-   "projected": 492
+   "players": 661,
+   "projected": 494
   },
   "nm_scale": {
-   "QB": 1.077,
-   "RB": 0.963,
-   "WR": 1.084,
-   "TE": 1.184,
-   "K": 1.052,
-   "DST": 1.026
+   "QB": 1.069,
+   "RB": 0.966,
+   "WR": 1.065,
+   "TE": 1.224,
+   "K": 1.049,
+   "DST": 1.079
   }
  },
- "scorecard": "week 11: 42 pre-kickoff projections saved",
+ "scorecard": "week 12: 661 pre-kickoff projections saved",
  "consensus": {
-  "used": 333,
-  "fallback": 46,
+  "used": 426,
+  "fallback": 49,
   "single_source_blend": 35,
-  "out_by_injury": 82,
-  "no_source_zero": 69,
-  "added_from_sites": 5,
+  "out_by_injury": 93,
+  "no_source_zero": 90,
+  "added_from_sites": 3,
   "added_4plus": [
-   "Josh Johnson ARI QB 7.4"
+   "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 150,
-   "1": 47,
-   "2": 190,
-   "3": 103,
+   "0": 160,
+   "1": 70,
+   "2": 255,
+   "3": 133,
    "4": 40
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 656,
+ "players": 661,
  "spread_k": 1.05,
  "spread_rho": 0.06,
  "no_games_yet": 0
