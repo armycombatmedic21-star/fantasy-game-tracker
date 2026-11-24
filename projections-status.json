@@ -1,5 +1,5 @@
 {
- "at": "2026-11-24T09:41:56+00:00",
+ "at": "2026-11-24T22:51:07+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -10,9 +10,9 @@
    "requests": 4,
    "total_available": {
     "QB": "78",
-    "RB": "144",
-    "WR": "236",
-    "TE": "140"
+    "RB": "141",
+    "WR": "234",
+    "TE": "138"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 490,
-   "secs": 3.2,
+   "records": 489,
+   "secs": 3.4,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 32,
-    "injury_flags": 286
+    "injury_flags": 287
    }
   },
   "espn": {
    "ok": true,
-   "records": 434,
-   "secs": 0.9,
+   "records": 432,
+   "secs": 0.5,
    "info": {
     "players": 1063,
-    "kept": 434,
+    "kept": 432,
     "dropped": {
      "pos": 0,
      "team": 325,
-     "no_week_proj": 304
+     "no_week_proj": 306
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 176,
-   "secs": 21.4,
+   "records": 175,
+   "secs": 31.7,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 15
+    "no_projection": 16
    }
   },
   "fp": {
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Jameson Williams DET",
-  "Travis Etienne NO",
-  "Carnell Tate TEN",
+  "Aaron Rodgers PIT",
+  "Omarion Hampton LAC",
+  "Woody Marks HOU",
+  "D'Andre Swift CHI",
+  "Denzel Boston CLE",
+  "Chris Rodriguez Jr. JAX",
+  "Garrett Wilson NYJ",
+  "Carson Beck ARI",
+  "Emeka Egbuka TB",
   "Adonai Mitchell NYJ",
   "Jonah Coleman DEN",
-  "David Montgomery HOU",
-  "Rashee Rice KC",
-  "Zach Charbonnet SEA",
-  "Fernando Mendoza LV",
-  "Chig Okonkwo WAS",
-  "George Pickens DAL",
-  "Jordan Love GB",
-  "DJ Moore BUF",
-  "Tetairoa McMillan CAR",
-  "Jameis Winston NYG",
-  "Luther Burden III CHI",
-  "Jaylen Waddle DEN",
-  "D'Andre Swift CHI",
+  "J.J. McCarthy NYG",
+  "Matthew Stafford LA",
+  "Cam Ward TEN",
+  "Deebo Samuel Sr. SF",
+  "Stefon Diggs WAS",
+  "Bryce Young CAR",
+  "Jameson Williams DET",
   "Antonio Williams WAS",
-  "Aaron Jones MIN",
-  "Jakobi Meyers JAX",
-  "Breece Hall NYJ",
-  "Tyler Allgeier ARI",
-  "Geno Smith NYJ",
-  "Javonte Williams DAL"
+  "Jordan Love GB",
+  "Jalen Coker CAR",
+  "Bo Nix DEN",
+  "Ashton Jeanty LV",
+  "Rome Odunze CHI",
+  "Breece Hall NYJ"
  ],
- "fp_unmatched_5plus_count": 81,
+ "fp_unmatched_5plus_count": 84,
  "future": {
   "13": {
    "sites": [
@@ -126,7 +126,7 @@
     "espn"
    ],
    "players": 657,
-   "projected": 425
+   "projected": 427
   },
   "14": {
    "sites": [
@@ -134,7 +134,7 @@
     "espn"
    ],
    "players": 659,
-   "projected": 460
+   "projected": 457
   },
   "15": {
    "sites": [
@@ -142,7 +142,7 @@
     "espn"
    ],
    "players": 661,
-   "projected": 491
+   "projected": 488
   },
   "16": {
    "sites": [
@@ -150,7 +150,7 @@
     "espn"
    ],
    "players": 661,
-   "projected": 492
+   "projected": 491
   },
   "17": {
    "sites": [
@@ -158,33 +158,33 @@
     "espn"
    ],
    "players": 661,
-   "projected": 494
+   "projected": 492
   },
   "nm_scale": {
-   "QB": 1.069,
-   "RB": 0.966,
-   "WR": 1.065,
-   "TE": 1.224,
-   "K": 1.049,
-   "DST": 1.079
+   "QB": 1.059,
+   "RB": 0.972,
+   "WR": 1.05,
+   "TE": 1.221,
+   "K": 1.044,
+   "DST": 1.087
   }
  },
  "scorecard": "week 12: 661 pre-kickoff projections saved",
  "consensus": {
-  "used": 426,
+  "used": 424,
   "fallback": 49,
   "single_source_blend": 35,
-  "out_by_injury": 93,
-  "no_source_zero": 90,
+  "out_by_injury": 94,
+  "no_source_zero": 91,
   "added_from_sites": 3,
   "added_4plus": [
-   "Zonovan Knight ARI RB 4.8"
+   "Zonovan Knight ARI RB 5.0"
   ],
   "sources_per_player": {
-   "0": 160,
-   "1": 70,
-   "2": 255,
-   "3": 133,
+   "0": 161,
+   "1": 71,
+   "2": 254,
+   "3": 132,
    "4": 40
   },
   "min_sources": 2
