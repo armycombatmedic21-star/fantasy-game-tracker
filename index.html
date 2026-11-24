@@ -840,7 +840,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 /* v1.15.0 (Wes, Nov 16): draft pick — Home 4th box, Standings DRAFT # column, drop-down tile (replaces Differential) */
 .lagrid{grid-template-columns:1fr 1px 1fr 1px 1fr 1px 1fr}
 .lacell.dpc em{color:var(--muted)}
-.sthead,.strow{grid-template-columns:16px 28px minmax(0,1fr) 33px 30px 26px 44px 34px;gap:4px;padding:0 10px}
+.sthead,.strow{grid-template-columns:16px 28px minmax(0,1fr) 38px 30px 26px 44px 34px;gap:4px;padding:0 10px}
 .sthead .poh{grid-column:auto;justify-self:center;text-align:center}
 .sthead .dph{justify-self:center;text-align:center;white-space:nowrap}
 @media (min-width:381px){ .sthead span{font-size:8.5px;letter-spacing:.4px} }
@@ -857,7 +857,7 @@ html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
 .stdet .stt.dpt .dplk{display:flex;justify-content:center;padding:8px 0 4px}
 .stdet .stt.dpt .dplk .lockic svg{width:30px;height:30px}
 .stdet .stt.dpt > b{text-align:center}
-@media (max-width:380px){ .sthead,.strow{grid-template-columns:14px 26px minmax(0,1fr) 30px 28px 22px 38px 28px;gap:4px;padding:0 8px} .strow .stchev{left:88px} }
+@media (max-width:380px){ .sthead,.strow{grid-template-columns:14px 26px minmax(0,1fr) 38px 28px 22px 38px 28px;gap:4px;padding:0 8px} .strow .stchev{left:88px} }
 .sthead .poh,.sthead .dph{white-space:normal;line-height:1.15;text-align:center}
 .stdet .stt.dpt .dpl{flex-direction:row;align-items:baseline}
 .stdet .stt.dpt .dpl span{display:inline;margin:0}
@@ -1571,10 +1571,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.31.0';
+const APP_VERSION = '1.31.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.31.1', 'Standings: double-digit records like 10-1 now show at the same size as the other records (the W-L column is a little wider). Only records with a tie use the smaller size.'],
   ['1.31.0', 'Week 12 position night: as soon as Week 11 is final, the app pairs the teams itself (AFC 1st vs NFC 1st \u2026 6th vs 6th, by the standings), so Matchup, Scoreboard, win % and the Schedule show your Week 12 opponent even before CBS lists the games. When CBS has the Week 12 matchups, CBS\u2019s are used.'],
   ['1.30.0', 'When CBS lists a player as injured (Q, D, O, IR or suspended), his Matchup drop-down now shows the INJURY box during and after his game too, not just before kickoff. It also shows CBS\u2019s latest news headline about him, and the expected return week when CBS has one. Players in your IR slot now show their projection like bench players (their points still don\u2019t count toward your score or bench total).'],
   ['1.29.0', 'Every Scoreboard game now has a \u201cplayers left\u201d pill on its top edge that counts down as players finish and turns into FINAL with a green check. Win odds show >99.9% / <0.1% until a game is really over (100% only once nobody is left). On the Matchup screen each team has its own \u201cleft\u201d count on the Starters bar, and a FINAL badge sits above the VS once the game is over. The Schedule shows the W or L, the score and 100% as soon as that game is done. Playoff odds now count a player coming back from injured reserve from the week CBS lists as his expected return.'],
@@ -3269,7 +3270,7 @@ function standingsView(){
       const mvh = mv == null ? '<span class="stmv na">—</span>' : mv === 0 ? '<span class="stmv eq" aria-label="No change"><i></i></span>' :
         '<span class="stmv ' + mvc + '" aria-label="' + (mv > 0 ? 'Up ' : 'Down ') + Math.abs(mv) + '"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (mv > 0 ? 'M5 1.5 9 7.5H1z' : 'M5 8.5 1 2.5h8z') + '"/></svg>' + Math.abs(mv) + '</span>';
       h += '<button class="strow' + (me ? ' me' : '') + (i >= 5 ? ' out5' : '') + '" data-st="' + esc(id) + '" data-key="st-' + esc(id) + '" aria-expanded="' + open + '"><span class="rk">' + (i + 1) + '</span>' + badge(T) +
-        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl' + (wl.length > 3 ? ' x' : '') + '">' + esc(wl) + '</span><span class="stdv' + (num(t.division_ties) ? ' x' : '') + '">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + dpCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
+        '<span class="stn"><span class="stl"><span class="stnm' + (trim(t.name).length >= 10 ? ' long' : '') + '">' + esc(trim(t.name)) + '</span>' + odot(id) + '</span>' + (ownerOf({ id: id }) ? '<small class="sto">' + esc(ownerOf({ id: id })) + '</small>' : '') + '</span><span class="stwl' + (wl.split('-').length > 2 ? ' x' : '') + '">' + esc(wl) + '</span><span class="stdv' + (num(t.division_ties) ? ' x' : '') + '">' + esc(num(t.division_wins) + '-' + num(t.division_losses) + (num(t.division_ties) ? '-' + num(t.division_ties) : '')) + '</span>' + mvh + poCell(id) + dpCell(id) + '<span class="stchev" aria-hidden="true">' + ICON.rowchev + '</span></button>';
       if(open){
         const g = num(t._g), pf = num(t.points_scored), pa = num(t.points_against), live = t._live != null;
         const pfd = num(t._pfDone), pad = num(t._paDone);
