@@ -1571,10 +1571,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.32.0';
+const APP_VERSION = '1.32.1';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.32.1', 'Fewer pop-ups: no more alert pop-up when you open the app.'],
   ['1.32.0', 'Playoff Engine: the projected bracket now moves on the team that most often actually wins each playoff game in the simulations (a bye no longer counts toward winning the Wild Card game), so each spot shows the most likely opponent. The bye box now shows each team\u2019s real chance of a bye.'],
   ['1.31.1', 'Standings: double-digit records like 10-1 now show at the same size as the other records (the W-L column is a little wider). Only records with a tie use the smaller size.'],
   ['1.31.0', 'Week 12 position night: as soon as Week 11 is final, the app pairs the teams itself (AFC 1st vs NFC 1st \u2026 6th vs 6th, by the standings), so Matchup, Scoreboard, win % and the Schedule show your Week 12 opponent even before CBS lists the games. When CBS has the Week 12 matchups, CBS\u2019s are used.'],
@@ -3482,8 +3483,9 @@ const TK_FLAG = '<svg class="tkfl" viewBox="0 0 24 24" width="13" height="13" ar
 function tkPlayers(){ const m = weekModel(), by = {}; if(m) Object.keys(m.teams).forEach(function(id){ m.teams[id].lineup.concat(m.teams[id].bench).forEach(function(p){ if(p) by[p.id] = p; }); }); return by; }
 function tkName(p){ if(!p) return '?'; if(p.pos === 'DST') return p.name; const w = p.name.split(' '); let l = w[w.length - 1]; if(/^(Jr\.?|Sr\.?|II|III|IV|V)$/.test(l) && w.length > 2) l = w[w.length - 2] + ' ' + l; return w[0][0] + '. ' + l; }
 let tkAlertT = 0;
+const TK_ALERTS = false;   // v1.32.1 (Wes, Nov 24): pop-up alerts off for now; red flags still show in the Playoff Engine
 function tkAlert(lines){
-  if(!lines.length) return; let el = $('#tkAlert');
+  if(!TK_ALERTS || !lines.length) return; let el = $('#tkAlert');
   if(!el){ el = document.createElement('div'); el.id = 'tkAlert'; el.className = 'tkalert'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
   el.innerHTML = '<b>Shenanigans alert</b>' + lines.map(function(l){ return '<span>' + l + '</span>'; }).join('');
   el.classList.add('show'); clearTimeout(tkAlertT); tkAlertT = setTimeout(function(){ el.classList.remove('show'); }, 6500);
