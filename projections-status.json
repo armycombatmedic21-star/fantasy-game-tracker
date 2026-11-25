@@ -1,5 +1,5 @@
 {
- "at": "2026-11-24T22:51:07+00:00",
+ "at": "2026-11-25T22:03:40+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -9,10 +9,10 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "78",
-    "RB": "141",
-    "WR": "234",
-    "TE": "138"
+    "QB": "77",
+    "RB": "139",
+    "WR": "233",
+    "TE": "136"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 489,
-   "secs": 3.4,
+   "records": 486,
+   "secs": 3.5,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,7 +54,7 @@
     "TE": 646,
     "K": 157,
     "DST": 32,
-    "injury_flags": 287
+    "injury_flags": 240
    }
   },
   "espn": {
@@ -66,19 +66,19 @@
     "kept": 432,
     "dropped": {
      "pos": 0,
-     "team": 325,
-     "no_week_proj": 306
+     "team": 332,
+     "no_week_proj": 299
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 175,
-   "secs": 31.7,
+   "records": 174,
+   "secs": 32.4,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 16
+    "no_projection": 17
    }
   },
   "fp": {
@@ -87,61 +87,61 @@
   }
  },
  "checks": {
-  "players": 661,
+  "players": 662,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Aaron Rodgers PIT",
-  "Omarion Hampton LAC",
-  "Woody Marks HOU",
-  "D'Andre Swift CHI",
-  "Denzel Boston CLE",
-  "Chris Rodriguez Jr. JAX",
-  "Garrett Wilson NYJ",
+  "Kyle McCord MIA",
+  "Braelon Allen NYJ",
+  "Matthew Golden GB",
+  "Carnell Tate TEN",
+  "Travis Etienne NO",
+  "KC Concepcion CLE",
   "Carson Beck ARI",
-  "Emeka Egbuka TB",
-  "Adonai Mitchell NYJ",
-  "Jonah Coleman DEN",
-  "J.J. McCarthy NYG",
+  "Tyler Shough NO",
   "Matthew Stafford LA",
-  "Cam Ward TEN",
-  "Deebo Samuel Sr. SF",
-  "Stefon Diggs WAS",
-  "Bryce Young CAR",
-  "Jameson Williams DET",
-  "Antonio Williams WAS",
+  "Chase Brown CIN",
+  "Dylan Sampson CLE",
+  "J.J. McCarthy NYG",
   "Jordan Love GB",
-  "Jalen Coker CAR",
-  "Bo Nix DEN",
-  "Ashton Jeanty LV",
-  "Rome Odunze CHI",
-  "Breece Hall NYJ"
+  "Tony Pollard TEN",
+  "Denzel Boston CLE",
+  "Kyler Murray MIN",
+  "Kyle Monangai CHI",
+  "Rashee Rice KC",
+  "Justin Herbert LAC",
+  "Breece Hall NYJ",
+  "Caleb Douglas MIA",
+  "Chris Olave NO",
+  "Jakobi Meyers JAX",
+  "Jacoby Brissett BAL",
+  "Geno Smith NYJ"
  ],
- "fp_unmatched_5plus_count": 84,
+ "fp_unmatched_5plus_count": 81,
  "future": {
   "13": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 657,
-   "projected": 427
+   "players": 658,
+   "projected": 425
   },
   "14": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 659,
-   "projected": 457
+   "players": 660,
+   "projected": 458
   },
   "15": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 661,
+   "players": 662,
    "projected": 488
   },
   "16": {
@@ -149,7 +149,7 @@
     "sleeper",
     "espn"
    ],
-   "players": 661,
+   "players": 662,
    "projected": 491
   },
   "17": {
@@ -157,41 +157,42 @@
     "sleeper",
     "espn"
    ],
-   "players": 661,
+   "players": 662,
    "projected": 492
   },
   "nm_scale": {
-   "QB": 1.059,
-   "RB": 0.972,
-   "WR": 1.05,
-   "TE": 1.221,
-   "K": 1.044,
-   "DST": 1.087
+   "QB": 1.074,
+   "RB": 0.982,
+   "WR": 1.041,
+   "TE": 1.209,
+   "K": 1.042,
+   "DST": 1.09
   }
  },
- "scorecard": "week 12: 661 pre-kickoff projections saved",
+ "scorecard": "week 12: 662 pre-kickoff projections saved",
  "consensus": {
-  "used": 424,
-  "fallback": 49,
-  "single_source_blend": 35,
-  "out_by_injury": 94,
-  "no_source_zero": 91,
-  "added_from_sites": 3,
+  "used": 426,
+  "fallback": 63,
+  "single_source_blend": 46,
+  "out_by_injury": 65,
+  "no_source_zero": 104,
+  "added_from_sites": 4,
   "added_4plus": [
-   "Zonovan Knight ARI RB 5.0"
+   "Chigoziem Okonkwo WAS TE 5.3",
+   "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 161,
-   "1": 71,
-   "2": 254,
-   "3": 132,
-   "4": 40
+   "0": 166,
+   "1": 66,
+   "2": 255,
+   "3": 130,
+   "4": 41
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 661,
+ "players": 662,
  "spread_k": 1.05,
  "spread_rho": 0.06,
  "no_games_yet": 0
