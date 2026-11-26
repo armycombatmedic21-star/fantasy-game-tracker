@@ -1571,10 +1571,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.32.2';
+const APP_VERSION = '1.32.3';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.32.3', 'iPhone: works around Apple’s iOS 26 bug that leaves the tab bar floating mid-screen; the bar now follows the real bottom of the screen.'],
   ['1.32.2', 'iPhone: the tab bar no longer gets stuck in the middle of the screen; it snaps back to the bottom on its own.'],
   ['1.32.1', 'Fewer pop-ups: no more alert pop-up when you open the app.'],
   ['1.32.0', 'Playoff Engine: the projected bracket now moves on the team that most often actually wins each playoff game in the simulations (a bye no longer counts toward winning the Wild Card game), so each spot shows the most likely opponent. The bye box now shows each team\u2019s real chance of a bye.'],
@@ -3967,6 +3968,7 @@ function setView(v){
         if(vv && vv.scale && vv.scale > 1.01) return false;   // pinch-zoomed: leave it alone
         const screenBottom = vv ? vv.height + vv.offsetTop : window.innerHeight;
         const r = bar.getBoundingClientRect();
+        if(shifted) return false;                               // already slid into place
         if(r.bottom > screenBottom + 4) return false;        // slid away on purpose (sheet open)
         if(screenBottom - r.bottom > 60) return true;          // floating well above the bottom
         if(vv && (vv.offsetTop > 2 || window.innerHeight - vv.height > 80)) return true;   // page left shifted
@@ -3981,15 +3983,35 @@ function setView(v){
         void bar.offsetHeight;
         bar.style.display = d;
       }
-      // At most 3 tries in a row, then rest 10 s, so it can never flicker.
+      /* Known iOS 26 bug: after the keyboard closes, visualViewport.offsetTop
+         doesn't reset, so position:fixed bars draw part-way up the screen.
+         Measure where the screen's bottom really is and slide the bar there
+         (translate composes with the bar's own hide/show transform). When
+         things are normal the shift is 0 and nothing changes. */
+      let shifted = 0;
+      function place(){
+        const vv = window.visualViewport;
+        let shift = 0;
+        if(vv && !typing() && !(vv.scale && vv.scale > 1.01)){
+          shift = Math.round(vv.offsetTop + vv.height - window.innerHeight);
+          if(Math.abs(shift) < 3) shift = 0;
+        }
+        if(shift !== shifted){
+          shifted = shift;
+          bar.style.translate = shift ? '0 ' + shift + 'px' : '';
+        }
+      }
+      // At most 3 nudges in a row, then rest 10 s, so it can never flicker.
       let tries = 0, restUntil = 0;
       function check(){
         try{
+          place();
           if(!stuck()){ tries = 0; return; }
           const now = Date.now();
           if(now < restUntil) return;
           if(++tries > 3){ tries = 0; restUntil = now + 10000; return; }
           fix();
+          place();
         }catch(e){}
       }
       function soon(){ [60, 320, 800, 1600].forEach(function(ms){ setTimeout(check, ms); }); }
@@ -3998,9 +4020,9 @@ function setView(v){
       window.addEventListener('pageshow', soon);
       window.addEventListener('orientationchange', soon);
       window.addEventListener('resize', soon);
-      if(window.visualViewport) window.visualViewport.addEventListener('resize', soon);
+      if(window.visualViewport){ window.visualViewport.addEventListener('resize', function(){ place(); soon(); }); window.visualViewport.addEventListener('scroll', place); }
       let st = 0;
-      window.addEventListener('scroll', function(){ clearTimeout(st); st = setTimeout(check, 150); }, { passive: true });
+      window.addEventListener('scroll', function(){ place(); clearTimeout(st); st = setTimeout(check, 150); }, { passive: true });
       setInterval(check, 500);
     })();
   let drag = null; const HANDLE = 44, CLOSE_AT = 80;
