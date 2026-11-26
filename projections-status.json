@@ -1,5 +1,5 @@
 {
- "at": "2026-11-26T03:48:11+00:00",
+ "at": "2026-11-26T22:00:55+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -9,10 +9,10 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "77",
+    "QB": "76",
     "RB": "138",
     "WR": "233",
-    "TE": "136"
+    "TE": "135"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
    "stat_keys": [
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 486,
-   "secs": 3.3,
+   "records": 483,
+   "secs": 3.4,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,13 +54,13 @@
     "TE": 646,
     "K": 157,
     "DST": 32,
-    "injury_flags": 253
+    "injury_flags": 258
    }
   },
   "espn": {
    "ok": true,
    "records": 432,
-   "secs": 0.4,
+   "secs": 0.9,
    "info": {
     "players": 1063,
     "kept": 432,
@@ -73,12 +73,12 @@
   },
   "cbs": {
    "ok": true,
-   "records": 172,
-   "secs": 30.1,
+   "records": 173,
+   "secs": 26.6,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 19
+    "no_projection": 18
    }
   },
   "fp": {
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
+  "Braelon Allen NYJ",
+  "Bhayshul Tuten JAX",
   "Jordan Mason MIN",
-  "Chase Brown CIN",
-  "Carnell Tate TEN",
-  "Michael Penix Jr. ATL",
-  "Jalen Coker CAR",
-  "Travis Etienne NO",
-  "Chuba Hubbard CAR",
-  "Tyler Shough NO",
+  "Antonio Williams WAS",
+  "Aaron Jones MIN",
   "Justin Herbert LAC",
-  "Kyren Williams LA",
-  "Tyler Allgeier ARI",
   "Woody Marks HOU",
-  "Luther Burden III CHI",
-  "Jacory Croskey-Merritt WAS",
-  "Derrick Henry BAL",
+  "Jordyn Tyson NO",
+  "KC Concepcion CLE",
+  "Mason Rudolph PIT",
+  "Kyle Monangai CHI",
+  "Zay Flowers BAL",
+  "Travis Etienne NO",
+  "Anthony Richardson IND",
   "Jameis Winston NYG",
-  "Omarion Hampton LAC",
-  "Saquon Barkley PHI",
-  "Breece Hall NYJ",
-  "Jameson Williams DET",
-  "Geno Smith NYJ",
+  "Chuba Hubbard CAR",
+  "Bo Nix DEN",
   "Caleb Douglas MIA",
-  "Jacoby Brissett BAL",
-  "D'Andre Swift CHI",
-  "Bo Nix DEN"
+  "Jalen Coker CAR",
+  "Malik Nabers NYG",
+  "Denzel Boston CLE",
+  "Ashton Jeanty LV",
+  "Saquon Barkley PHI",
+  "Derrick Henry BAL",
+  "D'Andre Swift CHI"
  ],
- "fp_unmatched_5plus_count": 81,
+ "fp_unmatched_5plus_count": 82,
  "future": {
   "13": {
    "sites": [
@@ -161,31 +161,31 @@
    "projected": 492
   },
   "nm_scale": {
-   "QB": 1.071,
-   "RB": 0.985,
+   "QB": 1.073,
+   "RB": 0.979,
    "WR": 1.042,
-   "TE": 1.203,
-   "K": 1.039,
-   "DST": 1.098
+   "TE": 1.201,
+   "K": 1.04,
+   "DST": 1.1
   }
  },
- "scorecard": "week 12: 617 pre-kickoff projections saved",
+ "scorecard": "week 12: 534 pre-kickoff projections saved",
  "consensus": {
-  "used": 427,
-  "fallback": 60,
-  "single_source_blend": 43,
-  "out_by_injury": 66,
-  "no_source_zero": 105,
+  "used": 426,
+  "fallback": 58,
+  "single_source_blend": 41,
+  "out_by_injury": 70,
+  "no_source_zero": 104,
   "added_from_sites": 3,
   "added_4plus": [
    "Chigoziem Okonkwo WAS TE 5.3",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 168,
-   "1": 63,
-   "2": 257,
-   "3": 128,
+   "0": 170,
+   "1": 62,
+   "2": 255,
+   "3": 129,
    "4": 42
   },
   "min_sources": 2
