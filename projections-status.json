@@ -1,5 +1,5 @@
 {
- "at": "2026-11-25T22:03:40+00:00",
+ "at": "2026-11-26T03:48:11+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -10,7 +10,7 @@
    "requests": 4,
    "total_available": {
     "QB": "77",
-    "RB": "139",
+    "RB": "138",
     "WR": "233",
     "TE": "136"
    },
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 486,
-   "secs": 3.5,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 32,
-    "injury_flags": 240
+    "injury_flags": 253
    }
   },
   "espn": {
    "ok": true,
    "records": 432,
-   "secs": 0.5,
+   "secs": 0.4,
    "info": {
     "players": 1063,
     "kept": 432,
     "dropped": {
      "pos": 0,
-     "team": 332,
-     "no_week_proj": 299
+     "team": 331,
+     "no_week_proj": 300
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 174,
-   "secs": 32.4,
+   "records": 172,
+   "secs": 30.1,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 17
+    "no_projection": 19
    }
   },
   "fp": {
@@ -87,36 +87,36 @@
   }
  },
  "checks": {
-  "players": 662,
+  "players": 661,
   "week_ok": true,
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Kyle McCord MIA",
-  "Braelon Allen NYJ",
-  "Matthew Golden GB",
-  "Carnell Tate TEN",
-  "Travis Etienne NO",
-  "KC Concepcion CLE",
-  "Carson Beck ARI",
-  "Tyler Shough NO",
-  "Matthew Stafford LA",
+  "Jordan Mason MIN",
   "Chase Brown CIN",
-  "Dylan Sampson CLE",
-  "J.J. McCarthy NYG",
-  "Jordan Love GB",
-  "Tony Pollard TEN",
-  "Denzel Boston CLE",
-  "Kyler Murray MIN",
-  "Kyle Monangai CHI",
-  "Rashee Rice KC",
+  "Carnell Tate TEN",
+  "Michael Penix Jr. ATL",
+  "Jalen Coker CAR",
+  "Travis Etienne NO",
+  "Chuba Hubbard CAR",
+  "Tyler Shough NO",
   "Justin Herbert LAC",
+  "Kyren Williams LA",
+  "Tyler Allgeier ARI",
+  "Woody Marks HOU",
+  "Luther Burden III CHI",
+  "Jacory Croskey-Merritt WAS",
+  "Derrick Henry BAL",
+  "Jameis Winston NYG",
+  "Omarion Hampton LAC",
+  "Saquon Barkley PHI",
   "Breece Hall NYJ",
+  "Jameson Williams DET",
+  "Geno Smith NYJ",
   "Caleb Douglas MIA",
-  "Chris Olave NO",
-  "Jakobi Meyers JAX",
   "Jacoby Brissett BAL",
-  "Geno Smith NYJ"
+  "D'Andre Swift CHI",
+  "Bo Nix DEN"
  ],
  "fp_unmatched_5plus_count": 81,
  "future": {
@@ -125,15 +125,15 @@
     "sleeper",
     "espn"
    ],
-   "players": 658,
-   "projected": 425
+   "players": 657,
+   "projected": 424
   },
   "14": {
    "sites": [
     "sleeper",
     "espn"
    ],
-   "players": 660,
+   "players": 659,
    "projected": 458
   },
   "15": {
@@ -141,7 +141,7 @@
     "sleeper",
     "espn"
    ],
-   "players": 662,
+   "players": 661,
    "projected": 488
   },
   "16": {
@@ -149,7 +149,7 @@
     "sleeper",
     "espn"
    ],
-   "players": 662,
+   "players": 661,
    "projected": 491
   },
   "17": {
@@ -157,42 +157,42 @@
     "sleeper",
     "espn"
    ],
-   "players": 662,
+   "players": 661,
    "projected": 492
   },
   "nm_scale": {
-   "QB": 1.074,
-   "RB": 0.982,
-   "WR": 1.041,
-   "TE": 1.209,
-   "K": 1.042,
-   "DST": 1.09
+   "QB": 1.071,
+   "RB": 0.985,
+   "WR": 1.042,
+   "TE": 1.203,
+   "K": 1.039,
+   "DST": 1.098
   }
  },
- "scorecard": "week 12: 662 pre-kickoff projections saved",
+ "scorecard": "week 12: 617 pre-kickoff projections saved",
  "consensus": {
-  "used": 426,
-  "fallback": 63,
-  "single_source_blend": 46,
-  "out_by_injury": 65,
-  "no_source_zero": 104,
-  "added_from_sites": 4,
+  "used": 427,
+  "fallback": 60,
+  "single_source_blend": 43,
+  "out_by_injury": 66,
+  "no_source_zero": 105,
+  "added_from_sites": 3,
   "added_4plus": [
    "Chigoziem Okonkwo WAS TE 5.3",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 166,
-   "1": 66,
-   "2": 255,
-   "3": 130,
-   "4": 41
+   "0": 168,
+   "1": 63,
+   "2": 257,
+   "3": 128,
+   "4": 42
   },
   "min_sources": 2
  },
  "fp_blended": true,
  "fp_matched": 40,
- "players": 662,
+ "players": 661,
  "spread_k": 1.05,
  "spread_rho": 0.06,
  "no_games_yet": 0
