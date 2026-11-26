@@ -1571,10 +1571,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.32.1';
+const APP_VERSION = '1.32.2';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.32.2', 'iPhone: the tab bar no longer gets stuck in the middle of the screen; it snaps back to the bottom on its own.'],
   ['1.32.1', 'Fewer pop-ups: no more alert pop-up when you open the app.'],
   ['1.32.0', 'Playoff Engine: the projected bracket now moves on the team that most often actually wins each playoff game in the simulations (a bye no longer counts toward winning the Wild Card game), so each spot shows the most likely opponent. The bye box now shows each team\u2019s real chance of a bye.'],
   ['1.31.1', 'Standings: double-digit records like 10-1 now show at the same size as the other records (the W-L column is a little wider). Only records with a tie use the smaller size.'],
@@ -3944,6 +3945,64 @@ function setView(v){
   const root = document.documentElement; root.classList.add('ios');
   function setVh(){ const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if(h) root.style.setProperty('--vvh', (h / 100) + 'px'); }
   setVh(); window.addEventListener('resize', setVh); if(window.visualViewport) window.visualViewport.addEventListener('resize', setVh);
+    /* v1.32.2: iPhone tab bar re-pin. iOS sometimes leaves the page shifted (after the
+       keyboard closes, or when the app comes back from the background), so the
+       bottom tab bar hangs mid-screen until you scroll. A watchdog checks a
+       couple of times a second while you're using the app, plus on every
+       keyboard close / return to the app; if the bar isn't at the bottom of
+       the screen it nudges the page 1 pixel and redraws the bar. One position
+       read each check: no data, no battery to speak of. */
+    (function repinTabBar(){
+      const bar = document.getElementById('tabBar');
+      if(!bar) return;
+      function typing(){
+        const a = document.activeElement;
+        return !!(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable));
+      }
+      function stuck(){
+        if(typing() || document.hidden) return false;
+        const cs = getComputedStyle(bar);
+        if(cs.display === 'none' || cs.visibility === 'hidden') return false;
+        const vv = window.visualViewport;
+        if(vv && vv.scale && vv.scale > 1.01) return false;   // pinch-zoomed: leave it alone
+        const screenBottom = vv ? vv.height + vv.offsetTop : window.innerHeight;
+        const r = bar.getBoundingClientRect();
+        if(r.bottom > screenBottom + 4) return false;        // slid away on purpose (sheet open)
+        if(screenBottom - r.bottom > 60) return true;          // floating well above the bottom
+        if(vv && (vv.offsetTop > 2 || window.innerHeight - vv.height > 80)) return true;   // page left shifted
+        return false;
+      }
+      function fix(){
+        const x = window.scrollX || 0, y = window.scrollY || window.pageYOffset || 0;
+        window.scrollTo(x, y + 1);
+        window.scrollTo(x, y);
+        const d = bar.style.display;
+        bar.style.display = 'none';
+        void bar.offsetHeight;
+        bar.style.display = d;
+      }
+      // At most 3 tries in a row, then rest 10 s, so it can never flicker.
+      let tries = 0, restUntil = 0;
+      function check(){
+        try{
+          if(!stuck()){ tries = 0; return; }
+          const now = Date.now();
+          if(now < restUntil) return;
+          if(++tries > 3){ tries = 0; restUntil = now + 10000; return; }
+          fix();
+        }catch(e){}
+      }
+      function soon(){ [60, 320, 800, 1600].forEach(function(ms){ setTimeout(check, ms); }); }
+      document.addEventListener('focusout', soon);
+      document.addEventListener('visibilitychange', function(){ if(!document.hidden) soon(); });
+      window.addEventListener('pageshow', soon);
+      window.addEventListener('orientationchange', soon);
+      window.addEventListener('resize', soon);
+      if(window.visualViewport) window.visualViewport.addEventListener('resize', soon);
+      let st = 0;
+      window.addEventListener('scroll', function(){ clearTimeout(st); st = setTimeout(check, 150); }, { passive: true });
+      setInterval(check, 500);
+    })();
   let drag = null; const HANDLE = 44, CLOSE_AT = 80;
   document.addEventListener('touchstart', function(e){
     drag = null; const t = e.touches && e.touches[0];
