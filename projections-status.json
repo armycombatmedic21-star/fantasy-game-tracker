@@ -1,5 +1,5 @@
 {
- "at": "2026-11-27T03:49:08+00:00",
+ "at": "2026-11-27T08:06:20+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 483,
-   "secs": 3.6,
+   "secs": 4.2,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 173,
-   "secs": 30.3,
+   "secs": 30.5,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,31 +92,31 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Zach Charbonnet SEA",
-  "Jakobi Meyers JAX",
-  "Bhayshul Tuten JAX",
-  "Tommy DeVito NE",
-  "Bryce Young CAR",
-  "Dylan Sampson CLE",
-  "Garrett Wilson NYJ",
-  "Travis Etienne NO",
-  "Chuba Hubbard CAR",
-  "Breece Hall NYJ",
-  "Adonai Mitchell NYJ",
-  "Jacory Croskey-Merritt WAS",
-  "Anthony Richardson IND",
-  "Justin Herbert LAC",
-  "Fernando Mendoza LV",
-  "Jalen Coker CAR",
-  "Rhamondre Stevenson NE",
-  "Luther Burden III CHI",
+  "Mike Evans SF",
+  "Omarion Hampton LAC",
   "Tetairoa McMillan CAR",
-  "Kyler Murray MIN",
-  "Mason Rudolph PIT",
-  "Caleb Douglas MIA",
-  "Zay Flowers BAL",
-  "Chase Brown CIN",
-  "J.J. McCarthy NYG"
+  "Tyler Allgeier ARI",
+  "Drake London ATL",
+  "Geno Smith NYJ",
+  "D'Andre Swift CHI",
+  "Saquon Barkley PHI",
+  "Joe Milton III PHI",
+  "Chris Olave NO",
+  "Matthew Stafford LA",
+  "DeVonta Smith PHI",
+  "Rome Odunze CHI",
+  "Bryce Young CAR",
+  "Michael Penix Jr. ATL",
+  "Breece Hall NYJ",
+  "Derrick Henry BAL",
+  "Braelon Allen NYJ",
+  "Tommy DeVito NE",
+  "Kyle McCord MIA",
+  "Jacory Croskey-Merritt WAS",
+  "Emeka Egbuka TB",
+  "Jacoby Brissett BAL",
+  "Kyle Monangai CHI",
+  "Rashee Rice KC"
  ],
  "fp_unmatched_5plus_count": 80,
  "future": {
@@ -163,18 +163,18 @@
   "nm_scale": {
    "QB": 1.071,
    "RB": 0.978,
-   "WR": 1.041,
-   "TE": 1.19,
+   "WR": 1.04,
+   "TE": 1.199,
    "K": 1.039,
    "DST": 1.098
   }
  },
  "scorecard": "week 12: 492 pre-kickoff projections saved",
  "consensus": {
-  "used": 426,
+  "used": 425,
   "fallback": 59,
   "single_source_blend": 42,
-  "out_by_injury": 70,
+  "out_by_injury": 71,
   "no_source_zero": 103,
   "added_from_sites": 3,
   "added_4plus": [
