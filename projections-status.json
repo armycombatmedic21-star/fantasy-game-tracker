@@ -1,5 +1,5 @@
 {
- "at": "2026-11-27T08:06:20+00:00",
+ "at": "2026-11-27T21:44:16+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -9,9 +9,9 @@
    "source": "api",
    "requests": 4,
    "total_available": {
-    "QB": "76",
-    "RB": "138",
-    "WR": "232",
+    "QB": "73",
+    "RB": "136",
+    "WR": "225",
     "TE": "135"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -45,8 +45,8 @@
  "sources": {
   "sleeper": {
    "ok": true,
-   "records": 483,
-   "secs": 4.2,
+   "records": 474,
+   "secs": 3.3,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,31 +54,31 @@
     "TE": 646,
     "K": 157,
     "DST": 32,
-    "injury_flags": 259
+    "injury_flags": 260
    }
   },
   "espn": {
    "ok": true,
-   "records": 432,
-   "secs": 0.5,
+   "records": 433,
+   "secs": 0.9,
    "info": {
     "players": 1063,
-    "kept": 432,
+    "kept": 433,
     "dropped": {
      "pos": 0,
      "team": 331,
-     "no_week_proj": 300
+     "no_week_proj": 299
     }
    }
   },
   "cbs": {
    "ok": true,
-   "records": 173,
-   "secs": 30.5,
+   "records": 171,
+   "secs": 32.0,
    "info": {
     "rostered": 191,
     "calls": 5,
-    "no_projection": 18
+    "no_projection": 20
    }
   },
   "fp": {
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Mike Evans SF",
-  "Omarion Hampton LAC",
-  "Tetairoa McMillan CAR",
-  "Tyler Allgeier ARI",
-  "Drake London ATL",
-  "Geno Smith NYJ",
-  "D'Andre Swift CHI",
-  "Saquon Barkley PHI",
-  "Joe Milton III PHI",
-  "Chris Olave NO",
-  "Matthew Stafford LA",
-  "DeVonta Smith PHI",
-  "Rome Odunze CHI",
+  "Malik Nabers NYG",
+  "Chase Brown CIN",
+  "Caleb Douglas MIA",
+  "Garrett Wilson NYJ",
   "Bryce Young CAR",
-  "Michael Penix Jr. ATL",
-  "Breece Hall NYJ",
+  "Chris Rodriguez Jr. JAX",
+  "Jameis Winston NYG",
+  "Tony Pollard TEN",
+  "Woody Marks HOU",
+  "Travis Etienne NO",
+  "Jaylen Warren PIT",
+  "Ladd McConkey LAC",
+  "Denzel Boston CLE",
+  "KC Concepcion CLE",
+  "Zach Charbonnet SEA",
+  "Carnell Tate TEN",
+  "Jordan Love GB",
+  "Jordyn Tyson NO",
+  "Jordan Mason MIN",
+  "Aaron Jones MIN",
+  "Ashton Jeanty LV",
+  "Chuba Hubbard CAR",
+  "Blake Corum LA",
   "Derrick Henry BAL",
-  "Braelon Allen NYJ",
-  "Tommy DeVito NE",
-  "Kyle McCord MIA",
-  "Jacory Croskey-Merritt WAS",
-  "Emeka Egbuka TB",
-  "Jacoby Brissett BAL",
-  "Kyle Monangai CHI",
-  "Rashee Rice KC"
+  "David Montgomery HOU"
  ],
- "fp_unmatched_5plus_count": 80,
+ "fp_unmatched_5plus_count": 81,
  "future": {
   "13": {
    "sites": [
@@ -134,7 +134,7 @@
     "espn"
    ],
    "players": 659,
-   "projected": 458
+   "projected": 459
   },
   "15": {
    "sites": [
@@ -142,7 +142,7 @@
     "espn"
    ],
    "players": 661,
-   "projected": 488
+   "projected": 489
   },
   "16": {
    "sites": [
@@ -150,7 +150,7 @@
     "espn"
    ],
    "players": 661,
-   "projected": 491
+   "projected": 492
   },
   "17": {
    "sites": [
@@ -158,34 +158,34 @@
     "espn"
    ],
    "players": 661,
-   "projected": 492
+   "projected": 493
   },
   "nm_scale": {
-   "QB": 1.071,
-   "RB": 0.978,
-   "WR": 1.04,
-   "TE": 1.199,
-   "K": 1.039,
+   "QB": 1.059,
+   "RB": 0.977,
+   "WR": 1.06,
+   "TE": 1.212,
+   "K": 1.04,
    "DST": 1.098
   }
  },
- "scorecard": "week 12: 492 pre-kickoff projections saved",
+ "scorecard": "week 12: 451 pre-kickoff projections saved",
  "consensus": {
-  "used": 425,
-  "fallback": 59,
-  "single_source_blend": 42,
-  "out_by_injury": 71,
-  "no_source_zero": 103,
+  "used": 422,
+  "fallback": 52,
+  "single_source_blend": 38,
+  "out_by_injury": 85,
+  "no_source_zero": 99,
   "added_from_sites": 3,
   "added_4plus": [
    "Chigoziem Okonkwo WAS TE 5.3",
    "Zonovan Knight ARI RB 4.8"
   ],
   "sources_per_player": {
-   "0": 170,
+   "0": 173,
    "1": 62,
-   "2": 255,
-   "3": 129,
+   "2": 256,
+   "3": 125,
    "4": 42
   },
   "min_sources": 2
