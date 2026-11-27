@@ -1,5 +1,5 @@
 {
- "at": "2026-11-26T22:00:55+00:00",
+ "at": "2026-11-27T03:49:08+00:00",
  "ok": true,
  "runner": "github-actions",
  "week": 12,
@@ -11,7 +11,7 @@
    "total_available": {
     "QB": "76",
     "RB": "138",
-    "WR": "233",
+    "WR": "232",
     "TE": "135"
    },
    "endpoint": "https://api.fantasypros.com/public/v2",
@@ -46,7 +46,7 @@
   "sleeper": {
    "ok": true,
    "records": 483,
-   "secs": 3.4,
+   "secs": 3.6,
    "info": {
     "QB": 355,
     "RB": 752,
@@ -54,13 +54,13 @@
     "TE": 646,
     "K": 157,
     "DST": 32,
-    "injury_flags": 258
+    "injury_flags": 259
    }
   },
   "espn": {
    "ok": true,
    "records": 432,
-   "secs": 0.9,
+   "secs": 0.5,
    "info": {
     "players": 1063,
     "kept": 432,
@@ -74,7 +74,7 @@
   "cbs": {
    "ok": true,
    "records": 173,
-   "secs": 26.6,
+   "secs": 30.3,
    "info": {
     "rostered": 191,
     "calls": 5,
@@ -92,33 +92,33 @@
   "outliers": []
  },
  "fp_unmatched_5plus": [
-  "Braelon Allen NYJ",
+  "Zach Charbonnet SEA",
+  "Jakobi Meyers JAX",
   "Bhayshul Tuten JAX",
-  "Jordan Mason MIN",
-  "Antonio Williams WAS",
-  "Aaron Jones MIN",
-  "Justin Herbert LAC",
-  "Woody Marks HOU",
-  "Jordyn Tyson NO",
-  "KC Concepcion CLE",
-  "Mason Rudolph PIT",
-  "Kyle Monangai CHI",
-  "Zay Flowers BAL",
+  "Tommy DeVito NE",
+  "Bryce Young CAR",
+  "Dylan Sampson CLE",
+  "Garrett Wilson NYJ",
   "Travis Etienne NO",
-  "Anthony Richardson IND",
-  "Jameis Winston NYG",
   "Chuba Hubbard CAR",
-  "Bo Nix DEN",
-  "Caleb Douglas MIA",
+  "Breece Hall NYJ",
+  "Adonai Mitchell NYJ",
+  "Jacory Croskey-Merritt WAS",
+  "Anthony Richardson IND",
+  "Justin Herbert LAC",
+  "Fernando Mendoza LV",
   "Jalen Coker CAR",
-  "Malik Nabers NYG",
-  "Denzel Boston CLE",
-  "Ashton Jeanty LV",
-  "Saquon Barkley PHI",
-  "Derrick Henry BAL",
-  "D'Andre Swift CHI"
+  "Rhamondre Stevenson NE",
+  "Luther Burden III CHI",
+  "Tetairoa McMillan CAR",
+  "Kyler Murray MIN",
+  "Mason Rudolph PIT",
+  "Caleb Douglas MIA",
+  "Zay Flowers BAL",
+  "Chase Brown CIN",
+  "J.J. McCarthy NYG"
  ],
- "fp_unmatched_5plus_count": 82,
+ "fp_unmatched_5plus_count": 80,
  "future": {
   "13": {
    "sites": [
@@ -126,7 +126,7 @@
     "espn"
    ],
    "players": 657,
-   "projected": 424
+   "projected": 425
   },
   "14": {
    "sites": [
@@ -161,21 +161,21 @@
    "projected": 492
   },
   "nm_scale": {
-   "QB": 1.073,
-   "RB": 0.979,
-   "WR": 1.042,
-   "TE": 1.201,
-   "K": 1.04,
-   "DST": 1.1
+   "QB": 1.071,
+   "RB": 0.978,
+   "WR": 1.041,
+   "TE": 1.19,
+   "K": 1.039,
+   "DST": 1.098
   }
  },
- "scorecard": "week 12: 534 pre-kickoff projections saved",
+ "scorecard": "week 12: 492 pre-kickoff projections saved",
  "consensus": {
   "used": 426,
-  "fallback": 58,
-  "single_source_blend": 41,
+  "fallback": 59,
+  "single_source_blend": 42,
   "out_by_injury": 70,
-  "no_source_zero": 104,
+  "no_source_zero": 103,
   "added_from_sites": 3,
   "added_4plus": [
    "Chigoziem Okonkwo WAS TE 5.3",
