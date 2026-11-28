@@ -508,6 +508,8 @@ html.chattyping .tabbar{display:none}
 html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%}
 button,a,[role=button]{touch-action:manipulation}
 html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none}
+/* v1.32.4: no rubber-band bounce past the top or bottom of the page on iPhone; iOS 26 drags the fixed tab bar around during that bounce */
+html.ios,html.ios body{overscroll-behavior-y:none}
 #chatPane{will-change:transform}
 .onstrip span{font-size:12.5px;padding:2px 9px 2px 7px;gap:6px}
 .strow .stn{display:flex;flex-direction:column;justify-content:center;gap:1px;line-height:1.15}
@@ -1571,10 +1573,11 @@ html.ios .sheet.schsheet{max-height:none}   /* v1.28.1: iPhone sheets are capped
           ESPN scoreboard (10 s while live) + per-game box scores (refetched when a new play happens)
    Score: our league's exact rules (Drop 1 §2), computed from ESPN; CBS fpts is the cross-check.
    ===================================================================== */
-const APP_VERSION = '1.32.3';
+const APP_VERSION = '1.32.4';
 const OWNERS = { '1': 'Darrell Hill', '2': 'Derek Sandstrom', '3': 'Mike Amarose', '4': 'Michael Hester', '5': 'Perry Holmes', '6': 'Donald Burse', '7': 'Mike Burse', '8': 'Dale LaPointe', '9': 'Mark Lamb', '10': 'Jason Bendickson', '11': 'Rick L. & Wes S.', '12': 'Brett LaLonde' };   // read once from CBS (Nov 8, 2026); edit here if an owner changes
 function ownerOf(t){ return t ? (OWNERS[String(t.id)] || '') : ''; }
 const CHANGELOG = [
+  ['1.32.4', 'iPhone: the tab bar no longer bounces at the top or bottom of the page; the stuck-bar fix only steps in when the page is still.'],
   ['1.32.3', 'iPhone: works around Apple’s iOS 26 bug that leaves the tab bar floating mid-screen; the bar now follows the real bottom of the screen.'],
   ['1.32.2', 'iPhone: the tab bar no longer gets stuck in the middle of the screen; it snaps back to the bottom on its own.'],
   ['1.32.1', 'Fewer pop-ups: no more alert pop-up when you open the app.'],
@@ -3946,84 +3949,70 @@ function setView(v){
   const root = document.documentElement; root.classList.add('ios');
   function setVh(){ const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight; if(h) root.style.setProperty('--vvh', (h / 100) + 'px'); }
   setVh(); window.addEventListener('resize', setVh); if(window.visualViewport) window.visualViewport.addEventListener('resize', setVh);
-    /* v1.32.2: iPhone tab bar re-pin. iOS sometimes leaves the page shifted (after the
-       keyboard closes, or when the app comes back from the background), so the
-       bottom tab bar hangs mid-screen until you scroll. A watchdog checks a
-       couple of times a second while you're using the app, plus on every
-       keyboard close / return to the app; if the bar isn't at the bottom of
-       the screen it nudges the page 1 pixel and redraws the bar. One position
-       read each check: no data, no battery to speak of. */
     (function repinTabBar(){
+      /* iPhone tab bar guard (v1.32.4, rewritten: the earlier version could move the
+         bar during iOS's rubber-band bounce at the top/bottom of the page).
+         Apple's iOS 26 bug: after the keyboard closes (or the app comes back
+         from the background) visualViewport.offsetTop can stay off, so the
+         fixed tab bar draws part-way up the screen. This only steps in when
+         that has happened AND the page is sitting still: never while a finger
+         is down, never while scrolling or bouncing. Otherwise it does nothing. */
       const bar = document.getElementById('tabBar');
       if(!bar) return;
+      let armed = false;          // a keyboard closed / app came back: watch for the bug
+      let touching = false, lastMove = 0, shifted = 0, nudged = 0;
       function typing(){
         const a = document.activeElement;
         return !!(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable));
       }
-      function stuck(){
-        if(typing() || document.hidden) return false;
-        const cs = getComputedStyle(bar);
-        if(cs.display === 'none' || cs.visibility === 'hidden') return false;
-        const vv = window.visualViewport;
-        if(vv && vv.scale && vv.scale > 1.01) return false;   // pinch-zoomed: leave it alone
-        const screenBottom = vv ? vv.height + vv.offsetTop : window.innerHeight;
-        const r = bar.getBoundingClientRect();
-        if(shifted) return false;                               // already slid into place
-        if(r.bottom > screenBottom + 4) return false;        // slid away on purpose (sheet open)
-        if(screenBottom - r.bottom > 60) return true;          // floating well above the bottom
-        if(vv && (vv.offsetTop > 2 || window.innerHeight - vv.height > 80)) return true;   // page left shifted
-        return false;
+      function settled(){
+        if(touching || Date.now() - lastMove < 450) return false;
+        const y = window.scrollY || 0;
+        const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        return y >= 0 && y <= max + 1;      // not bouncing past either end
       }
-      function fix(){
-        const x = window.scrollX || 0, y = window.scrollY || window.pageYOffset || 0;
-        window.scrollTo(x, y + 1);
-        window.scrollTo(x, y);
-        const d = bar.style.display;
-        bar.style.display = 'none';
-        void bar.offsetHeight;
-        bar.style.display = d;
+      function setShift(px){
+        if(px === shifted) return;
+        shifted = px;
+        bar.style.translate = px ? '0 ' + px + 'px' : '';
       }
-      /* Known iOS 26 bug: after the keyboard closes, visualViewport.offsetTop
-         doesn't reset, so position:fixed bars draw part-way up the screen.
-         Measure where the screen's bottom really is and slide the bar there
-         (translate composes with the bar's own hide/show transform). When
-         things are normal the shift is 0 and nothing changes. */
-      let shifted = 0;
-      function place(){
-        const vv = window.visualViewport;
-        let shift = 0;
-        if(vv && !typing() && !(vv.scale && vv.scale > 1.01)){
-          shift = Math.round(vv.offsetTop + vv.height - window.innerHeight);
-          if(Math.abs(shift) < 3) shift = 0;
-        }
-        if(shift !== shifted){
-          shifted = shift;
-          bar.style.translate = shift ? '0 ' + shift + 'px' : '';
-        }
-      }
-      // At most 3 nudges in a row, then rest 10 s, so it can never flicker.
-      let tries = 0, restUntil = 0;
       function check(){
         try{
-          place();
-          if(!stuck()){ tries = 0; return; }
-          const now = Date.now();
-          if(now < restUntil) return;
-          if(++tries > 3){ tries = 0; restUntil = now + 10000; return; }
-          fix();
-          place();
+          const vv = window.visualViewport;
+          if(!vv || document.hidden) return;
+          if(typing() || (vv.scale && vv.scale > 1.01)){ setShift(0); return; }
+          if(!armed || !settled()) return;                 // hold whatever it is until the page is still
+          let gap = Math.round(vv.offsetTop + vv.height - window.innerHeight);
+          if(Math.abs(gap) < 3) gap = 0;
+          if(!gap){ setShift(0); nudged = 0; armed = false; return; }   // all good again: stand down
+          // First try the gentle fix (a 1-pixel scroll makes iOS recompute);
+          // if the gap is still there after that, slide the bar to the real bottom.
+          if(nudged < 2){
+            nudged++;
+            const x = window.scrollX || 0, y = window.scrollY || 0;
+            window.scrollTo(x, y + 1); window.scrollTo(x, y);
+            return;
+          }
+          setShift(gap);
         }catch(e){}
       }
-      function soon(){ [60, 320, 800, 1600].forEach(function(ms){ setTimeout(check, ms); }); }
-      document.addEventListener('focusout', soon);
-      document.addEventListener('visibilitychange', function(){ if(!document.hidden) soon(); });
-      window.addEventListener('pageshow', soon);
-      window.addEventListener('orientationchange', soon);
-      window.addEventListener('resize', soon);
-      if(window.visualViewport){ window.visualViewport.addEventListener('resize', function(){ place(); soon(); }); window.visualViewport.addEventListener('scroll', place); }
-      let st = 0;
-      window.addEventListener('scroll', function(){ place(); clearTimeout(st); st = setTimeout(check, 150); }, { passive: true });
-      setInterval(check, 500);
+      function arm(){ armed = true; nudged = 0; [120, 500, 1100].forEach(function(ms){ setTimeout(check, ms); }); }
+      document.addEventListener('focusout', function(e){
+        const t = e.target;
+        if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) arm();
+      });
+      document.addEventListener('visibilitychange', function(){ if(!document.hidden) arm(); });
+      window.addEventListener('pageshow', arm);
+      window.addEventListener('orientationchange', arm);
+      document.addEventListener('touchstart', function(){ touching = true; }, { passive: true });
+      document.addEventListener('touchend', function(){ touching = false; lastMove = Date.now(); }, { passive: true });
+      document.addEventListener('touchcancel', function(){ touching = false; lastMove = Date.now(); }, { passive: true });
+      window.addEventListener('scroll', function(){ lastMove = Date.now(); }, { passive: true });
+      if(window.visualViewport){
+        window.visualViewport.addEventListener('resize', function(){ if(!typing()) arm(); });
+        window.visualViewport.addEventListener('scroll', function(){ lastMove = Date.now(); });
+      }
+      setInterval(check, 600);
     })();
   let drag = null; const HANDLE = 44, CLOSE_AT = 80;
   document.addEventListener('touchstart', function(e){
